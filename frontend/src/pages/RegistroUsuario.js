@@ -79,14 +79,12 @@ const RegistroUsuario = () => {
   };
 
   return (
-    <Layout>
       <RegistroUsuarioForm
         usuario={usuario}
         onChange={handleChange}
         onSubmit={handleSubmit}
         errores={errores}
       />
-    </Layout>
   );
 };
 
