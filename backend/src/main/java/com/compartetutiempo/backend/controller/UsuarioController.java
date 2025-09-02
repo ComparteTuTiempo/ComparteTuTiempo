@@ -1,7 +1,12 @@
 package com.compartetutiempo.backend.controller;
 
+import com.compartetutiempo.backend.dto.LoginRequest;
 import com.compartetutiempo.backend.model.Usuario;
+import com.compartetutiempo.backend.repository.UsuarioRepository;
 import com.compartetutiempo.backend.service.UsuarioService;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
@@ -30,4 +35,19 @@ public class UsuarioController {
     public Usuario obtenerUsuario(@PathVariable String correo) {
         return service.obtenerPorCorreo(correo);
     }
+
+    @PostMapping("/login")
+public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest) {
+    Usuario usuario = service.obtenerPorCorreo(loginRequest.getCorreo());
+
+    if (usuario == null) {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Usuario no encontrado");
+    }
+
+    if (!usuario.getContrasena().equals(loginRequest.getContrasena())) {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Contraseña incorrecta");
+    }
+
+    return ResponseEntity.ok(usuario);
+}
 }
