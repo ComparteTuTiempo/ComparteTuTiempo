@@ -102,6 +102,23 @@ const RegistroUsuarioForm = ({ usuario, onChange, onSubmit, errores }) => {
         </select>
         {errores.metodoAutenticacion && <span style={styles.error}>{errores.metodoAutenticacion}</span>}
 
+        {/* Aceptar política de privacidad */}
+        <label style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+          <input
+            type="checkbox"
+            name="aceptaPolitica"
+            checked={usuario.aceptaPolitica}
+            onChange={onChange}
+          />
+          <span>
+            He leído y acepto la{" "}
+            <a href="/politica-privacidad" target="_blank" rel="noopener noreferrer">
+              Política de Privacidad
+            </a>
+          </span>
+        </label>
+        {errores.aceptaPolitica && <span style={styles.error}>{errores.aceptaPolitica}</span>}
+
         <button type="submit" style={styles.button}>
           Registrarse
         </button>

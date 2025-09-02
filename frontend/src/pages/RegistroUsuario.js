@@ -13,13 +13,17 @@ const RegistroUsuario = () => {
     fotoPerfil: "",
     ubicacion: "",
     metodoAutenticacion: "correo",
+    aceptaPolitica: false,
   });
 
   const [errores, setErrores] = useState({});
 
   const handleChange = (e) => {
-    const { name, value, files } = e.target;
-    if (name === "fotoPerfil" && files && files[0]) {
+    const { name, value, files, type, checked } = e.target;
+    if(type === "checkbox"){
+      setUsuario({ ...usuario, [name]: checked });
+    }
+    else if (name === "fotoPerfil" && files && files[0]) {
       // Subida de imagen local
       const reader = new FileReader();
       reader.onloadend = () => {
@@ -33,6 +37,10 @@ const RegistroUsuario = () => {
 
   const validar = () => {
     const errores = {};
+
+    if (!usuario.aceptaPolitica) {
+      errores.aceptaPolitica = "Debes aceptar la política de privacidad para registrarte";
+    }
 
     // Contraseña: 1 mayúscula, 1 número, al menos 10 caracteres
     const passRegex = /^(?=.*[A-Z])(?=.*\d).{10,}$/;
