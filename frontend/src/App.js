@@ -4,6 +4,7 @@ import Layout from "./components/Layout";
 import LandingPage from "./pages/LandingPage";
 import RegistroUsuario from "./pages/RegistroUsuario";
 import LoginPage from "./pages/LoginPage";
+import PoliticaPrivacidad from "./pages/politica-privacidad"
 
 function App() {
   return (
@@ -14,6 +15,7 @@ function App() {
           <Route path="/" element={<LandingPage />} />
           <Route path="/registro" element={<RegistroUsuario />} />
           <Route path="/login" element={<LoginPage />} />
+          <Route path="/politica-privacidad" element={<PoliticaPrivacidad />} />
         </Route>
       </Routes>
     </Router>
