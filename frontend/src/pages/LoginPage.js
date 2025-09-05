@@ -21,9 +21,10 @@ const LoginPage = () => {
 
     try {
       const response = await axios.post(
-        "http://localhost:8080/api/usuarios/login",
-        credenciales
-      );
+        "http://localhost:8080/auth/login",{
+        correo: credenciales.correo,
+        contraseña: credenciales.contrasena
+      });
 
       // Guardar usuario en localStorage
       localStorage.setItem("usuario", JSON.stringify(response.data));
