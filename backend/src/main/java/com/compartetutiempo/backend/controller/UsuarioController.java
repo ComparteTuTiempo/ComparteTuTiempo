@@ -32,7 +32,7 @@ public class UsuarioController {
     }
 
     @GetMapping("/{correo}")
-    public Usuario obtenerUsuario(@PathVariable String correo) {
+    public  Usuario obtenerUsuario(@PathVariable String correo) {
         return service.obtenerPorCorreo(correo);
     }
 

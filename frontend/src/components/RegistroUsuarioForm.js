@@ -1,16 +1,16 @@
 import React from "react";
 
-const RegistroUsuarioForm = ({ usuario, onChange, onSubmit, errores }) => {
+const UsuarioForm = ({ usuario, onChange, onSubmit, errores, modo = "registro", deshabilitarCorreo = false, mostrarContrasena = true }) => {
   return (
     <div style={styles.container}>
-      <h2 style={styles.title}>Registro de Usuario</h2>
+      <h2 style={styles.title}>{modo === "registro" ? "Registro de Usuario" : "Editar Perfil"}</h2>
 
       <form onSubmit={onSubmit} style={styles.form}>
         {/* Nombre */}
         <input
           name="nombre"
           placeholder="Nombre y Apellidos"
-          value={usuario.nombre}
+          value={usuario.nombre || ""}
           onChange={onChange}
           style={styles.input}
           required
@@ -22,31 +22,36 @@ const RegistroUsuarioForm = ({ usuario, onChange, onSubmit, errores }) => {
           name="correo"
           placeholder="Correo electrónico"
           type="email"
-          value={usuario.correo}
+          value={usuario.correo || ""}
           onChange={onChange}
           style={styles.input}
           required
+          disabled={deshabilitarCorreo}
         />
         {errores.correo && <span style={styles.error}>{errores.correo}</span>}
 
         {/* Contraseña */}
-        <input
-          name="contrasena"
-          placeholder="Contraseña"
-          type="password"
-          value={usuario.contrasena}
-          onChange={onChange}
-          style={styles.input}
-          required
-        />
-        {errores.contrasena && <span style={styles.error}>{errores.contrasena}</span>}
+        {mostrarContrasena && (
+          <>
+            <input
+              name="contrasena"
+              placeholder="Contraseña"
+              type="password"
+              value={usuario.contrasena || ""}
+              onChange={onChange}
+              style={styles.input}
+              required={modo === "registro"}
+            />
+            {errores.contrasena && <span style={styles.error}>{errores.contrasena}</span>}
+          </>
+        )}
 
         {/* Fecha de nacimiento */}
         <input
           name="fechaNacimiento"
           placeholder="Fecha de Nacimiento"
           type="date"
-          value={usuario.fechaNacimiento}
+          value={usuario.fechaNacimiento || ""}
           onChange={onChange}
           style={styles.input}
         />
@@ -56,7 +61,7 @@ const RegistroUsuarioForm = ({ usuario, onChange, onSubmit, errores }) => {
         <textarea
           name="biografia"
           placeholder="Biografía"
-          value={usuario.biografia}
+          value={usuario.biografia || ""}
           onChange={onChange}
           style={{ ...styles.input, height: "80px" }}
         />
@@ -73,7 +78,7 @@ const RegistroUsuarioForm = ({ usuario, onChange, onSubmit, errores }) => {
         <input
           name="fotoPerfil"
           placeholder="O pega una URL de la foto"
-          value={usuario.fotoPerfil.startsWith("data:") ? "" : usuario.fotoPerfil}
+          value={usuario.fotoPerfil?.startsWith("data:") ? "" : usuario.fotoPerfil || ""}
           onChange={onChange}
           style={styles.input}
         />
@@ -83,7 +88,7 @@ const RegistroUsuarioForm = ({ usuario, onChange, onSubmit, errores }) => {
         <input
           name="ubicacion"
           placeholder="Ubicación"
-          value={usuario.ubicacion}
+          value={usuario.ubicacion || ""}
           onChange={onChange}
           style={styles.input}
         />
@@ -92,7 +97,7 @@ const RegistroUsuarioForm = ({ usuario, onChange, onSubmit, errores }) => {
         {/* Método de autenticación */}
         <select
           name="metodoAutenticacion"
-          value={usuario.metodoAutenticacion}
+          value={usuario.metodoAutenticacion || "correo"}
           onChange={onChange}
           style={styles.input}
         >
@@ -103,7 +108,7 @@ const RegistroUsuarioForm = ({ usuario, onChange, onSubmit, errores }) => {
         {errores.metodoAutenticacion && <span style={styles.error}>{errores.metodoAutenticacion}</span>}
 
         <button type="submit" style={styles.button}>
-          Registrarse
+          {modo === "registro" ? "Registrarse" : "Guardar cambios"}
         </button>
       </form>
     </div>
@@ -156,4 +161,4 @@ const styles = {
   },
 };
 
-export default RegistroUsuarioForm;
+export default UsuarioForm;
