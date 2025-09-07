@@ -1,7 +1,8 @@
-// src/pages/UserProfile.jsx
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { useAuth } from "../utils/AuthContext";
+
+
 
 const UserProfile = () => {
   const { user, token } = useAuth();
@@ -50,8 +51,14 @@ const UserProfile = () => {
           headers: { Authorization: `Bearer ${token}` },
         }
       );
-      setUsuario(res.data);
+      const updated = res.data;
+      setUsuario(updated);
       setEditing(false);
+      setFormData({
+            biografia: updated.biografia || "",
+            fechaNacimiento: updated.fechaNacimiento || "",
+            ubicacion: updated.ubicacion || "",
+          });
     } catch (err) {
       console.error("❌ Error al actualizar usuario:", err);
     }
@@ -242,7 +249,7 @@ const styles = {
     backgroundColor: "#28a745",
     border: "none",
     color: "#fff",
-    padding: "10px 16px",
+    padding: "5px 16px",
     borderRadius: "6px",
     cursor: "pointer",
   },

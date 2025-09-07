@@ -44,16 +44,17 @@ const Layout = () => {
 
           {usuario ? (
             <div style={styles.userSection}>
+              <Link to="/profile" style={{ textDecoration: "none" }}>
               {usuario.fotoPerfil ? (
                 <img
                   src={usuario.fotoPerfil}
                   alt="perfil"
                   style={styles.profileImg}
-                />
+                ></img>
               ) : (
                 <FaUserCircle style={styles.profileIcon} />
               )}
-
+              </Link>
               <span style={styles.username}>{usuario.nombre}</span>
 
               <button onClick={handleLogout} style={styles.logoutBtn}>

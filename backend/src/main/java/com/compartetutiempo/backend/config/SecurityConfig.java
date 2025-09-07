@@ -27,6 +27,7 @@ public class SecurityConfig{
           .cors(cors -> {})
           .csrf(csrf -> csrf.disable())
           .authorizeHttpRequests(auth -> auth
+            .requestMatchers("/api/usuarios/{correo}").authenticated()
             .anyRequest().permitAll()
           )
           .oauth2ResourceServer(oauth2 -> oauth2

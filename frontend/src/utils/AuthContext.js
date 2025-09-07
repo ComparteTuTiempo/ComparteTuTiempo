@@ -8,20 +8,19 @@ export const AuthProvider = ({ children }) => {
   const [token, setToken] = useState(null);
 
   useEffect(() => {
-    const stored = localStorage.getItem("usuario"); // aquí tienes el JSON
+    const stored = localStorage.getItem("usuario"); 
     if (stored) {
       try {
-        // 👇 parseamos el JSON { token: "..." }
         const parsed = JSON.parse(stored);
-        const jwt = parsed.token; // extraemos el string JWT
+        const jwt = parsed.token; 
 
         const decoded = jwtDecode(jwt);
         console.log("🔑 Token decodificado:", decoded);
 
         setToken(jwt);
         setUser({
-          correo: decoded.sub,   // subject es el correo
-          rol: decoded.scope,    // claim extra si lo usas
+          correo: decoded.sub,   
+          rol: decoded.scope,    
           ...decoded,
         });
       } catch (err) {

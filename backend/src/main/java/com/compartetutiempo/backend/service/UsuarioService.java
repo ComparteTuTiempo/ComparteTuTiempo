@@ -28,6 +28,22 @@ public class UsuarioService implements UserDetailsService{
         return repository.save(usuario);
     }
 
+    public Usuario actualizarUsuario(String correo, Usuario nuevosDatos) {
+        Usuario usuario = obtenerPorCorreo(correo);
+
+        usuario.setBiografia(
+            nuevosDatos.getBiografia() != null ? nuevosDatos.getBiografia() : usuario.getBiografia()
+        );
+        usuario.setFechaNacimiento(
+            nuevosDatos.getFechaNacimiento() != null ? nuevosDatos.getFechaNacimiento() : usuario.getFechaNacimiento()
+        );
+        usuario.setUbicacion(
+            nuevosDatos.getUbicacion() != null ? nuevosDatos.getUbicacion() : usuario.getUbicacion()
+        );
+
+        return repository.save(usuario);
+}
+
     public List<Usuario> obtenerUsuarios() {
         return repository.findAll();
     }
