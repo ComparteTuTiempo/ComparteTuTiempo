@@ -6,6 +6,7 @@ import com.compartetutiempo.backend.repository.UsuarioRepository;
 import com.compartetutiempo.backend.service.UsuarioService;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
@@ -32,8 +33,17 @@ public class UsuarioController {
     }
 
     @GetMapping("/{correo}")
-    public Usuario obtenerUsuario(@PathVariable String correo) {
+    public  Usuario obtenerUsuario(@PathVariable String correo) {
         return service.obtenerPorCorreo(correo);
+    }
+
+    @PutMapping("/{correo}")
+    public ResponseEntity<Usuario> actualizarUsuario(
+        @PathVariable String correo,
+        @RequestBody Usuario usuarioModificado) {
+    
+        Usuario actualizado = service.actualizarUsuario(correo, usuarioModificado);
+        return ResponseEntity.ok(actualizado);
     }
 
     @PostMapping("/login")
