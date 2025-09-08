@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
-import LoginForm from "../components/LoginForm";
+import LoginForm from "../forms/LoginForm";
 
 const LoginPage = () => {
   const [credenciales, setCredenciales] = useState({
