@@ -1,12 +1,15 @@
 import React, { useEffect, useState } from "react";
+import { Link ,useNavigate} from "react-router-dom";
 import axios from "axios";
 import { useAuth } from "../utils/AuthContext";
 
 
 
 const UserProfile = () => {
+  const navigate = useNavigate();
   const { user, token } = useAuth();
   const [usuario, setUsuario] = useState(null);
+  const [ofertas, setOfertas] = useState([]);
   const [editing, setEditing] = useState(false);
   const [formData, setFormData] = useState({
     biografia: "",
@@ -18,6 +21,10 @@ const UserProfile = () => {
     const fetchUsuario = async () => {
       if (user?.correo && token) {
         try {
+          const resOfertas = await axios.get(
+            `http://localhost:8080/intercambios/usuario/${user.correo}`,
+            { headers: { Authorization: `Bearer ${token}` } }
+          );
           const res = await axios.get(
             `http://localhost:8080/api/usuarios/${user.correo}`,
             {
@@ -30,6 +37,8 @@ const UserProfile = () => {
             fechaNacimiento: res.data.fechaNacimiento || "",
             ubicacion: res.data.ubicacion || "",
           });
+          
+          setOfertas(resOfertas.data);
         } catch (err) {
           console.error("❌ Error al cargar el usuario:", err);
         }
@@ -74,7 +83,11 @@ const UserProfile = () => {
       <aside style={styles.sidebar}>
         <ul style={styles.menu}>
           <li style={styles.menuItem}>Browse Offers</li>
-          <li style={styles.menuItem}>Create Offer</li>
+          <li style={styles.menuItem}>
+            <Link to="/crear-oferta" style={{ textDecoration: "none", color: "inherit" }}>
+              Create Offer
+            </Link>
+          </li>
           <li style={{ ...styles.menuItem, ...styles.active }}>My Profile</li>
           <li style={styles.menuItem}>Chats</li>
           <li style={styles.menuItem}>Reviews</li>
@@ -145,22 +158,28 @@ const UserProfile = () => {
           )}
         </div>
 
-        {/* Offers */}
-        <section style={styles.section}>
-          <h3 style={styles.sectionTitle}>My Offers</h3>
-          <div style={styles.cards}>
-            <div style={styles.card}>
-              <h4>Gardening Help</h4>
-              <p>Offering help with weeding, planting, and general garden maintenance.</p>
-              <button style={styles.detailsBtn}>View Details</button>
-            </div>
-            <div style={styles.card}>
-              <h4>Basic Web Design</h4>
-              <p>Can help set up simple websites using HTML/CSS.</p>
-              <button style={styles.detailsBtn}>View Details</button>
-            </div>
-          </div>
-        </section>
+        {/* Ofertas */}
+      <section style={styles.section}>
+        <h3 style={styles.sectionTitle}>Mis Ofertas</h3>
+        <div style={styles.cards}>
+          {ofertas.length > 0 ? (
+            ofertas.map((oferta) => (
+              <div key={oferta.id} style={styles.card}>
+                <h4>{oferta.nombre}</h4>
+                <p>descripción : {oferta.descripcion}</p>
+                <p>{oferta.tipo === "OFERTA"?"": "Horas:" + oferta.numeroHoras}</p>
+                <p>{oferta.tipo === "OFERTA"? "tipo : Oferta":"tipo : Petición"}</p>
+                <small>{new Date(oferta.fechaPublicacion).toLocaleDateString()}</small>
+                <button onClick={() => navigate(`/intercambios/${oferta.id}/editar`)}>
+                  Editar
+                </button>
+              </div>
+            ))
+          ) : (
+            <p>No tienes ofertas aún.</p>
+          )}
+        </div>
+      </section>
 
         {/* Reviews */}
         <section style={styles.section}>

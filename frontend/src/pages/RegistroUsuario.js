@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import RegistroUsuarioForm from "../components/RegistroUsuarioForm";
+import RegistroUsuarioForm from "../forms/RegistroUsuarioForm";
 import Layout from "../components/Layout";
 import axios from "axios";
 
