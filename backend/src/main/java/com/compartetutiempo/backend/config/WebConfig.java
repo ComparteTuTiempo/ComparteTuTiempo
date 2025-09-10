@@ -15,7 +15,9 @@ public class WebConfig {
                 registry
                 .addMapping("/**") // aplica a todos los endpoints
                         .allowedOrigins("http://localhost:3000") // React en dev
-                        .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS");
+                        .allowedOriginPatterns("*")
+                        .allowedMethods("*")
+                        .allowCredentials(true);
             }
         };
     }
