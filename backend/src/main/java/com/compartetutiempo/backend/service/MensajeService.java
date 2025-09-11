@@ -40,5 +40,9 @@ public class MensajeService {
     public List<Mensaje> getMessages(Long conversacionId) {
         return MensajeRepository.findByConversacionIdOrderByTimestampAsc(conversacionId);
     }
+
+    public void guardarMensaje(Mensaje mensaje){
+        MensajeRepository.save(mensaje);
+    }
 }
 

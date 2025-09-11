@@ -3,6 +3,8 @@ package com.compartetutiempo.backend.model;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import jakarta.persistence.Entity;
 import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
@@ -25,5 +27,6 @@ public class Conversacion extends BaseEntity{
         joinColumns = @JoinColumn(name = "conversacion_id"),
         inverseJoinColumns = @JoinColumn(name = "usuario_id")
     )
+    @JsonIgnore
     private List<Usuario> participantes = new ArrayList<>();
 }

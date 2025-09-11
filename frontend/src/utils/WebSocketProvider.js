@@ -14,11 +14,14 @@ export const WebSocketProvider = ({ children }) => {
     if (!token) return;
 
     const client = new Client({
-      webSocketFactory: () => new SockJS('http://localhost:8080/ws'),
-      brokerURL: "ws://localhost:8080/ws",
-      connectHeaders: { Authorization: `Bearer ${token}` },
+      webSocketFactory: () => new SockJS("http://localhost:8080/ws"),
+      connectHeaders: {
+        Authorization: `Bearer ${token}`,
+      },
       debug: (str) => console.log("[STOMP]", str),
       reconnectDelay: 5000,
+      onConnect: () => setConnected(true),
+      onDisconnect: () => setConnected(false),
     });
 
     client.activate();

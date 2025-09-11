@@ -11,6 +11,7 @@ export default function ConversationView() {
   const [messages, setMessages] = useState([]);
   const [text, setText] = useState("");
   const subRef = useRef(null);
+  const scrollRef = useRef(null);
 
   useEffect(() => {
     if (!id || !token) return;
@@ -30,26 +31,99 @@ export default function ConversationView() {
     };
   }, [id, token, subscribe]);
 
+  // Scroll automático al último mensaje
+  useEffect(() => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+    }
+  }, [messages]);
+
   const handleSend = () => {
     if (!text.trim()) return;
-    send(`/app/chat/${id}`, { content: text });
+    send(`/app/chat/${id}`, { contenido: text });
     setText("");
   };
+  
 
+  // ====== JSX ======
   return (
-    <div>
-      <h3>Chat</h3>
-      <div style={{height: 400, overflow: "auto", border: "1px solid #ddd", padding: 8}}>
-        {messages.map(m => (
-          <div key={m.id || Math.random()} style={{marginBottom: 8}}>
-            <strong>{m.senderNombre || m.senderCorreo}</strong>: {m.content}
-            <div><small>{new Date(m.timestamp).toLocaleString()}</small></div>
-          </div>
-        ))}
+    <div style={styles.container}>
+      <h3 style={styles.header}>Chat</h3>
+
+      <div ref={scrollRef} style={styles.messagesContainer}>
+        {messages.map((m, idx) => {
+          const isMe = m.remitente.correo === user?.correo;
+          return (
+            <div key={m.id || idx} style={styles.messageWrapper(isMe)}>
+              <div style={styles.messageBubble(isMe)}>
+                <div style={styles.senderName}>{isMe ? "Tú" : m.remitente.nombre || m.remitente.correo}</div>
+                <div style={styles.messageContent}>{m.contenido}</div>
+                <div style={styles.timestamp}>{new Date(m.timestamp).toLocaleTimeString()}</div>
+              </div>
+            </div>
+          );
+        })}
       </div>
 
-      <textarea value={text} onChange={(e)=>setText(e.target.value)} rows={3}/>
-      <button onClick={handleSend}>Enviar</button>
+      <div style={styles.inputContainer}>
+        <textarea
+          value={text}
+          onChange={(e) => setText(e.target.value)}
+          rows={2}
+          style={styles.textarea}
+          placeholder="Escribe un mensaje..."
+        />
+        <button onClick={handleSend} style={styles.sendButton}>Enviar</button>
+      </div>
     </div>
   );
 }
+
+const styles = {
+    container: { maxWidth: 600, margin: "20px auto", fontFamily: "Arial, sans-serif" },
+    header: { textAlign: "center" },
+    messagesContainer: {
+      height: 400,
+      overflowY: "auto",
+      border: "1px solid #ddd",
+      borderRadius: 8,
+      padding: 12,
+      backgroundColor: "#f7f7f7",
+      display: "flex",
+      flexDirection: "column",
+      gap: 8
+    },
+    messageWrapper: (isMe) => ({
+      display: "flex",
+      justifyContent: isMe ? "flex-end" : "flex-start"
+    }),
+    messageBubble: (isMe) => ({
+      maxWidth: "70%",
+      backgroundColor: isMe ? "#dcf8c6" : "#fff",
+      padding: "8px 12px",
+      borderRadius: 16,
+      borderTopRightRadius: isMe ? 0 : 16,
+      borderTopLeftRadius: isMe ? 16 : 0,
+      boxShadow: "0 1px 2px rgba(0,0,0,0.1)"
+    }),
+    senderName: { fontSize: 12, color: "#555", marginBottom: 4 },
+    messageContent: { fontSize: 14 },
+    timestamp: { fontSize: 10, color: "#999", textAlign: "right", marginTop: 4 },
+    inputContainer: { display: "flex", marginTop: 12 },
+    textarea: {
+      flex: 1,
+      borderRadius: 8,
+      border: "1px solid #ccc",
+      padding: 8,
+      resize: "none"
+    },
+    sendButton: {
+      marginLeft: 8,
+      padding: "8px 16px",
+      borderRadius: 8,
+      border: "none",
+      backgroundColor: "#007bff",
+      color: "#fff",
+      cursor: "pointer"
+    }
+  };
