@@ -11,17 +11,19 @@ export default function ConversationView() {
   const [messages, setMessages] = useState([]);
   const [text, setText] = useState("");
   const subRef = useRef(null);
-  const scrollRef = useRef(null);
+  const scrollRef = useRef(null); 
+  
 
   useEffect(() => {
-    if (!id || !token) return;
+    if (!id || !token || !user) return;
 
     axios.get(`http://localhost:8080/mensajes/${id}`, {
       headers: { Authorization: `Bearer ${token}` }
-    }).then(res => setMessages(res.data))
-      .catch(err => console.error(err));
+    })
+    .then(res => setMessages(res.data))
+    .catch(err => console.error(err));
 
-    // subscribe topic conversation
+    // Suscribirse al topic de conversación
     subRef.current = subscribe(`/topic/conversation/${id}`, (msg) => {
       setMessages(prev => [...prev, msg]);
     });
@@ -31,32 +33,47 @@ export default function ConversationView() {
     };
   }, [id, token, subscribe]);
 
-  // Scroll automático al último mensaje
+
   useEffect(() => {
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
   }, [messages]);
 
+
   const handleSend = () => {
-    if (!text.trim()) return;
+    if (!text.trim() || !user) return;
+
+
+    const newMessage = {
+      id: Math.random(), 
+      contenido: text,
+      remitente: user,
+      timestamp: new Date().toISOString()
+    };
+    setMessages(prev => [...prev, newMessage]);
+
+
     send(`/app/chat/${id}`, { contenido: text });
+
     setText("");
   };
-  
 
-  // ====== JSX ======
+ 
+  if (!user) return <div>Cargando chat...</div>;
+
   return (
     <div style={styles.container}>
       <h3 style={styles.header}>Chat</h3>
-
+      
       <div ref={scrollRef} style={styles.messagesContainer}>
-        {messages.map((m, idx) => {
-          const isMe = m.remitente.correo === user?.correo;
+        {messages.map((m, idx) => {       
+          const isMe = user && m.remitente.correo?.toLowerCase() === user.correo?.toLowerCase();   
           return (
+            
             <div key={m.id || idx} style={styles.messageWrapper(isMe)}>
               <div style={styles.messageBubble(isMe)}>
-                <div style={styles.senderName}>{isMe ? "Tú" : m.remitente.nombre || m.remitente.correo}</div>
+                <div style={styles.senderName}>{isMe ? "Tú" : m.senderNombre || "Desconocido"}</div>
                 <div style={styles.messageContent}>{m.contenido}</div>
                 <div style={styles.timestamp}>{new Date(m.timestamp).toLocaleTimeString()}</div>
               </div>
@@ -79,7 +96,7 @@ export default function ConversationView() {
   );
 }
 
-const styles = {
+ const styles = {
     container: { maxWidth: 600, margin: "20px auto", fontFamily: "Arial, sans-serif" },
     header: { textAlign: "center" },
     messagesContainer: {
