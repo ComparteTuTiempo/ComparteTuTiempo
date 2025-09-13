@@ -44,7 +44,7 @@ const Layout = () => {
 
           {usuario ? (
             <div style={styles.userSection}>
-              <Link to="/profile" style={{ textDecoration: "none" }}>
+              <Link to="/perfil" style={{ textDecoration: "none" }}>
               {usuario.fotoPerfil ? (
                 <img
                   src={usuario.fotoPerfil}

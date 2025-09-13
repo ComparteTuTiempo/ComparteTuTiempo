@@ -29,11 +29,12 @@ function App() {
                 <Route path="/" element={<LandingPage />} />
                 <Route path="/registro" element={<RegistroUsuario />} />
                 <Route path="/login" element={<LoginPage />} />
-                <Route path="/profile" element={<UserProfile correo={correo} />}/>
+                <Route path="/perfil" element={<UserProfile correo={correo} />}/>
+                <Route path="/perfil/:correo" element={<UserProfile />} />
                 <Route path="/crear-oferta" element={<CrearOferta />} />
                 <Route path="/intercambios/:id/editar" element={<CrearOferta />} />
                 <Route path="/conversaciones" element={<ConversacionList />} />
-                <Route path="/conversaciones/:id" element={<ConversacionView />} />
+                <Route path="/conversaciones/:id" element={<ConversacionView />} />           
               </Route>
             </Routes>
           </Router>
