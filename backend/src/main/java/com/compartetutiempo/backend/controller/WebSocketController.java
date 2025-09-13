@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 
 import com.compartetutiempo.backend.config.JwtService;
 import com.compartetutiempo.backend.dto.MensajeDTO;
+import com.compartetutiempo.backend.dto.UsuarioDTO;
 import com.compartetutiempo.backend.model.Conversacion;
 import com.compartetutiempo.backend.model.Mensaje;
 import com.compartetutiempo.backend.model.Usuario;
@@ -69,10 +70,24 @@ public class WebSocketController {
         mensaje.setTimestamp(Instant.now());
         mensajeService.guardarMensaje(mensaje);
 
-        // Enviar mensaje a todos los suscriptores del topic
-        messagingTemplate.convertAndSend("/topic/messages", mensaje);
+        UsuarioDTO remitenteDTO = new UsuarioDTO(
+            remitente.getId(),
+            remitente.getNombre(),
+            remitente.getCorreo(),
+            remitente.getFotoPerfil()
+        );
 
-        System.out.println("✅ Mensaje enviado por: " + correoRemitente);
+        MensajeDTO response = new MensajeDTO(
+            mensaje.getId(),
+            mensaje.getContenido(),
+            mensaje.getTimestamp(),
+            remitenteDTO
+        );
+
+        // Enviar mensaje a todos los suscriptores del topic
+        messagingTemplate.convertAndSend("/topic/messages", response);
+
+        System.out.println(" Mensaje enviado por: " + correoRemitente);
     }
 
     @MessageMapping("/private")
