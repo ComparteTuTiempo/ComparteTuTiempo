@@ -89,7 +89,12 @@ const UserProfile = () => {
             </Link>
           </li>
           <li style={{ ...styles.menuItem, ...styles.active }}>My Profile</li>
-          <li style={styles.menuItem}>Chats</li>
+          <li style={styles.menuItem}>
+            <Link to="/conversaciones" style={{ textDecoration: "none", color: "inherit" }}>
+              Mis Chats
+            </Link>
+          </li>
+          
           <li style={styles.menuItem}>Reviews</li>
         </ul>
       </aside>
