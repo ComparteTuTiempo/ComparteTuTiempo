@@ -39,6 +39,9 @@ public class Usuario implements UserDetails{
     @Column
     private String fotoPerfil;
 
+    @Column(name = "numero_horas",precision = 2)
+    private Double numeroHoras = 0.0;
+
     @Column
     private String ubicacion;
 

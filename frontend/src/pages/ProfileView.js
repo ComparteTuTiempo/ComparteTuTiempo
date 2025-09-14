@@ -1,13 +1,13 @@
 import React, { useEffect, useState } from "react";
-import { Link ,useNavigate} from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import axios from "axios";
 import { useAuth } from "../utils/AuthContext";
 
-
-
 const UserProfile = () => {
   const navigate = useNavigate();
+  const { correo } = useParams(); // correo en la URL si es otro perfil
   const { user, token } = useAuth();
+
   const [usuario, setUsuario] = useState(null);
   const [ofertas, setOfertas] = useState([]);
   const [editing, setEditing] = useState(false);
@@ -19,17 +19,13 @@ const UserProfile = () => {
 
   useEffect(() => {
     const fetchUsuario = async () => {
-      if (user?.correo && token) {
+      if (token) {
         try {
-          const resOfertas = await axios.get(
-            `http://localhost:8080/intercambios/usuario/${user.correo}`,
-            { headers: { Authorization: `Bearer ${token}` } }
-          );
+          const targetCorreo = correo || user?.correo; // si no hay param, tu perfil
+
           const res = await axios.get(
-            `http://localhost:8080/api/usuarios/${user.correo}`,
-            {
-              headers: { Authorization: `Bearer ${token}` },
-            }
+            `http://localhost:8080/api/usuarios/${targetCorreo}`,
+            { headers: { Authorization: `Bearer ${token}` } }
           );
           setUsuario(res.data);
           setFormData({
@@ -37,15 +33,22 @@ const UserProfile = () => {
             fechaNacimiento: res.data.fechaNacimiento || "",
             ubicacion: res.data.ubicacion || "",
           });
-          
-          setOfertas(resOfertas.data);
+
+          // solo ofertas si es tu perfil
+          if (!correo && user?.correo) {
+            const resOfertas = await axios.get(
+              `http://localhost:8080/intercambios/usuario/${user.correo}`,
+              { headers: { Authorization: `Bearer ${token}` } }
+            );
+            setOfertas(resOfertas.data);
+          }
         } catch (err) {
           console.error("❌ Error al cargar el usuario:", err);
         }
       }
     };
     fetchUsuario();
-  }, [user, token]);
+  }, [correo, token, user]);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -56,18 +59,16 @@ const UserProfile = () => {
       const res = await axios.put(
         `http://localhost:8080/api/usuarios/${user.correo}`,
         { ...usuario, ...formData },
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
+        { headers: { Authorization: `Bearer ${token}` } }
       );
       const updated = res.data;
       setUsuario(updated);
       setEditing(false);
       setFormData({
-            biografia: updated.biografia || "",
-            fechaNacimiento: updated.fechaNacimiento || "",
-            ubicacion: updated.ubicacion || "",
-          });
+        biografia: updated.biografia || "",
+        fechaNacimiento: updated.fechaNacimiento || "",
+        ubicacion: updated.ubicacion || "",
+      });
     } catch (err) {
       console.error("❌ Error al actualizar usuario:", err);
     }
@@ -77,24 +78,31 @@ const UserProfile = () => {
     return <p style={{ textAlign: "center", marginTop: "40px" }}>Cargando perfil...</p>;
   }
 
+  const isOwnProfile = !correo || correo === user?.correo;
+
   return (
     <div style={styles.container}>
       {/* Sidebar */}
       <aside style={styles.sidebar}>
         <ul style={styles.menu}>
           <li style={styles.menuItem}>Browse Offers</li>
-          <li style={styles.menuItem}>
-            <Link to="/crear-oferta" style={{ textDecoration: "none", color: "inherit" }}>
-              Create Offer
-            </Link>
+          {isOwnProfile && (
+            <li style={styles.menuItem}>
+              <Link to="/crear-oferta" style={{ textDecoration: "none", color: "inherit" }}>
+                Create Offer
+              </Link>
+            </li>
+          )}
+          <li style={{ ...styles.menuItem, ...styles.active }}>
+            {isOwnProfile ? "My Profile" : "Perfil de usuario"}
           </li>
-          <li style={{ ...styles.menuItem, ...styles.active }}>My Profile</li>
-          <li style={styles.menuItem}>
-            <Link to="/conversaciones" style={{ textDecoration: "none", color: "inherit" }}>
-              Mis Chats
-            </Link>
-          </li>
-          
+          {isOwnProfile && (
+            <li style={styles.menuItem}>
+              <Link to="/conversaciones" style={{ textDecoration: "none", color: "inherit" }}>
+                Mis Chats
+              </Link>
+            </li>
+          )}
           <li style={styles.menuItem}>Reviews</li>
         </ul>
       </aside>
@@ -152,39 +160,42 @@ const UserProfile = () => {
             )}
           </div>
 
-          {editing ? (
-            <button style={styles.saveBtn} onClick={handleSave}>
-              Guardar
-            </button>
-          ) : (
-            <button style={styles.editBtn} onClick={() => setEditing(true)}>
-              Edit Profile
-            </button>
-          )}
+          {isOwnProfile &&
+            (editing ? (
+              <button style={styles.saveBtn} onClick={handleSave}>
+                Guardar
+              </button>
+            ) : (
+              <button style={styles.editBtn} onClick={() => setEditing(true)}>
+                Edit Profile
+              </button>
+            ))}
         </div>
 
         {/* Ofertas */}
-      <section style={styles.section}>
-        <h3 style={styles.sectionTitle}>Mis Ofertas</h3>
-        <div style={styles.cards}>
-          {ofertas.length > 0 ? (
-            ofertas.map((oferta) => (
-              <div key={oferta.id} style={styles.card}>
-                <h4>{oferta.nombre}</h4>
-                <p>descripción : {oferta.descripcion}</p>
-                <p>{oferta.tipo === "OFERTA"?"": "Horas:" + oferta.numeroHoras}</p>
-                <p>{oferta.tipo === "OFERTA"? "tipo : Oferta":"tipo : Petición"}</p>
-                <small>{new Date(oferta.fechaPublicacion).toLocaleDateString()}</small>
-                <button onClick={() => navigate(`/intercambios/${oferta.id}/editar`)}>
-                  Editar
-                </button>
-              </div>
-            ))
-          ) : (
-            <p>No tienes ofertas aún.</p>
-          )}
-        </div>
-      </section>
+        
+          <section style={styles.section}>
+            <h3 style={styles.sectionTitle}>Mis Ofertas</h3>
+            <div style={styles.cards}>
+              {ofertas.length > 0 ? (
+                ofertas.map((oferta) => (
+                  <div key={oferta.id} style={styles.card}>
+                    <h4>{oferta.nombre}</h4>
+                    <p>descripción : {oferta.descripcion}</p>
+                    <p>{oferta.tipo === "OFERTA" ? "" : "Horas:" + oferta.numeroHoras}</p>
+                    <p>{oferta.tipo === "OFERTA" ? "tipo : Oferta" : "tipo : Petición"}</p>
+                    <small>{new Date(oferta.fechaPublicacion).toLocaleDateString()}</small>
+                    <button onClick={() => navigate(`/intercambios/${oferta.id}/editar`)}>
+                      Editar
+                    </button>
+                  </div>
+                ))
+              ) : (
+                <p>No hay ofertas aún</p>
+              )}
+            </div>
+          </section>
+        
 
         {/* Reviews */}
         <section style={styles.section}>

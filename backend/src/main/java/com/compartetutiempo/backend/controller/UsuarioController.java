@@ -1,6 +1,7 @@
 package com.compartetutiempo.backend.controller;
 
 import com.compartetutiempo.backend.dto.LoginRequest;
+import com.compartetutiempo.backend.dto.UsuarioDTO;
 import com.compartetutiempo.backend.model.Usuario;
 import com.compartetutiempo.backend.repository.UsuarioRepository;
 import com.compartetutiempo.backend.service.UsuarioService;
@@ -33,8 +34,16 @@ public class UsuarioController {
     }
 
     @GetMapping("/{correo}")
-    public  Usuario obtenerUsuario(@PathVariable String correo) {
-        return service.obtenerPorCorreo(correo);
+    public  UsuarioDTO obtenerUsuario(@PathVariable String correo) {
+        Usuario usuario = service.obtenerPorCorreo(correo);
+        UsuarioDTO usuarioDTO = new UsuarioDTO();
+        usuarioDTO.setCorreo(correo);
+        usuarioDTO.setFotoPerfil(usuario.getFotoPerfil());
+        usuarioDTO.setNombre(usuario.getNombre());
+        usuarioDTO.setUbicacion(usuario.getUbicacion());
+
+        return usuarioDTO;
+
     }
 
     @PutMapping("/{correo}")
