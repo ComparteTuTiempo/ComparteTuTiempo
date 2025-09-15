@@ -11,6 +11,7 @@ import { WebSocketProvider } from "./utils/WebSocketProvider";
 import { AuthProvider } from "./utils/AuthContext";
 import ConversacionList from "./pages/ConversacionList";
 import ConversacionView from "./pages/ConversacionView";
+import CrearEventoForm from "./forms/CrearEventoForm";
 
 
 function App() {
@@ -34,7 +35,8 @@ function App() {
                 <Route path="/crear-oferta" element={<CrearOferta />} />
                 <Route path="/intercambios/:id/editar" element={<CrearOferta />} />
                 <Route path="/conversaciones" element={<ConversacionList />} />
-                <Route path="/conversaciones/:id" element={<ConversacionView />} />           
+                <Route path="/conversaciones/:id" element={<ConversacionView />} />
+                <Route path="/eventos/crear" element={<CrearEventoForm  />} />            
               </Route>
             </Routes>
           </Router>
