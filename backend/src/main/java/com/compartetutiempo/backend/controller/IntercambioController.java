@@ -35,6 +35,12 @@ public class IntercambioController {
         return ResponseEntity.status(HttpStatus.CREATED).body(creado);
     }
 
+    @GetMapping
+    public ResponseEntity<List<Intercambio>> obtenerTodos() {
+        List<Intercambio> intercambios = intercambioService.obtenerTodos();
+        return ResponseEntity.ok(intercambios);
+    }
+
     @GetMapping("/usuario/{correo}")
     public ResponseEntity<List<Intercambio>> obtenerIntercambiosPorUsuario(@PathVariable String correo) {
         List<Intercambio> intercambios = intercambioService.obtenerPorUsuario(correo);
