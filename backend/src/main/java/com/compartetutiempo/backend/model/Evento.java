@@ -54,6 +54,5 @@ public class Evento extends BaseEntity{
         joinColumns = @JoinColumn(name = "evento_id"),
         inverseJoinColumns = @JoinColumn(name = "usuario_id")
     )
-    @JsonIgnore
     private List<Usuario> participantes;
 }

@@ -1,5 +1,8 @@
 package com.compartetutiempo.backend.service;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.springframework.stereotype.Service;
 
 import com.compartetutiempo.backend.model.Evento;
@@ -25,21 +28,52 @@ public class EventoService {
         return eventoRepository.save(evento);
     }
 
+    public List<Evento> listarEventos() {
+        return eventoRepository.findAll();
+    }
 
-    
+    public void guardarEvento(Evento evento){
+        eventoRepository.save(evento);
+    }
+
+    public Evento obtenerEventoPorId(Integer id) {
+        return eventoRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Evento no encontrado con id: " + id));
+    }
+
+    public List<Usuario> obtenerParticipantesEvento(Integer id){
+        Evento evento = obtenerEventoPorId(id);
+        return evento.getParticipantes();
+    }
+
     @Transactional
-    public Evento participarEnEvento(Long eventoId, Long usuarioId) {
+    public Evento participarEnEvento(Integer eventoId, String correo) {
         Evento evento = eventoRepository.findById(eventoId)
                 .orElseThrow(() -> new RuntimeException("Evento no encontrado"));
-        Usuario usuario = usuarioRepository.findById(usuarioId)
+        Usuario usuario = usuarioRepository.findByCorreo(correo)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
+        // Si la lista de participantes es nula, inicializarla
+        if (evento.getParticipantes() == null) {
+            evento.setParticipantes(new ArrayList<>());
+        }else if(evento.getOrganizador().getCorreo().equals(correo)){
+            throw new RuntimeException("El anfitrión no puede registrar su participación en su propio evento");
+        }
+
+        boolean yaInscrito = evento.getParticipantes().stream()
+                .anyMatch(p -> p.getCorreo().equals(usuario.getCorreo()));
+
+        if (yaInscrito) {
+            throw new RuntimeException("El usuario ya está inscrito en este evento");
+        }
 
         evento.getParticipantes().add(usuario);
         return eventoRepository.save(evento);
     }
 
+
     @Transactional
-    public Evento finalizarEvento(Long eventoId) {
+    public Evento finalizarEvento(Integer eventoId) {
         Evento evento = eventoRepository.findById(eventoId)
                 .orElseThrow(() -> new RuntimeException("Evento no encontrado"));
 

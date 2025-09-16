@@ -4,7 +4,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import com.compartetutiempo.backend.model.Evento;
 
-public interface EventoRepository extends JpaRepository<Evento,Long> {
+public interface EventoRepository extends JpaRepository<Evento,Integer> {
 
     
 }

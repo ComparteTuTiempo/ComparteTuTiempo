@@ -12,6 +12,7 @@ import { AuthProvider } from "./utils/AuthContext";
 import ConversacionList from "./pages/ConversacionList";
 import ConversacionView from "./pages/ConversacionView";
 import CrearEventoForm from "./forms/CrearEventoForm";
+import EventoDetails from "./pages/EventoDetails";
 
 
 function App() {
@@ -36,7 +37,8 @@ function App() {
                 <Route path="/intercambios/:id/editar" element={<CrearOferta />} />
                 <Route path="/conversaciones" element={<ConversacionList />} />
                 <Route path="/conversaciones/:id" element={<ConversacionView />} />
-                <Route path="/eventos/crear" element={<CrearEventoForm  />} />            
+                <Route path="/eventos/crear" element={<CrearEventoForm  />} />
+                <Route path="/eventos/:id" element={<EventoDetails  />} />                
               </Route>
             </Routes>
           </Router>
