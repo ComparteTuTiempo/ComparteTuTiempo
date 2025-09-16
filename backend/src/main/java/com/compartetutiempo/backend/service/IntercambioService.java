@@ -32,6 +32,9 @@ public class IntercambioService {
         return intercambioRepository.save(intercambio);
     }
 
+    public List<Intercambio> obtenerTodos() {
+        return intercambioRepository.findAll();
+    }
     public List<Intercambio> obtenerPorUsuario(String correo) {
         Usuario usuario = usuarioRepository.findByCorreo(correo)
             .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
