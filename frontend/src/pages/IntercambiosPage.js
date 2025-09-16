@@ -3,99 +3,104 @@ import axios from "axios";
 
 const IntercambiosPage = () => {
   const [intercambios, setIntercambios] = useState([]);
-  const [intercambioSeleccionado, setIntercambioSeleccionado] = useState(null);
+  const [seleccionado, setSeleccionado] = useState(null);
+  const [tabActiva, setTabActiva] = useState("Oferta"); // pestaña activa
 
   useEffect(() => {
-    const obtenerTodosLosIntercambios = async () => {
+    const obtenerIntercambios = async () => {
       try {
         const response = await axios.get("http://localhost:8080/intercambios");
         setIntercambios(response.data);
       } catch (error) {
-        console.error("Error al obtener los intercambios:", error);
+        console.error("Error al obtener intercambios:", error);
       }
     };
 
-    obtenerTodosLosIntercambios();
+    obtenerIntercambios();
   }, []);
 
-  const abrirDetalle = (intercambio) => {
-    setIntercambioSeleccionado(intercambio);
-  };
+const filtrados = intercambios.filter(
+  (i) => (i.tipo || "").toLowerCase() === tabActiva.toLowerCase()
+);
 
-  const cerrarDetalle = () => {
-    setIntercambioSeleccionado(null);
-  };
 
   return (
     <div style={{ padding: "20px" }}>
-      <h1>Intercambios disponibles</h1>
+      <h1>Intercambios</h1>
+
+      {/* Pestañas */}
+      <div style={{ display: "flex", marginBottom: "20px" }}>
+        {["Oferta", "Peticion"].map((tipo) => (
+          <button
+            key={tipo}
+            onClick={() => setTabActiva(tipo)}
+            style={{
+              flex: 1,
+              padding: "10px",
+              border: "none",
+              cursor: "pointer",
+              backgroundColor: tabActiva === tipo ? "#007bff" : "#f1f1f1",
+              color: tabActiva === tipo ? "white" : "black",
+              fontWeight: tabActiva === tipo ? "bold" : "normal",
+              borderRadius: "5px 5px 0 0",
+            }}
+          >
+            {tipo}
+          </button>
+        ))}
+      </div>
+
+      {/* Lista */}
       <div style={{
         display: "grid",
         gridTemplateColumns: "repeat(auto-fill, minmax(250px, 1fr))",
         gap: "20px",
-        marginTop: "20px"
+        marginTop: "10px",
       }}>
-        {intercambios.map((intercambio) => (
+        {filtrados.map((i) => (
           <div
-            key={intercambio.id}
-            onClick={() => abrirDetalle(intercambio)}
+            key={i.id}
+            onClick={() => setSeleccionado(i)}
             style={{
               border: "1px solid #ccc",
               borderRadius: "8px",
               padding: "15px",
-              boxShadow: "0 2px 5px rgba(0,0,0,0.1)",
               cursor: "pointer",
-              transition: "transform 0.2s",
+              boxShadow: "0 2px 5px rgba(0,0,0,0.1)",
             }}
-            onMouseEnter={(e) => e.currentTarget.style.transform = "scale(1.03)"}
-            onMouseLeave={(e) => e.currentTarget.style.transform = "scale(1)"}
           >
-            <h3>{intercambio.titulo}</h3>
-            <p>{intercambio.descripcion}</p>
-            <p><strong>{intercambio.horas}</strong> horas</p>
+            <h3>{i.titulo}</h3>
+            <p>{i.descripcion}</p>
+            <p><strong>{i.horas}</strong> horas</p>
           </div>
         ))}
       </div>
 
       {/* Modal de detalle */}
-      {intercambioSeleccionado && (
+      {seleccionado && (
         <div style={{
-          position: "fixed",
-          top: 0, left: 0, right: 0, bottom: 0,
-          backgroundColor: "rgba(0,0,0,0.5)",
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          zIndex: 1000
+          position: "fixed", top: 0, left: 0, right: 0, bottom: 0,
+          backgroundColor: "rgba(0,0,0,0.5)", display: "flex",
+          justifyContent: "center", alignItems: "center", zIndex: 1000
         }}>
           <div style={{
-            backgroundColor: "#fff",
-            padding: "30px",
-            borderRadius: "10px",
-            width: "400px",
-            maxHeight: "80%",
-            overflowY: "auto",
+            background: "#fff", padding: "30px", borderRadius: "10px", width: "400px",
             position: "relative"
           }}>
             <button
-              onClick={cerrarDetalle}
+              onClick={() => setSeleccionado(null)}
               style={{
-                position: "absolute",
-                top: "10px",
-                right: "10px",
-                border: "none",
-                background: "none",
-                fontSize: "18px",
-                cursor: "pointer"
+                position: "absolute", top: "10px", right: "10px",
+                border: "none", background: "none", fontSize: "18px", cursor: "pointer"
               }}
             >
               ✖
             </button>
-            <h2>{intercambioSeleccionado.titulo}</h2>
-            <p><strong>Descripción:</strong> {intercambioSeleccionado.descripcion}</p>
-            <p><strong>Horas:</strong> {intercambioSeleccionado.horas}</p>
-            <p><strong>Tipo de intercambio:</strong> Oferta</p>
-            <p><strong>Modalidad:</strong> {intercambioSeleccionado.modalidad}</p>
+            <h2>{seleccionado.titulo}</h2>
+            <p><strong>Descripción:</strong> {seleccionado.descripcion}</p>
+            <p><strong>Horas:</strong> {seleccionado.horas}</p>
+            <p><strong>Tipo de intercambio:</strong> {seleccionado.tipoIntercambio}</p>
+            <p><strong>Modalidad:</strong> {seleccionado.modalidad}</p>
           </div>
         </div>
       )}
