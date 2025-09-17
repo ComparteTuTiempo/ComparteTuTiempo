@@ -59,5 +59,8 @@ public class IntercambioService {
                 .orElseThrow(() -> new RuntimeException("Intercambio no encontrado con id: " + id));
     }
 
+    public List<Intercambio> obtenerPorUsuario(Usuario user) {
+        return intercambioRepository.findByUser(user);
+}
     
 }

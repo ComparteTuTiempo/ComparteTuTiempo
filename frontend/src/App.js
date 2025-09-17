@@ -12,7 +12,9 @@ import { AuthProvider } from "./utils/AuthContext";
 import ConversacionList from "./pages/ConversacionList";
 import ConversacionView from "./pages/ConversacionView";
 import IntercambiosPage from "./pages/IntercambiosPage";
-
+import MercadoPage from "./pages/MercadoPage";
+import ProductoPage from "./pages/ProductoPage";
+import PublicacionesPage from "./pages/PublicacionesPage";
 
 function App() {
   
@@ -36,7 +38,11 @@ function App() {
                 <Route path="/intercambios/:id/editar" element={<CrearOferta />} />
                 <Route path="/conversaciones" element={<ConversacionList />} />
                 <Route path="/conversaciones/:id" element={<ConversacionView />} />
-                <Route path="/intercambios" element={<IntercambiosPage />} />        
+                <Route path="/intercambios" element={<IntercambiosPage />} />
+                <Route path="/mercado" element={<MercadoPage />} /> 
+                <Route path="/producto/nuevo" element={<ProductoPage />} />
+                <Route path="/mispublicaciones" element={<PublicacionesPage />} />
+                <Route path="/productos/editar/:id" element={<ProductoPage />} />
               </Route>
             </Routes>
           </Router>
