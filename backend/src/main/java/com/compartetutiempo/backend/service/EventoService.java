@@ -5,9 +5,13 @@ import java.util.List;
 
 import org.springframework.stereotype.Service;
 
+import com.compartetutiempo.backend.dto.EventoResponse;
+import com.compartetutiempo.backend.dto.ParticipacionDTO;
 import com.compartetutiempo.backend.model.Evento;
+import com.compartetutiempo.backend.model.Participacion;
 import com.compartetutiempo.backend.model.Usuario;
 import com.compartetutiempo.backend.repository.EventoRepository;
+import com.compartetutiempo.backend.repository.ParticipacionRepository;
 import com.compartetutiempo.backend.repository.UsuarioRepository;
 
 import jakarta.transaction.Transactional;
@@ -19,56 +23,70 @@ public class EventoService {
 
     private final EventoRepository eventoRepository;
     private final UsuarioRepository usuarioRepository;
+    private final ParticipacionRepository participacionRepository;
 
     @Transactional
     public Evento crearEvento(Evento evento, String correoOrganizador) {
         Usuario organizador = usuarioRepository.findByCorreo(correoOrganizador)
         .orElseThrow(() -> new RuntimeException("Organizador no encontrado"));
+        
         evento.setOrganizador(organizador);
         return eventoRepository.save(evento);
     }
 
-    public List<Evento> listarEventos() {
-        return eventoRepository.findAll();
+    public List<EventoResponse> listarEventos() {
+        return eventoRepository.findAll().stream()
+            .map(EventoResponse::mapToDTO)
+            .toList();
     }
 
     public void guardarEvento(Evento evento){
         eventoRepository.save(evento);
     }
 
-    public Evento obtenerEventoPorId(Integer id) {
-        return eventoRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Evento no encontrado con id: " + id));
-    }
-
-    public List<Usuario> obtenerParticipantesEvento(Integer id){
-        Evento evento = obtenerEventoPorId(id);
-        return evento.getParticipantes();
+    public EventoResponse obtenerEventoPorId(Integer id) {
+        Evento evento = eventoRepository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Evento no encontrado con id: " + id));
+        return EventoResponse.mapToDTO(evento);
     }
 
     @Transactional
-    public Evento participarEnEvento(Integer eventoId, String correo) {
+    public Participacion participarEnEvento(Integer eventoId, String correo) {
         Evento evento = eventoRepository.findById(eventoId)
                 .orElseThrow(() -> new RuntimeException("Evento no encontrado"));
+
         Usuario usuario = usuarioRepository.findByCorreo(correo)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
-        // Si la lista de participantes es nula, inicializarla
-        if (evento.getParticipantes() == null) {
-            evento.setParticipantes(new ArrayList<>());
-        }else if(evento.getOrganizador().getCorreo().equals(correo)){
-            throw new RuntimeException("El anfitrión no puede registrar su participación en su propio evento");
-        }
+        boolean yaInscrito = participacionRepository.findByEventoId(eventoId).stream()
+                .anyMatch(p -> p.getUsuario().getCorreo().equals(usuario.getCorreo()));
 
-        boolean yaInscrito = evento.getParticipantes().stream()
-                .anyMatch(p -> p.getCorreo().equals(usuario.getCorreo()));
-
+        boolean esAnfitrion = evento.getOrganizador().getCorreo().equals(correo);
         if (yaInscrito) {
             throw new RuntimeException("El usuario ya está inscrito en este evento");
+        }else if(esAnfitrion){
+            throw new RuntimeException("El anfitrión no puede inscribirse en su propio evento");
         }
 
-        evento.getParticipantes().add(usuario);
-        return eventoRepository.save(evento);
+        Participacion participacion = new Participacion();
+        participacion.setEvento(evento);
+        participacion.setUsuario(usuario);
+        participacion.setAsistio(false);
+
+        return participacionRepository.save(participacion);
+    }
+
+    public List<ParticipacionDTO> obtenerParticipacionesEvento(Integer eventoId) {
+    List<Participacion> participaciones = participacionRepository.findByEventoId(eventoId);
+
+    return participaciones.stream()
+            .map(p -> new ParticipacionDTO(
+                    p.getUsuario().getCorreo(),
+                    p.getUsuario().getNombre(),
+                    p.getUsuario().getFotoPerfil(),
+                    p.isAsistio()
+            ))
+            .toList();
     }
 
 
@@ -76,11 +94,13 @@ public class EventoService {
     public Evento finalizarEvento(Integer eventoId) {
         Evento evento = eventoRepository.findById(eventoId)
                 .orElseThrow(() -> new RuntimeException("Evento no encontrado"));
+        List<Participacion> participantes = participacionRepository.findByEventoId(eventoId);
 
-        Double horas = evento.getDuracion();
-        for (Usuario participante : evento.getParticipantes()) {
-            participante.setNumeroHoras(participante.getNumeroHoras() + horas);
-            usuarioRepository.save(participante);
+        Double duracionEvento = evento.getDuracion();
+        for (Participacion participante : participantes) {
+            Usuario usuario = participante.getUsuario();
+            usuario.setNumeroHoras(usuario.getNumeroHoras() + duracionEvento);
+            usuarioRepository.save(usuario);
         }
 
         return evento;

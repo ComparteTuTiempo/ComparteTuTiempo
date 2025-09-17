@@ -1,33 +1,40 @@
 import React, { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
-import { getEventoById, registrarParticipacion } from "../services/eventoService";
+import {
+  getEventoById,
+  registrarParticipacion,
+  getParticipantesEventoById,
+} from "../services/eventoService";
 import { useAuth } from "../utils/AuthContext";
 
 const EventoDetalle = () => {
   const { id } = useParams();
-  const { user } = useAuth();
   const [evento, setEvento] = useState(null);
+  const [participaciones, setParticipaciones] = useState([]);
+  const { user } = useAuth();
 
   useEffect(() => {
-    const fetchEvento = async () => {
+    const fetchData = async () => {
       try {
-        const data = await getEventoById(id);
-        setEvento(data);
+        const eventoData = await getEventoById(id);
+        setEvento(eventoData);
+
+        const participacionesData = await getParticipantesEventoById(id);
+        setParticipaciones(participacionesData);
       } catch (err) {
-        console.error("Error cargando evento:", err);
+        console.error("Error cargando datos:", err);
       }
     };
-    fetchEvento();
+    fetchData();
   }, [id]);
 
   const handleParticipar = async () => {
     try {
-      const eventoActualizado = await registrarParticipacion(id, user.correo);
-      setEvento(eventoActualizado);
-
+      const nueva = await registrarParticipacion(id, user.correo);
+      setParticipaciones((prev) => [...prev, nueva]);
       alert("Te has unido al evento con éxito");
-    } catch (error) {
-      const mensaje = error.response?.data?.message || "Error al unirse al evento";
+    } catch (err) {
+      const mensaje = err.response?.data?.message || "Error al unirse al evento";
       alert(mensaje);
     }
   };
@@ -36,27 +43,30 @@ const EventoDetalle = () => {
 
   return (
     <div style={styles.container}>
+        {console.log(evento)}
       <div style={styles.card}>
         <h1 style={styles.nombre}>{evento.nombre}</h1>
-        <p style={styles.fecha}>📅 {new Date(evento.fechaEvento).toLocaleString()}</p>
+        <p style={styles.fecha}>
+          📅 {new Date(evento.fechaEvento).toLocaleString()}
+        </p>
         <p style={styles.descripcion}>{evento.descripcion}</p>
 
         <div style={styles.organizador}>
           <img
-            src={evento.organizador.fotoPerfil || "/img/usuario-standar.png"}
-            alt={evento.organizador.nombre || "Organizador"}
+            src={evento.organizador.fotoPerfil || "/default-user.png"}
+            alt="organizador"
             style={styles.organizadorImg}
           />
           <Link to={`/perfil/${evento.organizador.correo}`}>
-            {evento.organizador.nombre || "Organizador"}
+            {evento.organizador.nombre}
           </Link>
         </div>
 
         <button
           onClick={handleParticipar}
           style={styles.btn}
-          onMouseOver={e => (e.target.style.background = "#e65c00")}
-          onMouseOut={e => (e.target.style.background = "#ff6600")}
+          onMouseOver={(e) => (e.target.style.background = "#e65c00")}
+          onMouseOut={(e) => (e.target.style.background = "#ff6600")}
         >
           Unirme al evento
         </button>
@@ -64,19 +74,24 @@ const EventoDetalle = () => {
         <div style={styles.participantes}>
           <h3>Participantes</h3>
           <div style={styles.participantesList}>
-            {evento.participantes && evento.participantes.length > 0 ? (
-              evento.participantes.map(p =>
-                p ? (
-                  <div key={p.correo} style={styles.participanteCard}>
-                    <img
-                      src={p.fotoPerfil || "/img/usuario-standar.png"}
-                      alt={p.nombre || "Usuario"}
-                      style={styles.participanteImg}
-                    />
-                    <Link to={`/perfil/${p.correo}`}>{p.nombre || "Usuario"}</Link>
-                  </div>
-                ) : null
-              )
+            {participaciones.length > 0 ? (
+              participaciones.map((p) => (
+                <div key={p.id} style={styles.participanteCard}>
+                  <img
+                    src={p.fotoPerfil || "/default-user.png"}
+                    alt={p.nombre || "Usuario"}
+                    style={styles.participanteImg}
+                  />
+                  <Link to={`/perfil/${p.correo}`}>
+                    {p.nombre}
+                  </Link>
+                  {p.asistio && (
+                    <span style={{ marginLeft: "8px", color: "green" }}>
+                      ✔ Asistió
+                    </span>
+                  )}
+                </div>
+              ))
             ) : (
               <p>No hay participantes todavía</p>
             )}

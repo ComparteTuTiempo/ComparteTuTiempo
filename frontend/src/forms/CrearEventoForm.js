@@ -5,13 +5,14 @@ import { useAuth } from "../utils/AuthContext";
 const CrearEventoForm = () => {
   const { user } = useAuth();
   const [fechaError, setFechaError] = useState("");
-  
+
   const [formData, setFormData] = useState({
     nombre: "",
     descripcion: "",
     fechaEvento: "",
     duracion: 1,
-    correoOrganizador: user?.correo ,
+    ubicacion: "",
+    correoOrganizador: user?.correo,
   });
 
   useEffect(() => {
@@ -35,9 +36,9 @@ const CrearEventoForm = () => {
     e.preventDefault();
     if (new Date(formData.fechaEvento) <= new Date()) {
       setFechaError("La fecha del evento debe ser futura");
-      return; 
+      return;
     }
-    try { 
+    try {
       await axios.post("http://localhost:8080/eventos/crear", formData);
       alert("Evento creado con éxito");
       setFormData({
@@ -45,7 +46,8 @@ const CrearEventoForm = () => {
         descripcion: "",
         fechaEvento: "",
         duracion: 1,
-        correoOrganizador: user?.correo ,
+        ubicacion: "",
+        correoOrganizador: user?.correo,
       });
     } catch (error) {
       console.error("Error creando el evento:", error);
@@ -54,7 +56,11 @@ const CrearEventoForm = () => {
   };
 
   if (!user) {
-    return <p style={{ textAlign: "center", marginTop: "2rem" }}>Cargando formulario...</p>;
+    return (
+      <p style={{ textAlign: "center", marginTop: "2rem" }}>
+        Cargando formulario...
+      </p>
+    );
   }
 
   return (
@@ -82,6 +88,17 @@ const CrearEventoForm = () => {
           placeholder="Describe tu evento..."
           required
         ></textarea>
+
+        <label style={styles.label}>Ubicación</label>
+        <input
+          type="text"
+          name="ubicacion"
+          value={formData.ubicacion}
+          onChange={handleChange}
+          style={styles.input}
+          placeholder="Ej: Calle Mayor 123, Madrid"
+          required
+        />
 
         <label style={styles.label}>Fecha y hora</label>
         <input

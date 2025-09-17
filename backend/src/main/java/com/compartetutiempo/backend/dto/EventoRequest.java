@@ -2,30 +2,36 @@ package com.compartetutiempo.backend.dto;
 
 import java.time.LocalDateTime;
 
+import org.hibernate.validator.constraints.Length;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import jakarta.persistence.Column;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.FutureOrPresent;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
 @Data
 public class EventoRequest{
-    @Column(nullable = false, length = 64)
-    private String nombre;
 
-    @Column(nullable = false, unique = true)
+    @NotBlank
+    private String nombre;
+   
     @Email
     private String correoOrganizador;
 
-    @Column(nullable = false, length = 512)
+    @NotBlank
+    @Length(max = 512)
     private String descripcion;
 
-    @Column(name = "duracion", nullable = false,scale = 2)
+    @NotBlank
+    private String ubicacion;
+
+    @NotNull
     private Double duracion;
 
     @DateTimeFormat
-    @Column(name = "fecha_evento",nullable = false)
     @FutureOrPresent
     private LocalDateTime fechaEvento;
     
