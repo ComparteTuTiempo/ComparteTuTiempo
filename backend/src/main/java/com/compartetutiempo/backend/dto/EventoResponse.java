@@ -3,7 +3,6 @@ package com.compartetutiempo.backend.dto;
 import java.time.LocalDateTime;
 
 import org.hibernate.validator.constraints.Length;
-import org.springframework.format.annotation.DateTimeFormat;
 
 import com.compartetutiempo.backend.model.Evento;
 import com.compartetutiempo.backend.model.enums.EstadoEvento;
@@ -31,7 +30,8 @@ public class EventoResponse {
     @NotBlank
     private String ubicacion;
 
-    private EstadoEvento estado;
+    @NotNull
+    private EstadoEvento estadoEvento;
 
     @NotNull
     private UsuarioDTO organizador;
@@ -43,6 +43,7 @@ public class EventoResponse {
             evento.getUbicacion(),
             evento.getDuracion(),
             evento.getFechaEvento(),
+            evento.getEstadoEvento(),
             new UsuarioDTO(
                     null,
                     evento.getOrganizador().getNombre(),
@@ -54,12 +55,13 @@ public class EventoResponse {
 }
 
     public EventoResponse(String nombre, String descripcion,String ubicacion, Double duracion, LocalDateTime fechaEvento,
-            UsuarioDTO usuarioDTO) {
+            EstadoEvento estadoEvento,UsuarioDTO usuarioDTO) {
         this.nombre = nombre;
         this.descripcion = descripcion;
         this.ubicacion = ubicacion;
         this.duracion = duracion;
         this.fechaEvento = fechaEvento;
+        this.estadoEvento = estadoEvento;
         this.organizador = usuarioDTO;
     }
 }

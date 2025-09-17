@@ -12,6 +12,26 @@ export const getParticipantesEventoById = async (id) => {
   return response.data;
 };
 
+export const cargarParticipantes = (id, correoOrganizador) => {
+  return axios
+    .get(`${API_URL}/${id}/participantes/lista`, {
+      params: { correoOrganizador },
+    })
+    .then((res) => res.data);
+};
+
+export const marcarAsistencia = (id, correoOrganizador, correoParticipante, asistio) => {
+  return axios.post(`${API_URL}/${id}/asistencia`, null, {
+    params: { correoOrganizador, correoParticipante, asistio },
+  });
+};
+
+export const finalizarEvento = (id, correoOrganizador) => {
+  return axios.post(`${API_URL}/${id}/finalizar`, null, {
+    params: { correoOrganizador },
+  });
+};
+
 export const registrarParticipacion = async (id, correoUsuario) => {
   try {
     const response = await axios.post(`/eventos/${id}/participar/${correoUsuario}`);

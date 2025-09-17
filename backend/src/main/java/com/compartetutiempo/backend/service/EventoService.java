@@ -1,5 +1,6 @@
 package com.compartetutiempo.backend.service;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -10,6 +11,7 @@ import com.compartetutiempo.backend.dto.ParticipacionDTO;
 import com.compartetutiempo.backend.model.Evento;
 import com.compartetutiempo.backend.model.Participacion;
 import com.compartetutiempo.backend.model.Usuario;
+import com.compartetutiempo.backend.model.enums.EstadoEvento;
 import com.compartetutiempo.backend.repository.EventoRepository;
 import com.compartetutiempo.backend.repository.ParticipacionRepository;
 import com.compartetutiempo.backend.repository.UsuarioRepository;
@@ -91,19 +93,56 @@ public class EventoService {
 
 
     @Transactional
-    public Evento finalizarEvento(Integer eventoId) {
+    public EventoResponse finalizarEvento(Integer eventoId, String correoOrganizador) {
         Evento evento = eventoRepository.findById(eventoId)
                 .orElseThrow(() -> new RuntimeException("Evento no encontrado"));
-        List<Participacion> participantes = participacionRepository.findByEventoId(eventoId);
 
-        Double duracionEvento = evento.getDuracion();
-        for (Participacion participante : participantes) {
-            Usuario usuario = participante.getUsuario();
-            usuario.setNumeroHoras(usuario.getNumeroHoras() + duracionEvento);
-            usuarioRepository.save(usuario);
+        if (!evento.getOrganizador().getCorreo().equals(correoOrganizador)) {
+            throw new RuntimeException("Solo el organizador puede finalizar el evento");
+        }
+        
+        else if (evento.getFechaEvento().isAfter(LocalDateTime.now())) {
+            throw new RuntimeException("No puedes finalizar un evento que aún no ha ocurrido");
+        }
+        
+        else if (evento.getEstadoEvento() == EstadoEvento.FINALIZADO) {
+            throw new RuntimeException("El evento ya fue finalizado");
         }
 
-        return evento;
+        // Sumar horas solo a quienes asistieron
+        for (Participacion p : participacionRepository.findByEventoId(eventoId)) {
+            if (p.isAsistio()) {
+                Usuario usuario = p.getUsuario();
+                usuario.setNumeroHoras(usuario.getNumeroHoras() + evento.getDuracion());
+                usuarioRepository.save(usuario);
+            }
+        }
+
+        evento.setEstadoEvento(EstadoEvento.FINALIZADO);
+        eventoRepository.save(evento);
+
+        EventoResponse eventoDTO = EventoResponse.mapToDTO(evento);
+        return eventoDTO;
+
+
     }
+
+
+    @Transactional
+    public void marcarAsistencia(Integer eventoId, String correoOrganizador, String correoParticipante, boolean asistio) {
+        Evento evento = eventoRepository.findById(eventoId)
+                .orElseThrow(() -> new RuntimeException("Evento no encontrado"));
+
+        if (!evento.getOrganizador().getCorreo().equals(correoOrganizador)) {
+            throw new RuntimeException("Solo el organizador puede marcar asistencia");
+        }
+
+        Participacion participacion = participacionRepository.findByEventoIdAndUsuarioCorreo(eventoId, correoParticipante)
+                .orElseThrow(() -> new RuntimeException("Participación no encontrada"));
+
+        participacion.setAsistio(asistio);
+        participacionRepository.save(participacion);
+    }
+
 }
 

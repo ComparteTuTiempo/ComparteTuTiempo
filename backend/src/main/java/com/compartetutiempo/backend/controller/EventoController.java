@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.compartetutiempo.backend.dto.EventoRequest;
@@ -72,10 +73,46 @@ public class EventoController {
         }
     }   
 
+    @PostMapping("/{eventoId}/asistencia")
+    public ResponseEntity<String> marcarAsistencia(
+            @PathVariable Integer eventoId,
+            @RequestParam String correoOrganizador,
+            @RequestParam String correoParticipante,
+            @RequestParam boolean asistio) {
+        try {
+            eventoService.marcarAsistencia(eventoId, correoOrganizador, correoParticipante, asistio);
+            return ResponseEntity.ok("Asistencia marcada correctamente");
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
 
     @PostMapping("/{eventoId}/finalizar")
-    public ResponseEntity<Evento> finalizarEvento(@PathVariable Integer eventoId) {
-        return ResponseEntity.ok(eventoService.finalizarEvento(eventoId));
+    public ResponseEntity<?> finalizarEvento(
+            @PathVariable Integer eventoId,
+            @RequestParam String correoOrganizador) {
+        try {
+            EventoResponse evento = eventoService.finalizarEvento(eventoId, correoOrganizador);
+            return ResponseEntity.ok(evento);
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
     }
+
+    @GetMapping("/{eventoId}/participantes/lista")
+    public ResponseEntity<?> listaParticipantes(
+        @PathVariable Integer eventoId,
+        @RequestParam String correoOrganizador) {
+        try {
+            EventoResponse evento = eventoService.obtenerEventoPorId(eventoId);
+            if (!evento.getOrganizador().getCorreo().equals(correoOrganizador)) {
+                return ResponseEntity.status(403).body("No tienes permisos para gestionar este evento");
+            }
+            return ResponseEntity.ok(eventoService.obtenerParticipacionesEvento(eventoId));
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
 }
 

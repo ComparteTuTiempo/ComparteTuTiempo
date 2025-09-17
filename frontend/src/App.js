@@ -13,6 +13,7 @@ import ConversacionList from "./pages/ConversacionList";
 import ConversacionView from "./pages/ConversacionView";
 import CrearEventoForm from "./forms/CrearEventoForm";
 import EventoDetails from "./pages/EventoDetails";
+import ListaAsistencia from "./pages/AsistenciaList";
 
 
 function App() {
@@ -38,7 +39,8 @@ function App() {
                 <Route path="/conversaciones" element={<ConversacionList />} />
                 <Route path="/conversaciones/:id" element={<ConversacionView />} />
                 <Route path="/eventos/crear" element={<CrearEventoForm  />} />
-                <Route path="/eventos/:id" element={<EventoDetails  />} />                
+                <Route path="/eventos/:id" element={<EventoDetails  />} />
+                <Route path="/eventos/:id/participantes/lista" element={<ListaAsistencia  />} />                    
               </Route>
             </Routes>
           </Router>
