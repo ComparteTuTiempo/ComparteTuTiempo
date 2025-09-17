@@ -4,6 +4,8 @@ import java.util.List;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -12,8 +14,11 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+
 import com.compartetutiempo.backend.model.Intercambio;
+import com.compartetutiempo.backend.model.Usuario;
 import com.compartetutiempo.backend.service.IntercambioService;
+import com.compartetutiempo.backend.service.UsuarioService;
 
 @RestController
 @RequestMapping("/intercambios")
@@ -21,8 +26,11 @@ public class IntercambioController {
 
     private IntercambioService intercambioService;
 
-    public IntercambioController(IntercambioService intercambioService){
+    private final UsuarioService usuarioService;
+
+    public IntercambioController(IntercambioService intercambioService, UsuarioService usuarioService){
         this.intercambioService = intercambioService;
+        this.usuarioService = usuarioService;
 
     }
 
@@ -62,4 +70,14 @@ public class IntercambioController {
         return ResponseEntity.ok(intercambio);
     }
     
+    @GetMapping("/usuario")
+    public ResponseEntity<List<Intercambio>> obtenerPorUsuario(@AuthenticationPrincipal Jwt jwt) {
+        // Sacamos el correo del token
+        String correo = jwt.getSubject(); 
+        Usuario user = usuarioService.obtenerPorCorreo(correo);
+    
+        List<Intercambio> intercambios = intercambioService.obtenerPorUsuario(user);
+        return ResponseEntity.ok(intercambios);
+}
+
 }
