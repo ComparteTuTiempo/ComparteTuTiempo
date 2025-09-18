@@ -15,6 +15,10 @@ import CrearEventoForm from "./forms/CrearEventoForm";
 import EventoDetails from "./pages/EventoDetails";
 import ListaAsistencia from "./pages/AsistenciaList";
 
+import IntercambiosPage from "./pages/IntercambiosPage";
+import MercadoPage from "./pages/MercadoPage";
+import ProductoPage from "./pages/ProductoPage";
+import PublicacionesPage from "./pages/PublicacionesPage";
 
 function App() {
   
@@ -41,6 +45,11 @@ function App() {
                 <Route path="/eventos/crear" element={<CrearEventoForm  />} />
                 <Route path="/eventos/:id" element={<EventoDetails  />} />
                 <Route path="/eventos/:id/participantes/lista" element={<ListaAsistencia  />} />                    
+                <Route path="/intercambios" element={<IntercambiosPage />} />
+                <Route path="/mercado" element={<MercadoPage />} /> 
+                <Route path="/producto/nuevo" element={<ProductoPage />} />
+                <Route path="/mispublicaciones" element={<PublicacionesPage />} />
+                <Route path="/productos/editar/:id" element={<ProductoPage />} />
               </Route>
             </Routes>
           </Router>
