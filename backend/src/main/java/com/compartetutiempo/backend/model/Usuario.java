@@ -8,6 +8,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Email;
 import lombok.*;
 
 @Entity
@@ -25,6 +26,7 @@ public class Usuario implements UserDetails{
     private String nombre;
 
     @Column(nullable = false, unique = true)
+    @Email
     private String correo;
 
     @Column(nullable = false)

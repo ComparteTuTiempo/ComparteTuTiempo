@@ -11,6 +11,10 @@ import { WebSocketProvider } from "./utils/WebSocketProvider";
 import { AuthProvider } from "./utils/AuthContext";
 import ConversacionList from "./pages/ConversacionList";
 import ConversacionView from "./pages/ConversacionView";
+import CrearEventoForm from "./forms/CrearEventoForm";
+import EventoDetails from "./pages/EventoDetails";
+import ListaAsistencia from "./pages/AsistenciaList";
+
 import IntercambiosPage from "./pages/IntercambiosPage";
 import MercadoPage from "./pages/MercadoPage";
 import ProductoPage from "./pages/ProductoPage";
@@ -38,6 +42,9 @@ function App() {
                 <Route path="/intercambios/:id/editar" element={<CrearOferta />} />
                 <Route path="/conversaciones" element={<ConversacionList />} />
                 <Route path="/conversaciones/:id" element={<ConversacionView />} />
+                <Route path="/eventos/crear" element={<CrearEventoForm  />} />
+                <Route path="/eventos/:id" element={<EventoDetails  />} />
+                <Route path="/eventos/:id/participantes/lista" element={<ListaAsistencia  />} />                    
                 <Route path="/intercambios" element={<IntercambiosPage />} />
                 <Route path="/mercado" element={<MercadoPage />} /> 
                 <Route path="/producto/nuevo" element={<ProductoPage />} />
