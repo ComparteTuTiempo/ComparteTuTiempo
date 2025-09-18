@@ -15,6 +15,8 @@ import lombok.Data;
 @Data
 public class EventoResponse {
 
+    private Integer id;
+
     @NotBlank
     private String nombre;
 
@@ -38,6 +40,7 @@ public class EventoResponse {
 
     public static EventoResponse mapToDTO(Evento evento) {
     return new EventoResponse(
+            evento.getId(),
             evento.getNombre(),
             evento.getDescripcion(),
             evento.getUbicacion(),
@@ -54,8 +57,9 @@ public class EventoResponse {
     );
 }
 
-    public EventoResponse(String nombre, String descripcion,String ubicacion, Double duracion, LocalDateTime fechaEvento,
+    public EventoResponse(Integer id,String nombre, String descripcion,String ubicacion, Double duracion, LocalDateTime fechaEvento,
             EstadoEvento estadoEvento,UsuarioDTO usuarioDTO) {
+        this.id = id;
         this.nombre = nombre;
         this.descripcion = descripcion;
         this.ubicacion = ubicacion;

@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useAuth } from "../utils/AuthContext";
+import { crearEvento } from "../services/eventoService";
 
 const CrearEventoForm = () => {
-  const { user } = useAuth();
+  const { user,token} = useAuth();
   const [fechaError, setFechaError] = useState("");
 
   const [formData, setFormData] = useState({
@@ -39,7 +40,7 @@ const CrearEventoForm = () => {
       return;
     }
     try {
-      await axios.post("http://localhost:8080/eventos/crear", formData);
+      await crearEvento(formData, token);
       alert("Evento creado con éxito");
       setFormData({
         nombre: "",

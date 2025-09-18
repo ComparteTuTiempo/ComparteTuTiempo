@@ -8,18 +8,18 @@ import {
 } from "../services/eventoService";
 
 const ListaAsistencia = () => {
-  const { user } = useAuth();
+  const { user, token } = useAuth();
   const { id } = useParams();
   const [participantes, setParticipantes] = useState([]);
   const [filtro, setFiltro] = useState("");
 
   useEffect(() => {
-    if (user) cargar();
-  }, [user]);
+    if (user && token) cargar();
+  }, [user, token]);
 
   const cargar = async () => {
     try {
-      const data = await cargarParticipantes(id, user.correo);
+      const data = await cargarParticipantes(id, user.correo, token);
       setParticipantes(data);
     } catch (error) {
       alert(error.response?.data || "Error al cargar participantes");
@@ -28,7 +28,7 @@ const ListaAsistencia = () => {
 
   const handleMarcarAsistencia = async (correoParticipante, asistio) => {
     try {
-      await marcarAsistencia(id, user.correo, correoParticipante, asistio);
+      await marcarAsistencia(id, user.correo, correoParticipante, asistio, token);
       cargar();
     } catch (error) {
       alert(error.response?.data || "Error al marcar asistencia");
@@ -37,10 +37,10 @@ const ListaAsistencia = () => {
 
   const handleFinalizarEvento = async () => {
     if (!window.confirm("¿Seguro que quieres finalizar el evento?")) return;
-
     try {
-      await finalizarEvento(id, user.correo);
+      await finalizarEvento(id, user.correo, token);
       alert("Evento finalizado correctamente");
+      cargar();
     } catch (error) {
       alert(error.response?.data || "Error al finalizar evento");
     }
@@ -81,9 +81,7 @@ const ListaAsistencia = () => {
                       type="radio"
                       name={`asistencia-${p.correo}`}
                       checked={p.asistio === true}
-                      onChange={() =>
-                        handleMarcarAsistencia(p.correo, true)
-                      }
+                      onChange={() => handleMarcarAsistencia(p.correo, true)}
                     />
                     Sí
                   </label>
@@ -92,9 +90,7 @@ const ListaAsistencia = () => {
                       type="radio"
                       name={`asistencia-${p.correo}`}
                       checked={p.asistio === false}
-                      onChange={() =>
-                        handleMarcarAsistencia(p.correo, false)
-                      }
+                      onChange={() => handleMarcarAsistencia(p.correo, false)}
                     />
                     No
                   </label>

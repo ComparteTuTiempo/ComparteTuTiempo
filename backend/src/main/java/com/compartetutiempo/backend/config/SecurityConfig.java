@@ -30,7 +30,8 @@ public class SecurityConfig{
           .authorizeHttpRequests(auth -> auth
             .requestMatchers("/api/usuarios/{correo}").authenticated()
             .requestMatchers(HttpMethod.POST, "/api/intercambios/**").authenticated()
-            .requestMatchers(HttpMethod.GET, "/api/intercambios/**").permitAll()
+            .requestMatchers(HttpMethod.POST, "/eventos/**").authenticated()
+            .requestMatchers(HttpMethod.PUT, "/eventos/**").authenticated()
             .anyRequest().permitAll()
           )
           .oauth2ResourceServer(oauth2 -> oauth2

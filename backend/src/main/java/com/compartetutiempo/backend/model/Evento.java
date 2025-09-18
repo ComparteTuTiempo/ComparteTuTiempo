@@ -37,7 +37,6 @@ public class Evento extends BaseEntity {
     private String ubicacion;
 
     @Column(name = "fecha_evento", nullable = false)
-    @FutureOrPresent
     private LocalDateTime fechaEvento;
 
     @Enumerated(value = EnumType.STRING)

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useNavigate } from "react-router-dom";
 import {
   getEventoById,
   registrarParticipacion,
@@ -9,9 +9,10 @@ import { useAuth } from "../utils/AuthContext";
 
 const EventoDetalle = () => {
   const { id } = useParams();
+  const navigate = useNavigate();
   const [evento, setEvento] = useState(null);
   const [participaciones, setParticipaciones] = useState([]);
-  const { user } = useAuth();
+  const { user, token } = useAuth();
 
   useEffect(() => {
     const fetchData = async () => {
@@ -30,7 +31,7 @@ const EventoDetalle = () => {
 
   const handleParticipar = async () => {
     try {
-      const nueva = await registrarParticipacion(id, user.correo);
+      const nueva = await registrarParticipacion(id, user.correo, token);
       setParticipaciones((prev) => [...prev, nueva]);
       alert("Te has unido al evento con éxito");
     } catch (err) {
@@ -41,13 +42,14 @@ const EventoDetalle = () => {
 
   if (!evento) return <p>Cargando evento...</p>;
 
+  const esOrganizador = user?.correo === evento.organizador.correo;
+  const eventoFinalizado = evento.estadoEvento === "FINALIZADO";
+
   return (
     <div style={styles.container}>
-      {console.log(evento)}
       <div style={styles.card}>
         <h1 style={styles.nombre}>{evento.nombre}</h1>
 
-        {/* Estado del evento */}
         <span
           style={{
             ...styles.estado,
@@ -61,9 +63,7 @@ const EventoDetalle = () => {
           📅 {new Date(evento.fechaEvento).toLocaleString()}
         </p>
 
-        {/* Ubicación */}
         <p style={styles.ubicacion}>📍 {evento.ubicacion}</p>
-
         <p style={styles.descripcion}>{evento.descripcion}</p>
 
         <div style={styles.organizador}>
@@ -77,18 +77,30 @@ const EventoDetalle = () => {
           </Link>
         </div>
 
-        <button
-          onClick={handleParticipar}
-          style={styles.btn}
-          onMouseOver={(e) => (e.target.style.background = "#e65c00")}
-          onMouseOut={(e) => (e.target.style.background = "#ff6600")}
-          disabled={evento.estadoEvento === "FINALIZADO"}
-        >
-          {evento.estadoEvento === "FINALIZADO"
-            ? "Evento finalizado"
-            : "Unirme al evento"}
-        </button>
+        {/* Botones de acción */}
+        <div style={styles.acciones}>
+          {!esOrganizador && (
+            <button
+              onClick={handleParticipar}
+              style={{ ...styles.btn, background: "#ff6600" }}
+              disabled={eventoFinalizado}
+            >
+              {eventoFinalizado ? "Evento finalizado" : "Unirme al evento"}
+            </button>
+          )}
 
+          {esOrganizador && (
+            <button
+              onClick={() => navigate(`/eventos/${evento.id}/participantes/lista`)}
+              style={{ ...styles.btn, background: "#007bff" }}
+              disabled={eventoFinalizado}
+            >
+              {eventoFinalizado ? "Evento finalizado" : "Gestionar asistencia"}
+            </button>
+          )}
+        </div>
+
+        {/* Participantes */}
         <div style={styles.participantes}>
           <h3>Participantes</h3>
           <div style={styles.participantesList}>
@@ -162,8 +174,12 @@ const styles = {
     borderRadius: "50%",
     objectFit: "cover",
   },
+  acciones: {
+    display: "flex",
+    gap: "1rem",
+    marginBottom: "2rem",
+  },
   btn: {
-    background: "#ff6600",
     color: "white",
     padding: "0.7rem 1.5rem",
     border: "none",
@@ -171,7 +187,6 @@ const styles = {
     fontWeight: "bold",
     cursor: "pointer",
     transition: "background 0.3s",
-    marginBottom: "2rem",
   },
   participantes: { borderTop: "1px solid #eee", paddingTop: "1rem" },
   participantesList: { display: "flex", flexWrap: "wrap", gap: "1rem" },
@@ -192,8 +207,8 @@ const styles = {
 };
 
 const estadoStyles = {
-    DISPONIBLE: { backgroundColor: "#4CAF50", color: "white" }, 
-    FINALIZADO: { backgroundColor: "#f44336", color: "white" },
-  };
+  DISPONIBLE: { backgroundColor: "#4CAF50", color: "white" },
+  FINALIZADO: { backgroundColor: "#f44336", color: "white" },
+};
 
 export default EventoDetalle;
