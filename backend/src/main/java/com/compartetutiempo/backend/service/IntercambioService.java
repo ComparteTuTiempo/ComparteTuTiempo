@@ -4,11 +4,15 @@ import java.util.Date;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import com.compartetutiempo.backend.dto.IntercambioDTO;
 import com.compartetutiempo.backend.model.Intercambio;
+import com.compartetutiempo.backend.model.IntercambioUsuario;
 import com.compartetutiempo.backend.model.Usuario;
 import com.compartetutiempo.backend.model.enums.EstadoIntercambio;
 import com.compartetutiempo.backend.repository.IntercambioRepository;
+import com.compartetutiempo.backend.repository.IntercambioUsuarioRepository;
 import com.compartetutiempo.backend.repository.UsuarioRepository;
 
 @Service
@@ -16,10 +20,14 @@ public class IntercambioService {
 
     private final IntercambioRepository intercambioRepository;
     private final UsuarioRepository usuarioRepository;
+    private final IntercambioUsuarioRepository intercambioUsuarioRepository;
 
-    public IntercambioService(IntercambioRepository intercambioRepository,UsuarioRepository usuarioRepository){
+    public IntercambioService(IntercambioRepository intercambioRepository,
+    UsuarioRepository usuarioRepository,
+    IntercambioUsuarioRepository intercambioUsuarioRepository){
         this.intercambioRepository = intercambioRepository;
         this.usuarioRepository = usuarioRepository;
+        this.intercambioUsuarioRepository = intercambioUsuarioRepository;
     }
 
     public Intercambio crear(String correo, Intercambio intercambio) {
@@ -31,6 +39,35 @@ public class IntercambioService {
         intercambio.setEstado(EstadoIntercambio.EMPAREJAMIENTO); 
         return intercambioRepository.save(intercambio);
     }
+
+    @Transactional
+    public IntercambioDTO avanzarEstado(Integer intercambioId, String correoUsuario) {
+        Usuario usuario = usuarioRepository.findByCorreo(correoUsuario)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
+        IntercambioUsuario iu = intercambioUsuarioRepository
+                .findByIntercambioIdAndUsuarioId(intercambioId, usuario.getId())
+                .orElseThrow(() -> new RuntimeException("No eres participante de este intercambio"));
+
+        EstadoIntercambio actual = iu.getEstado();
+        EstadoIntercambio siguiente = switch (actual) {
+            case EMPAREJAMIENTO -> EstadoIntercambio.CONSENSO;
+            case CONSENSO -> EstadoIntercambio.EJECUCION;
+            case EJECUCION -> EstadoIntercambio.FINALIZADO;
+            default -> throw new IllegalStateException("El estado actual no permite más transiciones");
+        };
+
+        iu.setEstado(siguiente);
+        intercambioUsuarioRepository.save(iu);
+
+        Intercambio intercambio = iu.getIntercambio();
+        List<IntercambioUsuario> participantes =
+                intercambioUsuarioRepository.findByIntercambioId(intercambioId);
+
+        return IntercambioDTO.fromEntity(intercambio, participantes);
+    }
+
+
 
     public List<Intercambio> obtenerTodos() {
         return intercambioRepository.findAll();
@@ -54,13 +91,41 @@ public class IntercambioService {
         return intercambioRepository.save(intercambio);
     }
 
-    public Intercambio obtenerPorId(Long id) {
-        return intercambioRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Intercambio no encontrado con id: " + id));
+    public IntercambioDTO obtenerPorId(Integer id) {
+        Intercambio intercambio = intercambioRepository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Intercambio no encontrado"));
+        List<IntercambioUsuario> participantes = intercambioUsuarioRepository.findByIntercambioId(id);
+        return IntercambioDTO.fromEntity(intercambio, participantes);
     }
 
     public List<Intercambio> obtenerPorUsuario(Usuario user) {
         return intercambioRepository.findByUser(user);
-}
+    }
+
+    @Transactional
+    public IntercambioDTO solicitarIntercambio(Integer intercambioId, String correoDemandante) {
+        Usuario demandante = usuarioRepository.findByCorreo(correoDemandante)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
+        Intercambio intercambio = intercambioRepository.findById(intercambioId)
+                .orElseThrow(() -> new RuntimeException("Intercambio no encontrado"));
+
+        if (intercambio.getUser().getId().equals(demandante.getId())) {
+            throw new IllegalStateException("El dueño no puede solicitar intercambio consigo mismo");
+        }
+
+        // Creamos relación demandante-intercambio
+        IntercambioUsuario iu = new IntercambioUsuario();
+        iu.setIntercambio(intercambio);
+        iu.setUsuario(demandante);
+        iu.setEstado(EstadoIntercambio.EMPAREJAMIENTO);
+        iu.setHorasAsignadas(intercambio.getNumeroHoras());
+
+        intercambioUsuarioRepository.save(iu);
+
+        List<IntercambioUsuario> participantes = intercambioUsuarioRepository.findByIntercambioId(intercambioId);
+        return IntercambioDTO.fromEntity(intercambio, participantes);
+    }
+
     
 }

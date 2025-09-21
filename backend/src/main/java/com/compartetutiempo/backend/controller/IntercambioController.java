@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-
+import com.compartetutiempo.backend.dto.IntercambioDTO;
 import com.compartetutiempo.backend.model.Intercambio;
 import com.compartetutiempo.backend.model.Usuario;
 import com.compartetutiempo.backend.service.IntercambioService;
@@ -65,8 +65,8 @@ public class IntercambioController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Intercambio> obtenerIntercambio(@PathVariable Long id) {
-        Intercambio intercambio = intercambioService.obtenerPorId(id);
+    public ResponseEntity<IntercambioDTO> obtenerIntercambio(@PathVariable Integer id) {
+        IntercambioDTO intercambio = intercambioService.obtenerPorId(id);
         return ResponseEntity.ok(intercambio);
     }
     
@@ -78,6 +78,26 @@ public class IntercambioController {
     
         List<Intercambio> intercambios = intercambioService.obtenerPorUsuario(user);
         return ResponseEntity.ok(intercambios);
-}
+    }
+
+    @PutMapping("/{id}/avanzar")
+    public ResponseEntity<IntercambioDTO> avanzarEstado(
+        @PathVariable Integer id,
+        @AuthenticationPrincipal Jwt jwt
+        ) {
+        String correo = jwt.getSubject();
+        IntercambioDTO actualizado = intercambioService.avanzarEstado(id, correo);
+        return ResponseEntity.ok(actualizado);
+    }
+
+    @PostMapping("/{eventoId}/solicitar")
+    public ResponseEntity<IntercambioDTO> solicitarIntercambio(
+    @PathVariable Integer eventoId,
+    @AuthenticationPrincipal Jwt jwt
+    ) {
+        String correoDemandante = jwt.getSubject();
+        IntercambioDTO dto = intercambioService.solicitarIntercambio(eventoId, correoDemandante);
+        return ResponseEntity.status(HttpStatus.CREATED).body(dto);
+    }
 
 }

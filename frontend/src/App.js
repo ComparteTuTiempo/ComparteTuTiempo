@@ -19,6 +19,7 @@ import IntercambiosPage from "./pages/IntercambiosPage";
 import MercadoPage from "./pages/MercadoPage";
 import ProductoPage from "./pages/ProductoPage";
 import PublicacionesPage from "./pages/PublicacionesPage";
+import IntercambioDetails from "./pages/IntercambioDetails";
 
 function App() {
   
@@ -50,6 +51,7 @@ function App() {
                 <Route path="/producto/nuevo" element={<ProductoPage />} />
                 <Route path="/mispublicaciones" element={<PublicacionesPage />} />
                 <Route path="/productos/editar/:id" element={<ProductoPage />} />
+                <Route path="/intercambio/:id" element={<IntercambioDetails />} />
               </Route>
             </Routes>
           </Router>
