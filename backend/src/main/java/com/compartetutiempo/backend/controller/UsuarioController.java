@@ -41,6 +41,7 @@ public class UsuarioController {
         usuarioDTO.setFotoPerfil(usuario.getFotoPerfil());
         usuarioDTO.setNombre(usuario.getNombre());
         usuarioDTO.setUbicacion(usuario.getUbicacion());
+        usuarioDTO.setVerificado(usuario.isVerificado());
 
         return usuarioDTO;
 

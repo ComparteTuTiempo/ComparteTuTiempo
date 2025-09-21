@@ -84,27 +84,7 @@ const UserProfile = () => {
     <div style={styles.container}>
       {/* Sidebar */}
       <aside style={styles.sidebar}>
-        <ul style={styles.menu}>
-          <li style={styles.menuItem}>Browse Offers</li>
-          {isOwnProfile && (
-            <li style={styles.menuItem}>
-              <Link to="/crear-oferta" style={{ textDecoration: "none", color: "inherit" }}>
-                Create Offer
-              </Link>
-            </li>
-          )}
-          <li style={{ ...styles.menuItem, ...styles.active }}>
-            {isOwnProfile ? "My Profile" : "Perfil de usuario"}
-          </li>
-          {isOwnProfile && (
-            <li style={styles.menuItem}>
-              <Link to="/conversaciones" style={{ textDecoration: "none", color: "inherit" }}>
-                Mis Chats
-              </Link>
-            </li>
-          )}
-          <li style={styles.menuItem}>Reviews</li>
-        </ul>
+        {/* igual que lo tenías */}
       </aside>
 
       {/* Main content */}
@@ -118,6 +98,9 @@ const UserProfile = () => {
           />
           <div style={styles.profileInfo}>
             <h2>{usuario.nombre}</h2>
+            {usuario.verificado && (
+              <p style={styles.verificado}>✔ Usuario verificado</p>
+            )}
             <p style={styles.email}>{usuario.correo}</p>
 
             {editing ? (

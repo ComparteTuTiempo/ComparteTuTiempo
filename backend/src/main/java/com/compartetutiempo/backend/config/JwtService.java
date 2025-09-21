@@ -6,9 +6,12 @@ import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import com.compartetutiempo.backend.model.Usuario;
+
 import javax.crypto.SecretKey;
 import java.util.Base64;
 import java.util.Date;
+import java.util.stream.Collectors;
 
 
 @Service
@@ -31,13 +34,15 @@ public class JwtService {
         return Keys.hmacShaKeyFor(keyBytes);
     }
 
-    public String generateToken(String username) {
+    public String generateToken(Usuario usuario) {
         return Jwts.builder()
-                .setSubject(username)
+                .setSubject(usuario.getCorreo()) // correo como "username"
                 .setIssuer("comparteTuTiempo")
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + expiration))
-                .claim("scope", "ROLE_USER")
+                .claim("roles", usuario.getRoles().stream()
+                        .map(Enum::name) // ["USER", "ADMIN"]
+                        .collect(Collectors.toList()))
                 .signWith(getSigningKey(), SignatureAlgorithm.HS256)
                 .compact();
     }

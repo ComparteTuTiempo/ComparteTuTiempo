@@ -52,7 +52,8 @@ public class EventoResponse {
                     evento.getOrganizador().getNombre(),
                     evento.getOrganizador().getCorreo(),
                     null,
-                    evento.getOrganizador().getFotoPerfil()      
+                    evento.getOrganizador().getFotoPerfil(),
+                    evento.getOrganizador().isVerificado()   
             )
     );
 }

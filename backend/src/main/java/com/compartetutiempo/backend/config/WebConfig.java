@@ -3,22 +3,31 @@ package com.compartetutiempo.backend.config;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
+import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 @Configuration
-public class WebConfig {
+public class WebConfig implements WebMvcConfigurer {
+
     @Bean
     public WebMvcConfigurer corsConfigurer() {
         return new WebMvcConfigurer() {
             @Override
             public void addCorsMappings(CorsRegistry registry) {
                 registry
-                .addMapping("/**") // aplica a todos los endpoints
-                        .allowedOrigins("http://localhost:3000") // React en dev
-                        .allowedOriginPatterns("*")
-                        .allowedMethods("*")
-                        .allowCredentials(true);
+                    .addMapping("/**")
+                    .allowedOrigins("http://localhost:3000")
+                    .allowedOriginPatterns("*")
+                    .allowedMethods("*")
+                    .allowCredentials(true);
             }
         };
+    }
+
+    @Override
+    public void addResourceHandlers(ResourceHandlerRegistry registry) {
+        // Hace accesibles los archivos de /uploads/ desde la URL /uploads/**
+        registry.addResourceHandler("/uploads/**")
+                .addResourceLocations("file:uploads/");
     }
 }
