@@ -13,14 +13,18 @@ import com.compartetutiempo.backend.model.enums.Role;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
-import lombok.*;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.AllArgsConstructor;
+import lombok.Setter;
 
 @Entity
 @Table(name = "usuarios")
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class Usuario implements UserDetails{
+public class Usuario implements UserDetails {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -45,11 +49,14 @@ public class Usuario implements UserDetails{
     @Column
     private String fotoPerfil;
 
-    @Column(name = "numero_horas",precision = 2)
+    @Column(name = "numero_horas", precision = 2)
     private Double numeroHoras = 0.0;
 
     @Column
     private String ubicacion;
+
+    @Column(nullable = false)
+    private boolean activo = true;   // 👈 controla si el usuario está habilitado
 
     @Column(nullable = false)
     private String metodoAutenticacion;
@@ -59,10 +66,13 @@ public class Usuario implements UserDetails{
     @Column(name = "roles")
     private Set<Role> roles = new HashSet<>(Set.of(Role.USER));
 
-    private boolean verificado = false; // por defecto no verificado
+    @Column(nullable = false)
+    private boolean verificado = false; // verificación distinta del ban
 
-    private List<GrantedAuthority> authorities;
+    @Transient
+    private List<GrantedAuthority> authorities; // no persistido en BD
 
+    // ---- Métodos UserDetails ----
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return authorities;
@@ -95,14 +105,6 @@ public class Usuario implements UserDetails{
 
     @Override
     public boolean isEnabled() { 
-        return true; 
-    }
-
-    public boolean isVerificado() {
-        return verificado;
-    }
-
-    public void setVerificado(boolean verificado) {
-        this.verificado = verificado;
+        return activo; // 👈 ahora depende del campo "activo"
     }
 }

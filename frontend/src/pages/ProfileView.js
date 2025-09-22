@@ -17,11 +17,15 @@ const UserProfile = () => {
     ubicacion: "",
   });
 
+  // 👇 estados para reportes
+  const [showReportForm, setShowReportForm] = useState(false);
+  const [reportData, setReportData] = useState({ titulo: "", descripcion: "" });
+
   useEffect(() => {
     const fetchUsuario = async () => {
       if (token) {
         try {
-          const targetCorreo = correo || user?.correo; // si no hay param, tu perfil
+          const targetCorreo = correo || user?.correo;
 
           const res = await axios.get(
             `http://localhost:8080/api/usuarios/${targetCorreo}`,
@@ -34,7 +38,6 @@ const UserProfile = () => {
             ubicacion: res.data.ubicacion || "",
           });
 
-          // solo ofertas si es tu perfil
           if (!correo && user?.correo) {
             const resOfertas = await axios.get(
               `http://localhost:8080/intercambios/usuario/${user.correo}`,
@@ -50,9 +53,8 @@ const UserProfile = () => {
     fetchUsuario();
   }, [correo, token, user]);
 
-  const handleChange = (e) => {
+  const handleChange = (e) =>
     setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
 
   const handleSave = async () => {
     try {
@@ -74,8 +76,29 @@ const UserProfile = () => {
     }
   };
 
+  // 👇 enviar reporte
+  const handleReportSubmit = async () => {
+    try {
+      await axios.post(
+        `http://localhost:8080/api/reportes/${usuario.correo}`,
+        reportData,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      alert("✅ Reporte enviado con éxito");
+      setShowReportForm(false);
+      setReportData({ titulo: "", descripcion: "" });
+    } catch (err) {
+      console.error("❌ Error al enviar reporte:", err);
+      alert("Hubo un error al enviar el reporte");
+    }
+  };
+
   if (!usuario) {
-    return <p style={{ textAlign: "center", marginTop: "40px" }}>Cargando perfil...</p>;
+    return (
+      <p style={{ textAlign: "center", marginTop: "40px" }}>
+        Cargando perfil...
+      </p>
+    );
   }
 
   const isOwnProfile = !correo || correo === user?.correo;
@@ -84,7 +107,11 @@ const UserProfile = () => {
     <div style={styles.container}>
       {/* Sidebar */}
       <aside style={styles.sidebar}>
-        {/* igual que lo tenías */}
+        <ul style={styles.menu}>
+          <li style={styles.menuItem}>Inicio</li>
+          <li style={styles.menuItem}>Mensajes</li>
+          <li style={styles.menuItem}>Configuración</li>
+        </ul>
       </aside>
 
       {/* Main content */}
@@ -98,9 +125,15 @@ const UserProfile = () => {
           />
           <div style={styles.profileInfo}>
             <h2>{usuario.nombre}</h2>
+
             {usuario.verificado && (
               <p style={styles.verificado}>✔ Usuario verificado</p>
             )}
+
+            {!usuario.activo && (
+              <p style={styles.baneado}>🚫 Usuario baneado</p>
+            )}
+
             <p style={styles.email}>{usuario.correo}</p>
 
             {editing ? (
@@ -130,7 +163,9 @@ const UserProfile = () => {
               </>
             ) : (
               <>
-                <p style={styles.bio}>{usuario.biografia || "Sin biografía aún."}</p>
+                <p style={styles.bio}>
+                  {usuario.biografia || "Sin biografía aún."}
+                </p>
                 <p style={styles.detail}>
                   <strong>Fecha de nacimiento:</strong>{" "}
                   {usuario.fechaNacimiento || "No especificada"}
@@ -143,60 +178,115 @@ const UserProfile = () => {
             )}
           </div>
 
-          {isOwnProfile &&
-            (editing ? (
+          {isOwnProfile ? (
+            editing ? (
               <button style={styles.saveBtn} onClick={handleSave}>
                 Guardar
               </button>
             ) : (
               <button style={styles.editBtn} onClick={() => setEditing(true)}>
-                Edit Profile
+                Editar perfil
               </button>
-            ))}
+            )
+          ) : (
+            <button
+              style={styles.reportBtn}
+              onClick={() => setShowReportForm(true)}
+            >
+              Reportar usuario
+            </button>
+          )}
         </div>
 
         {/* Ofertas */}
-        
-          <section style={styles.section}>
-            <h3 style={styles.sectionTitle}>Mis Ofertas</h3>
-            <div style={styles.cards}>
-              {ofertas.length > 0 ? (
-                ofertas.map((oferta) => (
-                  <div key={oferta.id} style={styles.card}>
-                    <h4>{oferta.nombre}</h4>
-                    <p>descripción : {oferta.descripcion}</p>
-                    <p>{oferta.tipo === "OFERTA" ? "" : "Horas:" + oferta.numeroHoras}</p>
-                    <p>{oferta.tipo === "OFERTA" ? "tipo : Oferta" : "tipo : Petición"}</p>
-                    <small>{new Date(oferta.fechaPublicacion).toLocaleDateString()}</small>
-                    <button onClick={() => navigate(`/intercambios/${oferta.id}/editar`)}>
-                      Editar
-                    </button>
-                  </div>
-                ))
-              ) : (
-                <p>No hay ofertas aún</p>
-              )}
-            </div>
-          </section>
-        
+        <section style={styles.section}>
+          <h3 style={styles.sectionTitle}>Mis Ofertas</h3>
+          <div style={styles.cards}>
+            {ofertas.length > 0 ? (
+              ofertas.map((oferta) => (
+                <div key={oferta.id} style={styles.card}>
+                  <h4>{oferta.nombre}</h4>
+                  <p>descripción : {oferta.descripcion}</p>
+                  <p>
+                    {oferta.tipo === "OFERTA"
+                      ? "tipo : Oferta"
+                      : "Horas: " + oferta.numeroHoras}
+                  </p>
+                  <small>
+                    {new Date(oferta.fechaPublicacion).toLocaleDateString()}
+                  </small>
+                  <button
+                    onClick={() => navigate(`/intercambios/${oferta.id}/editar`)}
+                  >
+                    Editar
+                  </button>
+                </div>
+              ))
+            ) : (
+              <p>No hay ofertas aún</p>
+            )}
+          </div>
+        </section>
 
         {/* Reviews */}
         <section style={styles.section}>
-          <h3 style={styles.sectionTitle}>Reviews Received</h3>
+          <h3 style={styles.sectionTitle}>Reviews recibidas</h3>
           <div style={styles.cards}>
             <div style={styles.card}>
               <strong>Jane Smith</strong>
-              <p>John did an amazing job with my garden! Very thorough and knowledgeable.</p>
+              <p>
+                John did an amazing job with my garden! Very thorough and
+                knowledgeable.
+              </p>
               <small>2 days ago</small>
             </div>
             <div style={styles.card}>
               <strong>Mike Johnson</strong>
-              <p>Helped me with a quick website fix. Professional and efficient.</p>
+              <p>
+                Helped me with a quick website fix. Professional and efficient.
+              </p>
               <small>1 week ago</small>
             </div>
           </div>
         </section>
       </main>
+
+      {/* Modal Reporte */}
+      {showReportForm && (
+        <div style={styles.modal}>
+          <div style={styles.modalContent}>
+            <h3>Reportar a {usuario.nombre}</h3>
+            <input
+              type="text"
+              placeholder="Título del reporte"
+              value={reportData.titulo}
+              onChange={(e) =>
+                setReportData({ ...reportData, titulo: e.target.value })
+              }
+              style={styles.input}
+            />
+            <textarea
+              placeholder="Describe el problema..."
+              value={reportData.descripcion}
+              onChange={(e) =>
+                setReportData({ ...reportData, descripcion: e.target.value })
+              }
+              style={styles.textarea}
+            />
+            <div style={{ display: "flex", gap: "10px", marginTop: "10px" }}>
+              <button style={styles.saveBtn} onClick={handleReportSubmit}>
+                Enviar
+              </button>
+              <button
+                style={styles.closeBtn}
+                onClick={() => setShowReportForm(false)}
+              >
+                Cancelar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
@@ -271,6 +361,14 @@ const styles = {
     borderRadius: "6px",
     cursor: "pointer",
   },
+  reportBtn: {
+    backgroundColor: "#dc3545",
+    border: "none",
+    color: "#fff",
+    padding: "8px 12px",
+    borderRadius: "6px",
+    cursor: "pointer",
+  },
   section: { marginBottom: "30px" },
   sectionTitle: { marginBottom: "15px" },
   cards: {
@@ -293,9 +391,40 @@ const styles = {
     borderRadius: "6px",
     cursor: "pointer",
   },
+  modal: {
+    position: "fixed",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: "rgba(0,0,0,0.5)",
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    zIndex: 1000,
+  },
+  modalContent: {
+    backgroundColor: "#fff",
+    padding: "20px",
+    borderRadius: "8px",
+    width: "400px",
+    maxWidth: "90%",
+    boxShadow: "0 4px 12px rgba(0,0,0,0.2)",
+  },
+  closeBtn: {
+    backgroundColor: "#6c757d",
+    border: "none",
+    color: "#fff",
+    padding: "8px 12px",
+    borderRadius: "6px",
+    cursor: "pointer",
+  },
+  verificado: {
+    fontSize: "12px",
+    color: "#28a745",
+    margin: "4px 0",
+  },
 };
 
+
 export default UserProfile;
-
-
-

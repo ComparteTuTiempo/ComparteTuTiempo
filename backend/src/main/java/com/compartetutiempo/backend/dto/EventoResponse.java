@@ -53,13 +53,15 @@ public class EventoResponse {
                     evento.getOrganizador().getCorreo(),
                     null,
                     evento.getOrganizador().getFotoPerfil(),
-                    evento.getOrganizador().isVerificado()   
+                    evento.getOrganizador().isVerificado(),
+                    evento.getOrganizador().isActivo()
             )
     );
 }
 
-    public EventoResponse(Integer id,String nombre, String descripcion,String ubicacion, Double duracion, LocalDateTime fechaEvento,
-            EstadoEvento estadoEvento,UsuarioDTO usuarioDTO) {
+    public EventoResponse(Integer id, String nombre, String descripcion, String ubicacion, Double duracion,
+            LocalDateTime fechaEvento,
+            EstadoEvento estadoEvento, UsuarioDTO usuarioDTO) {
         this.id = id;
         this.nombre = nombre;
         this.descripcion = descripcion;
