@@ -14,7 +14,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-
 import com.compartetutiempo.backend.model.Intercambio;
 import com.compartetutiempo.backend.model.Usuario;
 import com.compartetutiempo.backend.service.IntercambioService;
@@ -28,7 +27,7 @@ public class IntercambioController {
 
     private final UsuarioService usuarioService;
 
-    public IntercambioController(IntercambioService intercambioService, UsuarioService usuarioService){
+    public IntercambioController(IntercambioService intercambioService, UsuarioService usuarioService) {
         this.intercambioService = intercambioService;
         this.usuarioService = usuarioService;
 
@@ -36,9 +35,8 @@ public class IntercambioController {
 
     @PostMapping("/{correo}")
     public ResponseEntity<Intercambio> crear(
-        @PathVariable String correo,
-        @RequestBody Intercambio intercambio
-    ) {
+            @PathVariable String correo,
+            @RequestBody Intercambio intercambio) {
         Intercambio creado = intercambioService.crear(correo, intercambio);
         return ResponseEntity.status(HttpStatus.CREATED).body(creado);
     }
@@ -57,8 +55,8 @@ public class IntercambioController {
 
     @PutMapping("/{id}")
     public ResponseEntity<Intercambio> actualizarIntercambio(
-        @PathVariable Long id,
-        @RequestBody Intercambio intercambioModificado) {
+            @PathVariable Long id,
+            @RequestBody Intercambio intercambioModificado) {
 
         Intercambio actualizado = intercambioService.actualizarIntercambio(id, intercambioModificado);
         return ResponseEntity.ok(actualizado);
@@ -69,15 +67,22 @@ public class IntercambioController {
         Intercambio intercambio = intercambioService.obtenerPorId(id);
         return ResponseEntity.ok(intercambio);
     }
-    
+
     @GetMapping("/usuario")
     public ResponseEntity<List<Intercambio>> obtenerPorUsuario(@AuthenticationPrincipal Jwt jwt) {
         // Sacamos el correo del token
-        String correo = jwt.getSubject(); 
+        String correo = jwt.getSubject();
         Usuario user = usuarioService.obtenerPorCorreo(correo);
-    
+
         List<Intercambio> intercambios = intercambioService.obtenerPorUsuario(user);
         return ResponseEntity.ok(intercambios);
-}
+    }
+
+    @GetMapping("/historial")
+    public ResponseEntity<List<Intercambio>> obtenerHistorial(@AuthenticationPrincipal Jwt jwt) {
+        String correo = jwt.getSubject();
+        Usuario user = usuarioService.obtenerPorCorreo(correo);
+        return ResponseEntity.ok(intercambioService.obtenerHistorial(user));
+    }
 
 }

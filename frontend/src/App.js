@@ -21,6 +21,7 @@ import IntercambiosPage from "./pages/IntercambiosPage";
 import MercadoPage from "./pages/MercadoPage";
 import ProductoPage from "./pages/ProductoPage";
 import PublicacionesPage from "./pages/PublicacionesPage";
+import HistorialPage from "./pages/HistorialPage";
 
 function App() {
   return (
@@ -66,6 +67,7 @@ function App() {
                   </ProtectedRoute>
                 }
               />
+              <Route path="/historial" element={<HistorialPage />} />
             </Route>
           </Routes>
         </Router>
