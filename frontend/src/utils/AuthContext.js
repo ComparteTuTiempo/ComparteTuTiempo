@@ -1,47 +1,39 @@
-import { createContext, useContext, useState, useEffect } from "react";
+import { createContext, useContext, useState } from "react";
 import { jwtDecode } from "jwt-decode";
 
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
-  const [token, setToken] = useState(null);
+  const stored = localStorage.getItem("usuario");
+  let initialUser = null;
+  let initialToken = null;
 
-  useEffect(() => {
-    const stored = localStorage.getItem("usuario"); 
-    if (stored) {
-      try {
-        const parsed = JSON.parse(stored);
-        const jwt = parsed.token; 
+  if (stored) {
+    try {
+      const parsed = JSON.parse(stored);
+      const jwt = parsed.token;
+      initialToken = jwt;
 
-        const decoded = jwtDecode(jwt);
-        console.log("🔑 Token decodificado:", decoded);
-
-        setToken(jwt);
-        setUser({
-          correo: decoded.sub,   
-          rol: decoded.scope,    
-          ...decoded,
-        });
-      } catch (err) {
-        console.error("❌ Error al procesar token", err);
-        setUser(null);
-        setToken(null);
-      }
+      const decoded = jwtDecode(jwt);
+      initialUser = {
+        correo: decoded.sub,
+        roles: decoded.roles || [],
+        ...decoded,
+      };
+    } catch (err) {
+      initialUser = null;
+      initialToken = null;
     }
-  }, []);
+  }
+
+  const [user, setUser] = useState(initialUser);
+  const [token, setToken] = useState(initialToken);
 
   return (
-    <AuthContext.Provider value={{ user, token }}>
+    <AuthContext.Provider value={{ user, token, setUser, setToken }}>
       {children}
     </AuthContext.Provider>
   );
 };
 
 export const useAuth = () => useContext(AuthContext);
-
-export const useUserFromToken = () => {
-  const { user } = useAuth();
-  return user;
-};
-

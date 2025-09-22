@@ -2,10 +2,14 @@ package com.compartetutiempo.backend.model;
 
 import java.time.LocalDate;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
+
+import com.compartetutiempo.backend.model.enums.Role;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
@@ -50,6 +54,13 @@ public class Usuario implements UserDetails{
     @Column(nullable = false)
     private String metodoAutenticacion;
 
+    @ElementCollection(fetch = FetchType.EAGER)
+    @Enumerated(EnumType.STRING)
+    @Column(name = "roles")
+    private Set<Role> roles = new HashSet<>(Set.of(Role.USER));
+
+    private boolean verificado = false; // por defecto no verificado
+
     private List<GrantedAuthority> authorities;
 
     @Override
@@ -86,5 +97,12 @@ public class Usuario implements UserDetails{
     public boolean isEnabled() { 
         return true; 
     }
-    
+
+    public boolean isVerificado() {
+        return verificado;
+    }
+
+    public void setVerificado(boolean verificado) {
+        this.verificado = verificado;
+    }
 }
