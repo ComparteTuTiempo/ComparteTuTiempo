@@ -22,6 +22,8 @@ import MercadoPage from "./pages/MercadoPage";
 import ProductoPage from "./pages/ProductoPage";
 import PublicacionesPage from "./pages/PublicacionesPage";
 import HistorialPage from "./pages/HistorialPage";
+import BuscarUsuarioPage from "./pages/BuscarUsuarioPage";
+import ReportesPage from "./pages/ReportesPage";
 
 function App() {
   return (
@@ -68,6 +70,16 @@ function App() {
                 }
               />
               <Route path="/historial" element={<HistorialPage />} />
+              <Route path="/buscarusuarios" element={<BuscarUsuarioPage />} />
+
+              <Route
+                path="/admin/reportes"
+                element={
+                  <ProtectedRoute roles={["ADMIN"]}>
+                    <ReportesPage />
+                  </ProtectedRoute>
+                }
+              />
             </Route>
           </Routes>
         </Router>

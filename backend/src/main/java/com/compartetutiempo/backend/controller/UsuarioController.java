@@ -34,7 +34,7 @@ public class UsuarioController {
     }
 
     @GetMapping("/{correo}")
-    public  UsuarioDTO obtenerUsuario(@PathVariable String correo) {
+    public UsuarioDTO obtenerUsuario(@PathVariable String correo) {
         Usuario usuario = service.obtenerPorCorreo(correo);
         UsuarioDTO usuarioDTO = new UsuarioDTO();
         usuarioDTO.setCorreo(correo);
@@ -42,32 +42,52 @@ public class UsuarioController {
         usuarioDTO.setNombre(usuario.getNombre());
         usuarioDTO.setUbicacion(usuario.getUbicacion());
         usuarioDTO.setVerificado(usuario.isVerificado());
-
+        usuarioDTO.setActivo(usuario.isActivo());
         return usuarioDTO;
 
     }
 
     @PutMapping("/{correo}")
     public ResponseEntity<Usuario> actualizarUsuario(
-        @PathVariable String correo,
-        @RequestBody Usuario usuarioModificado) {
-    
+            @PathVariable String correo,
+            @RequestBody Usuario usuarioModificado) {
+
         Usuario actualizado = service.actualizarUsuario(correo, usuarioModificado);
         return ResponseEntity.ok(actualizado);
     }
 
     @PostMapping("/login")
-public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest) {
-    Usuario usuario = service.obtenerPorCorreo(loginRequest.getCorreo());
+    public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest) {
+        Usuario usuario = service.obtenerPorCorreo(loginRequest.getCorreo());
 
-    if (usuario == null) {
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Usuario no encontrado");
+        if (usuario == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Usuario no encontrado");
+        }
+
+        if (!usuario.isActivo()) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Usuario baneado");
+        }
+
+        if (!usuario.getContrasena().equals(loginRequest.getContrasena())) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Contraseña incorrecta");
+        }
+
+        return ResponseEntity.ok(usuario);
     }
 
-    if (!usuario.getContrasena().equals(loginRequest.getContrasena())) {
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Contraseña incorrecta");
-    }
+    @GetMapping("/buscar")
+    public List<UsuarioDTO> buscarUsuarios(@RequestParam String nombre) {
+        List<Usuario> usuarios = service.buscarPorNombre(nombre);
 
-    return ResponseEntity.ok(usuario);
-}
+        return usuarios.stream().map(u -> {
+            UsuarioDTO dto = new UsuarioDTO();
+            dto.setCorreo(u.getCorreo());
+            dto.setFotoPerfil(u.getFotoPerfil());
+            dto.setNombre(u.getNombre());
+            dto.setUbicacion(u.getUbicacion());
+            dto.setVerificado(u.isVerificado());
+            dto.setActivo(u.isActivo());
+            return dto;
+        }).toList();
+    }
 }

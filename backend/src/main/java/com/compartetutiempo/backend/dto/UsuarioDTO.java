@@ -13,5 +13,6 @@ public class UsuarioDTO {
     private String correo;
     private String ubicacion;
     private String fotoPerfil;
-    private boolean verificado; 
+    private boolean verificado;
+    private boolean activo;
 }

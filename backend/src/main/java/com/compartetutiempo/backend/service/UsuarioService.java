@@ -65,4 +65,8 @@ public class UsuarioService implements UserDetailsService{
     public Usuario obtenerPorId(Long id) {
         return repository.findById(id).orElse(null);
     }
+
+    public List<Usuario> buscarPorNombre(String nombre) {
+        return repository.findByNombreContainingIgnoreCase(nombre);
+    }
 }
