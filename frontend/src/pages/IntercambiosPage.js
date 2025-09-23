@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
+import { useAuth } from "../utils/AuthContext";
 
 const IntercambiosPage = () => {
+  const { user, token } = useAuth();
   const [intercambios, setIntercambios] = useState([]);
   const [seleccionado, setSeleccionado] = useState(null);
   const [tabActiva, setTabActiva] = useState("OFERTA");
@@ -49,6 +51,23 @@ const IntercambiosPage = () => {
     setCategorias((prev) =>
       prev.includes(id) ? prev.filter((c) => c !== id) : [...prev, id]
     );
+  };
+
+  // eliminar intercambio (admin o dueño)
+  const eliminarIntercambio = async (id) => {
+    if (!window.confirm("¿Seguro que deseas eliminar este intercambio?")) return;
+
+    try {
+      await axios.delete(`http://localhost:8080/intercambios/${id}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setIntercambios((prev) => prev.filter((i) => i.id !== id));
+      setSeleccionado(null);
+      alert("✅ Intercambio eliminado correctamente");
+    } catch (err) {
+      console.error("❌ Error al eliminar intercambio:", err);
+      alert("No se pudo eliminar el intercambio");
+    }
   };
 
   return (
@@ -194,6 +213,24 @@ const IntercambiosPage = () => {
             <p><strong>Tipo:</strong> {seleccionado.tipo}</p>
             <p><strong>Modalidad:</strong> {seleccionado.modalidad}</p>
             <p><strong>Categorías:</strong> {seleccionado.categorias?.map(c => c.nombre).join(", ") || "Ninguna"}</p>
+
+            {/* Botón de eliminar si es admin */}
+            {user?.roles?.includes("ADMIN") && (
+              <button
+                onClick={() => eliminarIntercambio(seleccionado.id)}
+                style={{
+                  marginTop: "15px",
+                  backgroundColor: "#dc3545",
+                  color: "white",
+                  border: "none",
+                  padding: "10px 15px",
+                  borderRadius: "6px",
+                  cursor: "pointer"
+                }}
+              >
+                Eliminar (Admin)
+              </button>
+            )}
           </div>
         </div>
       )}

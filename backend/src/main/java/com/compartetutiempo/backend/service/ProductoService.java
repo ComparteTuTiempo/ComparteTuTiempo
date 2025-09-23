@@ -62,4 +62,10 @@ public class ProductoService {
         return productoRepository.findByUserAndEstado(user, EstadoProducto.ENTREGADO);
     }
 
+    public void eliminarProductoComoAdmin(Long id) {
+        Producto producto = productoRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Producto no encontrado"));
+        productoRepository.delete(producto);
+    }
+
 }
