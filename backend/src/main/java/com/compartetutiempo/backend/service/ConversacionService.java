@@ -72,7 +72,7 @@ public class ConversacionService {
 
         Conversacion conversacion = new Conversacion();
         conversacion.setParticipantes(usuarios);
-        conversacion.setTitulo("Chat del intercambio: " + iu.getIntercambio().getNombre());
+        conversacion.setTitulo("Chat del intercambio: " + iu.getIntercambio().getNombre() + " - " + iu.getUsuario().getNombre() );
 
         conversacion = conversacionRepository.save(conversacion);
         
