@@ -6,6 +6,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -19,6 +20,7 @@ import com.compartetutiempo.backend.dto.IntercambioDTO;
 import com.compartetutiempo.backend.model.Intercambio;
 import com.compartetutiempo.backend.model.Usuario;
 import com.compartetutiempo.backend.model.enums.ModalidadServicio;
+import com.compartetutiempo.backend.model.enums.Role;
 import com.compartetutiempo.backend.model.enums.TipoIntercambio;
 import com.compartetutiempo.backend.service.IntercambioService;
 import com.compartetutiempo.backend.service.UsuarioService;
@@ -61,9 +63,8 @@ public class IntercambioController {
     @PutMapping("/{id}")
     public ResponseEntity<Intercambio> actualizarIntercambio(
             @PathVariable Long id,
-            @RequestBody Intercambio intercambioModificado) {
-
-        Intercambio actualizado = intercambioService.actualizarIntercambio(id, intercambioModificado);
+            @RequestBody IntercambioDTO dto) {
+        Intercambio actualizado = intercambioService.actualizarIntercambio(id, dto);
         return ResponseEntity.ok(actualizado);
     }
 
@@ -100,5 +101,26 @@ public class IntercambioController {
             @RequestParam(required = false) String q) {
         return ResponseEntity.ok(
                 intercambioService.filtrar(tipo, modalidad, categorias, minHoras, maxHoras, q));
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> eliminarIntercambio(
+            @PathVariable Long id,
+            @AuthenticationPrincipal Jwt jwt) {
+
+        String correo = jwt.getSubject();
+        Usuario user = usuarioService.obtenerPorCorreo(correo);
+
+        Intercambio intercambio = intercambioService.obtenerPorId(id);
+
+        // Permitir eliminar si es el dueño o si es admin
+        boolean esAdmin = user.getRoles().contains(Role.ADMIN);
+
+        if (!intercambio.getUser().getCorreo().equals(correo) && !esAdmin) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+
+        intercambioService.eliminarIntercambio(id);
+        return ResponseEntity.noContent().build();
     }
 }

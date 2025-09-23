@@ -48,7 +48,8 @@ const PublicacionesPage = () => {
   const renderModalContent = () => {
     if (!selected) return null;
 
-    const isProducto = selected.tipo === undefined; // Solo productos no tienen tipo OFERTA/PETICION
+    const isProducto = selected.tipo === undefined; // productos no tienen tipo
+    const isIntercambio = !isProducto; // intercambios sí lo tienen
 
     return (
       <div style={styles.modalContent}>
@@ -61,6 +62,7 @@ const PublicacionesPage = () => {
           <p><strong>Publicado:</strong> {new Date(selected.fechaPublicacion).toLocaleDateString()}</p>
         )}
 
+        {/* Botones para PRODUCTOS */}
         {isProducto && (
           <div style={{ marginTop: "15px", display: "flex", gap: "10px" }}>
             <button
@@ -83,6 +85,42 @@ const PublicacionesPage = () => {
                   } catch (err) {
                     console.error("❌ Error al eliminar producto:", err);
                     alert("Hubo un error al eliminar el producto");
+                  }
+                }
+              }}
+            >
+              Eliminar
+            </button>
+          </div>
+        )}
+
+        {/* Botones para INTERCAMBIOS */}
+        {isIntercambio && (
+          <div style={{ marginTop: "15px", display: "flex", gap: "10px" }}>
+            <button
+              style={styles.editBtn}
+              onClick={() => navigate(`/intercambios/${selected.id}/editar`)}
+            >
+              Editar
+            </button>
+            <button
+              style={styles.deleteBtn}
+              onClick={async () => {
+                if (window.confirm("¿Seguro que quieres eliminar este intercambio?")) {
+                  try {
+                    await axios.delete(`http://localhost:8080/intercambios/${selected.id}`, {
+                      headers: { Authorization: `Bearer ${token}` },
+                    });
+                    alert("Intercambio eliminado ✅");
+                    setSelected(null);
+                    if (selected.tipo === "OFERTA") {
+                      setOfertas(ofertas.filter(i => i.id !== selected.id));
+                    } else {
+                      setPeticiones(peticiones.filter(i => i.id !== selected.id));
+                    }
+                  } catch (err) {
+                    console.error("❌ Error al eliminar intercambio:", err);
+                    alert("Hubo un error al eliminar el intercambio");
                   }
                 }
               }}
@@ -132,7 +170,7 @@ const PublicacionesPage = () => {
         {tab === "productos" && renderGrid(productos)}
       </div>
 
-      {/* Modal de detalles */}
+      {/* Modal */}
       {selected && (
         <div style={styles.modal}>
           {renderModalContent()}

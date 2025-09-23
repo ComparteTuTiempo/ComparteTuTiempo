@@ -3,6 +3,7 @@ package com.compartetutiempo.backend.controller;
 import com.compartetutiempo.backend.model.Producto;
 import com.compartetutiempo.backend.model.Usuario;
 import com.compartetutiempo.backend.model.enums.EstadoProducto;
+import com.compartetutiempo.backend.model.enums.Role;
 import com.compartetutiempo.backend.service.ProductoService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -78,7 +79,13 @@ public class ProductoController {
         String correo = jwt.getSubject();
         Usuario user = usuarioService.obtenerPorCorreo(correo);
 
-        productoService.eliminarProducto(id, user);
+        // Si es ADMIN, eliminamos sin validar propietario
+        if (user.getRoles().contains(Role.ADMIN)) {
+            productoService.eliminarProductoComoAdmin(id);
+        } else {
+            productoService.eliminarProducto(id, user);
+        }
+
         return ResponseEntity.noContent().build();
     }
 

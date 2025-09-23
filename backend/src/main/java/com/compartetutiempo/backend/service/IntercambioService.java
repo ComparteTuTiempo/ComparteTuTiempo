@@ -64,19 +64,22 @@ public class IntercambioService {
         return intercambioRepository.findByUser(usuario);
     }
 
-    public Intercambio actualizarIntercambio(Long id, Intercambio nuevosDatos) {
+    public Intercambio actualizarIntercambio(Long id, IntercambioDTO dto) {
         Intercambio intercambio = intercambioRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Intercambio no encontrado"));
 
-        intercambio.setNombre(nuevosDatos.getNombre() != null ? nuevosDatos.getNombre() : intercambio.getNombre());
-        intercambio.setDescripcion(
-                nuevosDatos.getDescripcion() != null ? nuevosDatos.getDescripcion() : intercambio.getDescripcion());
-        intercambio.setNumeroHoras(
-                nuevosDatos.getNumeroHoras() != null ? nuevosDatos.getNumeroHoras() : intercambio.getNumeroHoras());
-        intercambio.setModalidad(
-                nuevosDatos.getModalidad() != null ? nuevosDatos.getModalidad() : intercambio.getModalidad());
-        intercambio.setEstado(nuevosDatos.getEstado() != null ? nuevosDatos.getEstado() : intercambio.getEstado());
+        intercambio.setNombre(dto.getNombre() != null ? dto.getNombre() : intercambio.getNombre());
+        intercambio.setDescripcion(dto.getDescripcion() != null ? dto.getDescripcion() : intercambio.getDescripcion());
+        intercambio.setNumeroHoras(dto.getNumeroHoras() != null ? dto.getNumeroHoras() : intercambio.getNumeroHoras());
+        intercambio.setModalidad(dto.getModalidad() != null ? dto.getModalidad() : intercambio.getModalidad());
+        intercambio.setTipo(dto.getTipo() != null ? dto.getTipo() : intercambio.getTipo());
 
+        if (dto.getCategorias() != null) {
+            if (dto.getCategorias() != null) {
+                List<Categoria> categorias = categoriaRepository.findAllById(dto.getCategorias());
+                intercambio.setCategorias(new HashSet<>(categorias)); // 👈 convierte a Set
+            }
+        }
         return intercambioRepository.save(intercambio);
     }
 
@@ -109,5 +112,12 @@ public class IntercambioService {
                 .and(IntercambioSpecifications.conTexto(q));
 
         return intercambioRepository.findAll(spec); // ← ahora sí existe
+    }
+
+    public void eliminarIntercambio(Long id) {
+        if (!intercambioRepository.existsById(id)) {
+            throw new RuntimeException("Intercambio no encontrado");
+        }
+        intercambioRepository.deleteById(id);
     }
 }
