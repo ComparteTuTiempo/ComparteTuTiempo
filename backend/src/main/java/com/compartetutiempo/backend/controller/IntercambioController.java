@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.compartetutiempo.backend.dto.IntercambioDTO;
 import com.compartetutiempo.backend.model.Intercambio;
 import com.compartetutiempo.backend.model.Usuario;
 import com.compartetutiempo.backend.service.IntercambioService;
@@ -36,8 +37,9 @@ public class IntercambioController {
     @PostMapping("/{correo}")
     public ResponseEntity<Intercambio> crear(
             @PathVariable String correo,
-            @RequestBody Intercambio intercambio) {
-        Intercambio creado = intercambioService.crear(correo, intercambio);
+            @RequestBody IntercambioDTO dto) {
+
+        Intercambio creado = intercambioService.crear(correo, dto);
         return ResponseEntity.status(HttpStatus.CREATED).body(creado);
     }
 

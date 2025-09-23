@@ -24,6 +24,7 @@ import PublicacionesPage from "./pages/PublicacionesPage";
 import HistorialPage from "./pages/HistorialPage";
 import BuscarUsuarioPage from "./pages/BuscarUsuarioPage";
 import ReportesPage from "./pages/ReportesPage";
+import CategoriaForm from "./forms/CategoriaForm";
 
 function App() {
   return (
@@ -77,6 +78,15 @@ function App() {
                 element={
                   <ProtectedRoute roles={["ADMIN"]}>
                     <ReportesPage />
+                  </ProtectedRoute>
+                }
+              />
+
+                <Route
+                path="/admin/categorias"
+                element={
+                  <ProtectedRoute roles={["ADMIN"]}>
+                    <CategoriaForm />
                   </ProtectedRoute>
                 }
               />

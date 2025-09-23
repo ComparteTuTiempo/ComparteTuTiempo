@@ -14,38 +14,81 @@ const IntercambioForm = () => {
     numeroHoras: "",
     tipo: "OFERTA",
     modalidad: "PRESENCIAL",
+    categorias: [], // ids de categorías seleccionadas
   });
 
+  const [categoriasDisponibles, setCategoriasDisponibles] = useState([]);
+
   useEffect(() => {
-    if (id) {
-      // estamos en modo edición
-      axios.get(`http://localhost:8080/intercambios/${id}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      })
-      .then((res) => setFormData(res.data))
-      .catch((err) => console.error("❌ Error al cargar intercambio:", err));
-    }
+    const fetchCategorias = async () => {
+      try {
+        const res = await axios.get("http://localhost:8080/categorias", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        setCategoriasDisponibles(res.data);
+      } catch (err) {
+        console.error("❌ Error al cargar categorías:", err);
+      }
+    };
+
+    const fetchIntercambio = async () => {
+      if (id) {
+        try {
+          const res = await axios.get(`http://localhost:8080/intercambios/${id}`, {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+
+          const data = {
+            ...res.data,
+            categorias: res.data.categorias
+              ? res.data.categorias.map((c) => c.id)
+              : [],
+          };
+          setFormData(data);
+        } catch (err) {
+          console.error("❌ Error al cargar intercambio:", err);
+        }
+      }
+    };
+
+    fetchCategorias();
+    fetchIntercambio();
   }, [id, token]);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
+  // 🔹 Toggle de categorías
+  const handleToggleCategoria = (id) => {
+    setFormData((prev) => {
+      const alreadySelected = prev.categorias.includes(id);
+      return {
+        ...prev,
+        categorias: alreadySelected
+          ? prev.categorias.filter((c) => c !== id) // quitar
+          : [...prev.categorias, id], // añadir
+      };
+    });
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
       if (id) {
-        // actualizar
         await axios.put(`http://localhost:8080/intercambios/${id}`, formData, {
           headers: { Authorization: `Bearer ${token}` },
         });
       } else {
-        // crear nuevo
-        await axios.post(`http://localhost:8080/intercambios/${user.correo}`, formData, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        await axios.post(
+          `http://localhost:8080/intercambios/${user.correo}`,
+          formData,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
       }
-      navigate("/profile"); 
+      navigate("/profile");
     } catch (err) {
       console.error("❌ Error al guardar intercambio:", err);
     }
@@ -71,17 +114,18 @@ const IntercambioForm = () => {
           onChange={handleChange}
           style={styles.textarea}
           required
-        />{formData.tipo === "PETICION"?
+        />
+        {formData.tipo === "PETICION" ? (
           <input
-          type="number"
-          name="numeroHoras"
-          placeholder="Número de horas"
-          value={formData.numeroHoras}
-          onChange={handleChange}
-          style={styles.input}
+            type="number"
+            name="numeroHoras"
+            placeholder="Número de horas"
+            value={formData.numeroHoras}
+            onChange={handleChange}
+            style={styles.input}
           />
-          :""}
-        
+        ) : null}
+
         <select
           name="tipo"
           value={formData.tipo}
@@ -100,6 +144,28 @@ const IntercambioForm = () => {
           <option value="ONLINE">Online</option>
           <option value="PRESENCIAL">Presencial</option>
         </select>
+
+        {/* 🔹 Botones de categorías */}
+        <label>Categorías:</label>
+        <div style={styles.categoriasContainer}>
+          {categoriasDisponibles.map((c) => {
+            const isSelected = formData.categorias.includes(c.id);
+            return (
+              <button
+                type="button"
+                key={c.id}
+                onClick={() => handleToggleCategoria(c.id)}
+                style={{
+                  ...styles.categoriaBtn,
+                  ...(isSelected ? styles.categoriaBtnSelected : {}),
+                }}
+              >
+                {c.nombre}
+              </button>
+            );
+          })}
+        </div>
+
         <button type="submit" style={styles.button}>
           {id ? "Editar Intercambio" : "Crear Intercambio"}
         </button>
@@ -143,6 +209,23 @@ const styles = {
     padding: "10px",
     borderRadius: "6px",
     cursor: "pointer",
+  },
+  categoriasContainer: {
+    display: "flex",
+    flexWrap: "wrap",
+    gap: "10px",
+  },
+  categoriaBtn: {
+    padding: "6px 12px",
+    border: "1px solid #ccc",
+    borderRadius: "20px",
+    backgroundColor: "#f8f9fa",
+    cursor: "pointer",
+  },
+  categoriaBtnSelected: {
+    backgroundColor: "#007bff",
+    color: "#fff",
+    borderColor: "#007bff",
   },
 };
 
