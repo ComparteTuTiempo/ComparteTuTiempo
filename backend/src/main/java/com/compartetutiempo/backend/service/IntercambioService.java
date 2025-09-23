@@ -4,6 +4,7 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import com.compartetutiempo.backend.dto.IntercambioDTO;
@@ -11,9 +12,12 @@ import com.compartetutiempo.backend.model.Categoria;
 import com.compartetutiempo.backend.model.Intercambio;
 import com.compartetutiempo.backend.model.Usuario;
 import com.compartetutiempo.backend.model.enums.EstadoIntercambio;
+import com.compartetutiempo.backend.model.enums.ModalidadServicio;
+import com.compartetutiempo.backend.model.enums.TipoIntercambio;
 import com.compartetutiempo.backend.repository.CategoriaRepository;
 import com.compartetutiempo.backend.repository.IntercambioRepository;
 import com.compartetutiempo.backend.repository.UsuarioRepository;
+import com.compartetutiempo.backend.specifications.IntercambioSpecifications;
 
 @Service
 public class IntercambioService {
@@ -22,32 +26,33 @@ public class IntercambioService {
     private final UsuarioRepository usuarioRepository;
     private final CategoriaRepository categoriaRepository;
 
-    public IntercambioService(IntercambioRepository intercambioRepository, UsuarioRepository usuarioRepository, CategoriaRepository categoriaRepository) {
+    public IntercambioService(IntercambioRepository intercambioRepository, UsuarioRepository usuarioRepository,
+            CategoriaRepository categoriaRepository) {
         this.intercambioRepository = intercambioRepository;
         this.usuarioRepository = usuarioRepository;
         this.categoriaRepository = categoriaRepository;
     }
 
-public Intercambio crear(String correo, IntercambioDTO dto) {
-    Usuario usuario = usuarioRepository.findByCorreo(correo)
-            .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+    public Intercambio crear(String correo, IntercambioDTO dto) {
+        Usuario usuario = usuarioRepository.findByCorreo(correo)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
-    Intercambio intercambio = new Intercambio();
-    intercambio.setNombre(dto.getNombre());
-    intercambio.setDescripcion(dto.getDescripcion());
-    intercambio.setNumeroHoras(dto.getNumeroHoras());
-    intercambio.setTipo(dto.getTipo());
-    intercambio.setModalidad(dto.getModalidad());
-    intercambio.setUser(usuario);
-    intercambio.setFechaPublicacion(new Date());
-    intercambio.setEstado(EstadoIntercambio.EMPAREJAMIENTO);
+        Intercambio intercambio = new Intercambio();
+        intercambio.setNombre(dto.getNombre());
+        intercambio.setDescripcion(dto.getDescripcion());
+        intercambio.setNumeroHoras(dto.getNumeroHoras());
+        intercambio.setTipo(dto.getTipo());
+        intercambio.setModalidad(dto.getModalidad());
+        intercambio.setUser(usuario);
+        intercambio.setFechaPublicacion(new Date());
+        intercambio.setEstado(EstadoIntercambio.EMPAREJAMIENTO);
 
-    // 🔹 Buscar categorías por id
-    List<Categoria> categorias = categoriaRepository.findAllById(dto.getCategorias());
-    intercambio.setCategorias(new HashSet<>(categorias));
+        // 🔹 Buscar categorías por id
+        List<Categoria> categorias = categoriaRepository.findAllById(dto.getCategorias());
+        intercambio.setCategorias(new HashSet<>(categorias));
 
-    return intercambioRepository.save(intercambio);
-}
+        return intercambioRepository.save(intercambio);
+    }
 
     public List<Intercambio> obtenerTodos() {
         return intercambioRepository.findAll();
@@ -86,5 +91,23 @@ public Intercambio crear(String correo, IntercambioDTO dto) {
 
     public List<Intercambio> obtenerHistorial(Usuario user) {
         return intercambioRepository.findByUserAndEstado(user, EstadoIntercambio.FINALIZADO);
+    }
+
+    public List<Intercambio> filtrar(
+            TipoIntercambio tipo,
+            ModalidadServicio modalidad,
+            List<Long> categoriaIds,
+            Double minHoras,
+            Double maxHoras,
+            String q) {
+        Specification<Intercambio> spec = Specification
+                .where(IntercambioSpecifications.conTipo(tipo))
+                .and(IntercambioSpecifications.conModalidad(modalidad))
+                .and(IntercambioSpecifications.conCategoriaIds(categoriaIds))
+                .and(IntercambioSpecifications.conHorasMin(minHoras))
+                .and(IntercambioSpecifications.conHorasMax(maxHoras))
+                .and(IntercambioSpecifications.conTexto(q));
+
+        return intercambioRepository.findAll(spec); // ← ahora sí existe
     }
 }
