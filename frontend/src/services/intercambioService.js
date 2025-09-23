@@ -22,7 +22,7 @@ export const obtenerIntercambioPorId = async (id, token) => {
 export const solicitarIntercambio = async (intercambioId, token) => {
   const response = await axios.post(
     `${API_URL}/${intercambioId}/solicitar`,
-    {}, // no mandamos body, solo token
+    {},
     {
       headers: {
         Authorization: `Bearer ${token}`,
@@ -54,4 +54,28 @@ export const obtenerMisIntercambios = async (token) => {
     },
   });
   return response.data;
+};
+
+export const obtenerSolicitudes = async (token) => {
+  const res = await axios.get(`${API_URL}/solicitudes`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  return res.data;
+};
+
+export const aceptarSolicitud = async (id, token) => {
+  const res = await axios.put(
+    `${API_URL}/solicitudes/${id}/aceptar`,
+    {},
+    { headers: { Authorization: `Bearer ${token}` } }
+  );
+  return res.data;
+};
+
+export const rechazarSolicitud = async (id, token) => {
+  await axios.put(
+    `${API_URL}/solicitudes/${id}/rechazar`,
+    {},
+    { headers: { Authorization: `Bearer ${token}` } }
+  );
 };

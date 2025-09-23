@@ -8,6 +8,7 @@ import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -33,6 +34,10 @@ public class IntercambioUsuario extends BaseEntity {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private EstadoIntercambio estado; 
+
+    @OneToOne
+    @JoinColumn(name = "conversacion_id",referencedColumnName = "id",unique=true)
+    private Conversacion conversacion;
 
     @Column(name = "horas_asignadas")
     private Double horasAsignadas = 0.0;

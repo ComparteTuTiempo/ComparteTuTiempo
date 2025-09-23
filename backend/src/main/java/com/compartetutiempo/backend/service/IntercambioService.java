@@ -114,7 +114,6 @@ public class IntercambioService {
             throw new IllegalStateException("El dueño no puede solicitar intercambio consigo mismo");
         }
 
-        // Creamos relación demandante-intercambio
         IntercambioUsuario iu = new IntercambioUsuario();
         iu.setIntercambio(intercambio);
         iu.setUsuario(demandante);
@@ -126,6 +125,5 @@ public class IntercambioService {
         List<IntercambioUsuario> participantes = intercambioUsuarioRepository.findByIntercambioId(intercambioId);
         return IntercambioDTO.fromEntity(intercambio, participantes);
     }
-
     
 }

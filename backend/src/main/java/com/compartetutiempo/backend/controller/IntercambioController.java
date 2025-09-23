@@ -15,23 +15,30 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.compartetutiempo.backend.dto.IntercambioDTO;
+import com.compartetutiempo.backend.dto.IntercambioUsuarioDTO;
 import com.compartetutiempo.backend.model.Intercambio;
 import com.compartetutiempo.backend.model.Usuario;
 import com.compartetutiempo.backend.service.IntercambioService;
+import com.compartetutiempo.backend.service.IntercambioUsuarioService;
 import com.compartetutiempo.backend.service.UsuarioService;
 
 @RestController
 @RequestMapping("/intercambios")
 public class IntercambioController {
 
-    private IntercambioService intercambioService;
+    private final IntercambioService intercambioService;
 
     private final UsuarioService usuarioService;
 
-    public IntercambioController(IntercambioService intercambioService, UsuarioService usuarioService){
+    private final IntercambioUsuarioService intercambioUsuarioService;
+
+
+
+    public IntercambioController(IntercambioService intercambioService, UsuarioService usuarioService
+    , IntercambioUsuarioService intercambioUsuarioService ){
         this.intercambioService = intercambioService;
         this.usuarioService = usuarioService;
-
+        this.intercambioUsuarioService = intercambioUsuarioService;
     }
 
     @PostMapping("/{correo}")
@@ -99,5 +106,32 @@ public class IntercambioController {
         IntercambioDTO dto = intercambioService.solicitarIntercambio(eventoId, correoDemandante);
         return ResponseEntity.status(HttpStatus.CREATED).body(dto);
     }
+
+    @GetMapping("/solicitudes")
+    public ResponseEntity<List<IntercambioUsuarioDTO>> obtenerSolicitudesPendientes(
+        @AuthenticationPrincipal Jwt jwt) {
+        String correo = jwt.getSubject();
+        List<IntercambioUsuarioDTO> solicitudes = intercambioUsuarioService.obtenerSolicitudesPendientes(correo);
+        return ResponseEntity.ok(solicitudes);
+    }
+
+    @PutMapping("/solicitudes/{id}/aceptar")
+    public ResponseEntity<IntercambioDTO> aceptarSolicitud(
+            @PathVariable Integer id,
+            @AuthenticationPrincipal Jwt jwt) {
+        String correo = jwt.getSubject();
+        IntercambioDTO dto = intercambioUsuarioService.aceptarSolicitud(id, correo);
+        return ResponseEntity.ok(dto);
+    }
+
+    @PutMapping("/solicitudes/{id}/rechazar")
+    public ResponseEntity<Void> rechazarSolicitud(
+            @PathVariable Integer id,
+            @AuthenticationPrincipal Jwt jwt) {
+        String correo = jwt.getSubject();
+        intercambioUsuarioService.rechazarSolicitud(id, correo);
+        return ResponseEntity.noContent().build();
+    }
+
 
 }
