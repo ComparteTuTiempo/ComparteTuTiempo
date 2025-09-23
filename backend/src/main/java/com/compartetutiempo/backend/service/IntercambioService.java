@@ -1,13 +1,17 @@
 package com.compartetutiempo.backend.service;
 
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
 
+import com.compartetutiempo.backend.dto.IntercambioDTO;
+import com.compartetutiempo.backend.model.Categoria;
 import com.compartetutiempo.backend.model.Intercambio;
 import com.compartetutiempo.backend.model.Usuario;
 import com.compartetutiempo.backend.model.enums.EstadoIntercambio;
+import com.compartetutiempo.backend.repository.CategoriaRepository;
 import com.compartetutiempo.backend.repository.IntercambioRepository;
 import com.compartetutiempo.backend.repository.UsuarioRepository;
 
@@ -16,21 +20,34 @@ public class IntercambioService {
 
     private final IntercambioRepository intercambioRepository;
     private final UsuarioRepository usuarioRepository;
+    private final CategoriaRepository categoriaRepository;
 
-    public IntercambioService(IntercambioRepository intercambioRepository, UsuarioRepository usuarioRepository) {
+    public IntercambioService(IntercambioRepository intercambioRepository, UsuarioRepository usuarioRepository, CategoriaRepository categoriaRepository) {
         this.intercambioRepository = intercambioRepository;
         this.usuarioRepository = usuarioRepository;
+        this.categoriaRepository = categoriaRepository;
     }
 
-    public Intercambio crear(String correo, Intercambio intercambio) {
-        Usuario usuario = usuarioRepository.findByCorreo(correo)
-                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+public Intercambio crear(String correo, IntercambioDTO dto) {
+    Usuario usuario = usuarioRepository.findByCorreo(correo)
+            .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
-        intercambio.setUser(usuario);
-        intercambio.setFechaPublicacion(new Date());
-        intercambio.setEstado(EstadoIntercambio.EMPAREJAMIENTO);
-        return intercambioRepository.save(intercambio);
-    }
+    Intercambio intercambio = new Intercambio();
+    intercambio.setNombre(dto.getNombre());
+    intercambio.setDescripcion(dto.getDescripcion());
+    intercambio.setNumeroHoras(dto.getNumeroHoras());
+    intercambio.setTipo(dto.getTipo());
+    intercambio.setModalidad(dto.getModalidad());
+    intercambio.setUser(usuario);
+    intercambio.setFechaPublicacion(new Date());
+    intercambio.setEstado(EstadoIntercambio.EMPAREJAMIENTO);
+
+    // 🔹 Buscar categorías por id
+    List<Categoria> categorias = categoriaRepository.findAllById(dto.getCategorias());
+    intercambio.setCategorias(new HashSet<>(categorias));
+
+    return intercambioRepository.save(intercambio);
+}
 
     public List<Intercambio> obtenerTodos() {
         return intercambioRepository.findAll();

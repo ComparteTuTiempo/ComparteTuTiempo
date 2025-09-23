@@ -1,6 +1,9 @@
 package com.compartetutiempo.backend.model;
 
 import java.util.Date;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 import com.compartetutiempo.backend.model.enums.EstadoIntercambio;
 import com.compartetutiempo.backend.model.enums.ModalidadServicio;
@@ -11,6 +14,8 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.Getter;
@@ -47,6 +52,13 @@ public class Intercambio extends BaseEntity{
     @ManyToOne(optional=false)
     private Usuario user;
 
+    @ManyToMany
+    @JoinTable(
+    name = "intercambio_categorias",
+    joinColumns = @JoinColumn(name = "intercambio_id"),
+    inverseJoinColumns = @JoinColumn(name = "categoria_id")
+    )
+    private Set<Categoria> categorias = new HashSet<>();
     
 
     
