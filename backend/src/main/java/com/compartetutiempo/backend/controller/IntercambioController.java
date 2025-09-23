@@ -12,11 +12,14 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.compartetutiempo.backend.dto.IntercambioDTO;
 import com.compartetutiempo.backend.model.Intercambio;
 import com.compartetutiempo.backend.model.Usuario;
+import com.compartetutiempo.backend.model.enums.ModalidadServicio;
+import com.compartetutiempo.backend.model.enums.TipoIntercambio;
 import com.compartetutiempo.backend.service.IntercambioService;
 import com.compartetutiempo.backend.service.UsuarioService;
 
@@ -87,4 +90,15 @@ public class IntercambioController {
         return ResponseEntity.ok(intercambioService.obtenerHistorial(user));
     }
 
+    @GetMapping("/filtrar")
+    public ResponseEntity<List<Intercambio>> filtrar(
+            @RequestParam(required = false) TipoIntercambio tipo,
+            @RequestParam(required = false) ModalidadServicio modalidad,
+            @RequestParam(required = false) List<Long> categorias,
+            @RequestParam(required = false) Double minHoras,
+            @RequestParam(required = false) Double maxHoras,
+            @RequestParam(required = false) String q) {
+        return ResponseEntity.ok(
+                intercambioService.filtrar(tipo, modalidad, categorias, minHoras, maxHoras, q));
+    }
 }

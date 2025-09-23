@@ -141,7 +141,7 @@ const IntercambioForm = () => {
           onChange={handleChange}
           style={styles.input}
         >
-          <option value="ONLINE">Online</option>
+          <option value="VIRTUAL">Online</option>
           <option value="PRESENCIAL">Presencial</option>
         </select>
 
