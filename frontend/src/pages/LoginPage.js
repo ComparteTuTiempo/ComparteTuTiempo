@@ -20,9 +20,9 @@ const LoginPage = () => {
     setError("");
 
     try {
-      const response = await axios.post("http://localhost:8080/api/usuarios/login", {
+      const response = await axios.post("http://localhost:8080/auth/login", {
         correo: credenciales.correo,
-        contrasena: credenciales.contrasena,
+        contraseña: credenciales.contrasena,
       });
 
       localStorage.setItem(
