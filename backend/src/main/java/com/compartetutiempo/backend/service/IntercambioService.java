@@ -2,9 +2,12 @@ package com.compartetutiempo.backend.service;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
 import com.compartetutiempo.backend.dto.IntercambioDTO;
 import com.compartetutiempo.backend.model.Intercambio;
@@ -39,34 +42,6 @@ public class IntercambioService {
         intercambio.setEstado(EstadoIntercambio.EMPAREJAMIENTO); 
         return intercambioRepository.save(intercambio);
     }
-
-    @Transactional
-    public IntercambioDTO avanzarEstado(Integer intercambioId, String correoUsuario) {
-        Usuario usuario = usuarioRepository.findByCorreo(correoUsuario)
-                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
-
-        IntercambioUsuario iu = intercambioUsuarioRepository
-                .findByIntercambioIdAndUsuarioId(intercambioId, usuario.getId())
-                .orElseThrow(() -> new RuntimeException("No eres participante de este intercambio"));
-
-        EstadoIntercambio actual = iu.getEstado();
-        EstadoIntercambio siguiente = switch (actual) {
-            case EMPAREJAMIENTO -> EstadoIntercambio.CONSENSO;
-            case CONSENSO -> EstadoIntercambio.EJECUCION;
-            case EJECUCION -> EstadoIntercambio.FINALIZADO;
-            default -> throw new IllegalStateException("El estado actual no permite más transiciones");
-        };
-
-        iu.setEstado(siguiente);
-        intercambioUsuarioRepository.save(iu);
-
-        Intercambio intercambio = iu.getIntercambio();
-        List<IntercambioUsuario> participantes =
-                intercambioUsuarioRepository.findByIntercambioId(intercambioId);
-
-        return IntercambioDTO.fromEntity(intercambio, participantes);
-    }
-
 
 
     public List<Intercambio> obtenerTodos() {
@@ -110,8 +85,14 @@ public class IntercambioService {
         Intercambio intercambio = intercambioRepository.findById(intercambioId)
                 .orElseThrow(() -> new RuntimeException("Intercambio no encontrado"));
 
+        Optional<IntercambioUsuario> solicitud = 
+            intercambioUsuarioRepository.findByIntercambioIdAndUsuarioId(intercambioId, demandante.getId());
+
+
         if (intercambio.getUser().getId().equals(demandante.getId())) {
-            throw new IllegalStateException("El dueño no puede solicitar intercambio consigo mismo");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"El dueño no puede solicitar intercambio consigo mismo");
+        }else if(solicitud.isPresent()){
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Ya has solicitado este intercambio");
         }
 
         IntercambioUsuario iu = new IntercambioUsuario();

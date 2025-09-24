@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.server.ResponseStatusException;
 
 import com.compartetutiempo.backend.dto.IntercambioDTO;
 import com.compartetutiempo.backend.dto.IntercambioUsuarioDTO;
@@ -87,16 +88,6 @@ public class IntercambioController {
         return ResponseEntity.ok(intercambios);
     }
 
-    @PutMapping("/{id}/avanzar")
-    public ResponseEntity<IntercambioDTO> avanzarEstado(
-        @PathVariable Integer id,
-        @AuthenticationPrincipal Jwt jwt
-        ) {
-        String correo = jwt.getSubject();
-        IntercambioDTO actualizado = intercambioService.avanzarEstado(id, correo);
-        return ResponseEntity.ok(actualizado);
-    }
-
     @PostMapping("/{eventoId}/solicitar")
     public ResponseEntity<IntercambioDTO> solicitarIntercambio(
     @PathVariable Integer eventoId,
@@ -116,12 +107,17 @@ public class IntercambioController {
     }
 
     @PutMapping("/solicitudes/{id}/aceptar")
-    public ResponseEntity<IntercambioDTO> aceptarSolicitud(
+    public ResponseEntity<?> aceptarSolicitud(
             @PathVariable Integer id,
             @AuthenticationPrincipal Jwt jwt) {
-        String correo = jwt.getSubject();
-        IntercambioDTO dto = intercambioUsuarioService.aceptarSolicitud(id, correo);
-        return ResponseEntity.ok(dto);
+        try{
+            String correo = jwt.getSubject();
+            IntercambioDTO dto = intercambioUsuarioService.aceptarSolicitud(id, correo);
+            return ResponseEntity.ok(dto);
+        }catch(ResponseStatusException e){
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+        
     }
 
     @PutMapping("/solicitudes/{id}/rechazar")

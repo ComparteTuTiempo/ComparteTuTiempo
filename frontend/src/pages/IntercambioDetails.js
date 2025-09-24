@@ -3,7 +3,6 @@ import { useParams } from "react-router-dom";
 import { useAuth } from "../utils/AuthContext";
 import {
   obtenerIntercambioPorId,
-  avanzarIntercambio,
   solicitarIntercambio
 } from "../services/intercambioService";
 
@@ -20,7 +19,7 @@ export default function IntercambioDetalle() {
         .then((data) => {
           setIntercambio(data);
           const usuarioEsParticipante = data.participantes?.some(
-            p => p.usuarioId === user.id
+            (p) => p.usuarioId === user.id
           );
           setEsParticipante(usuarioEsParticipante);
           setLoading(false);
@@ -36,20 +35,11 @@ export default function IntercambioDetalle() {
     try {
       const actualizado = await solicitarIntercambio(id, token);
       setIntercambio(actualizado);
-      setEsParticipante(true); 
+      setEsParticipante(true);
       alert("Solicitud enviada correctamente");
     } catch (err) {
       console.error(err);
-      alert("Error al enviar la solicitud: " + err.message);
-    }
-  };
-
-  const avanzar = async () => {
-    try {
-      const actualizado = await avanzarIntercambio(id, token);
-      setIntercambio(actualizado);
-    } catch (err) {
-      console.error(err);
+      alert("Error al enviar la solicitud: " + err.response?.data.message);
     }
   };
 
@@ -58,9 +48,11 @@ export default function IntercambioDetalle() {
   }
 
   if (!intercambio) {
-    return <p style={{ textAlign: "center", marginTop: "20px", color: "red" }}>
-      No se encontró el intercambio.
-    </p>;
+    return (
+      <p style={{ textAlign: "center", marginTop: "20px", color: "red" }}>
+        No se encontró el intercambio.
+      </p>
+    );
   }
 
   // Verificar si el usuario es el creador del intercambio
@@ -98,24 +90,14 @@ export default function IntercambioDetalle() {
         <span>{intercambio.usuarioNombre}</span>
       </div>
 
-      {/* Mostrar botón de solicitud solo si:
+      {/* Mostrar botón de solicitud si:
           - No es el creador
-          - No es ya participante
           - El intercambio no está finalizado
       */}
-      {!esCreador && !esParticipante && intercambio.estado !== "FINALIZADO" && (
+      {!esCreador && intercambio.estado !== "FINALIZADO" && (
         <div>
           <button onClick={handleSolicitar} style={styles.solicitarBtn}>
             Solicitar intercambio
-          </button>
-        </div>
-      )}
-
-      {/* Mostrar botón de avanzar estado solo para participantes */}
-      {esParticipante && intercambio.estado !== "FINALIZADO" && (
-        <div>
-          <button onClick={avanzar} style={styles.btn}>
-            Avanzar al siguiente estado
           </button>
         </div>
       )}
@@ -155,17 +137,6 @@ const styles = {
   info: { color: "#444", marginBottom: "20px", lineHeight: "1.5" },
   owner: { display: "flex", alignItems: "center", gap: "10px", marginBottom: "20px" },
   avatar: { width: "40px", height: "40px", borderRadius: "50%", objectFit: "cover" },
-  btn: {
-    display: "inline-block",
-    padding: "10px 16px",
-    background: "#4f46e5",
-    color: "#fff",
-    border: "none",
-    borderRadius: "8px",
-    cursor: "pointer",
-    fontWeight: "600",
-    marginBottom: "20px",
-  },
   solicitarBtn: {
     display: "inline-block",
     padding: "10px 16px",
@@ -178,26 +149,4 @@ const styles = {
     marginBottom: "20px",
   },
   finalizado: { textAlign: "center", color: "#16a34a", fontWeight: "600" },
-  participantsTitle: { fontSize: "18px", fontWeight: "600", marginBottom: "12px" },
-  participant: {
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
-    padding: "8px 12px",
-    background: "#f9fafb",
-    borderRadius: "8px",
-    marginBottom: "8px",
-  },
-  participantBadge: {
-    base: {
-      padding: "4px 10px",
-      borderRadius: "12px",
-      fontSize: "13px",
-      fontWeight: "500",
-    },
-    emparejamiento: { background: "#dbeafe", color: "#1d4ed8" },
-    consenso: { background: "#fef9c3", color: "#854d0e" },
-    ejecucion: { background: "#dcfce7", color: "#166534" },
-    finalizado: { background: "#e5e7eb", color: "#374151" },
-  },
 };
