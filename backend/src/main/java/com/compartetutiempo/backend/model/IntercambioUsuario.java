@@ -35,6 +35,9 @@ public class IntercambioUsuario extends BaseEntity {
     @Column(nullable = false)
     private EstadoIntercambio estado; 
 
+    @Column(length = 512)
+    private String terminos;
+
     @OneToOne
     @JoinColumn(name = "conversacion_id",referencedColumnName = "id",unique=true)
     private Conversacion conversacion;

@@ -22,6 +22,7 @@ import PublicacionesPage from "./pages/PublicacionesPage";
 import IntercambioDetails from "./pages/IntercambioDetails";
 import SolicitudesIntercambio from "./pages/SolicitudesIntercambioList";
 import IntercambiosPorEstado from "./pages/IntercambiosByEstado";
+import FormularioAcuerdo from "./forms/AcuerdoForm";
 
 function App() {
   
@@ -56,6 +57,7 @@ function App() {
                 <Route path="/intercambio/:id" element={<IntercambioDetails />} />
                 <Route path="/solicitudes" element={<SolicitudesIntercambio />} />
                 <Route path="/intercambios/usuario" element={<IntercambiosPorEstado />} />
+                <Route path="/acuerdos/:id" element={<FormularioAcuerdo />} />
               </Route>
             </Routes>
           </Router>

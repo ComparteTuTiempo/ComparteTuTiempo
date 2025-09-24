@@ -13,8 +13,11 @@ public class IntercambioUsuarioDTO {
     private String intercambioNombre;
     private String intercambioDescripcion;
     private Double intercambioHoras;
+    private String solicitanteNombre;
+    private Integer conversacionId;
     private EstadoIntercambio intercambioEstado;
     private ModalidadServicio intercambioModalidad;
+    private String terminos;
     private Long creadorId;
     private String creadorNombre;
     private String creadorCorreo;
@@ -35,6 +38,9 @@ public class IntercambioUsuarioDTO {
         dto.setCreadorCorreo(iu.getIntercambio().getUser().getCorreo());
         dto.setEstado(iu.getEstado());
         dto.setHorasAsignadas(iu.getHorasAsignadas());
+        dto.setSolicitanteNombre(iu.getUsuario().getNombre());
+        dto.setConversacionId(iu.getConversacion() ==null? null:iu.getConversacion().getId());
+        dto.setTerminos(iu.getTerminos());
         
         
         return dto;

@@ -1,19 +1,26 @@
 import React, { useEffect, useState } from "react";
 import { useAuth } from "../utils/AuthContext";
-import { obtenerMisIntercambios } from "../services/intercambioService";
+import {
+  obtenerMisIntercambiosUsuario,
+  finalizarAcuerdo,
+} from "../services/intercambioService";
+import { useNavigate } from "react-router-dom";
+import SolicitudesIntercambio from "./SolicitudesIntercambioList"; 
 
 const IntercambiosPorEstado = () => {
   const { token } = useAuth();
   const [intercambios, setIntercambios] = useState([]);
   const [seleccionado, setSeleccionado] = useState(null);
-  const [tabActiva, setTabActiva] = useState("CONSENSO"); // Estado activo
+  const [tabActiva, setTabActiva] = useState("CONSENSO");
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (!token) return;
 
     const fetchIntercambios = async () => {
       try {
-        const data = await obtenerMisIntercambios(token);
+        if (tabActiva === "EMPAREJAMIENTO") return; 
+        const data = await obtenerMisIntercambiosUsuario(tabActiva, token);
         setIntercambios(data);
       } catch (error) {
         console.error("Error al obtener intercambios:", error);
@@ -21,12 +28,7 @@ const IntercambiosPorEstado = () => {
     };
 
     fetchIntercambios();
-  }, [token]);
-
-  // Filtrar por estado
-  const filtrados = intercambios.filter(
-    (i) => (i.estado || "").toUpperCase() === tabActiva.toUpperCase()
-  );
+  }, [token, tabActiva]);
 
   return (
     <div style={{ padding: "20px" }}>
@@ -34,7 +36,7 @@ const IntercambiosPorEstado = () => {
 
       {/* Pestañas por estado */}
       <div style={{ display: "flex", marginBottom: "20px" }}>
-        {["CONSENSO", "EJECUCION"].map((estado) => (
+        {["EMPAREJAMIENTO", "CONSENSO", "EJECUCION"].map((estado) => (
           <button
             key={estado}
             onClick={() => setTabActiva(estado)}
@@ -54,37 +56,111 @@ const IntercambiosPorEstado = () => {
         ))}
       </div>
 
-      {/* Lista de intercambios filtrados */}
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fill, minmax(250px, 1fr))",
-          gap: "20px",
-          marginTop: "10px",
-        }}
-      >
-        {filtrados.map((i) => (
-          <div
-            key={i.id}
-            onClick={() => setSeleccionado(i)}
-            style={{
-              border: "1px solid #ccc",
-              borderRadius: "8px",
-              padding: "15px",
-              cursor: "pointer",
-              boxShadow: "0 2px 5px rgba(0,0,0,0.1)",
-            }}
-          >
-            <h3>{i.titulo}</h3>
-            <p>{i.descripcion}</p>
-            <p>
-              <strong>{i.horas}</strong> horas
-            </p>
-          </div>
-        ))}
-      </div>
+      {/* Vista para cada estado */}
+      {tabActiva === "EMPAREJAMIENTO" ? (
+        <SolicitudesIntercambio /> 
+      ) : (
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fill, minmax(250px, 1fr))",
+            gap: "20px",
+            marginTop: "10px",
+          }}
+        >
+          {intercambios.map((i) => (
+            <div
+              key={i.id}
+              style={{
+                border: "1px solid #ccc",
+                borderRadius: "8px",
+                padding: "15px",
+                cursor: "pointer",
+                boxShadow: "0 2px 5px rgba(0,0,0,0.1)",
+              }}
+            >
+              <p>
+                <strong>
+                  {i.intercambioNombre} - {i.solicitanteNombre}
+                </strong>
+              </p>
 
-      {/* Modal de detalle */}
+              {/* CONSENSO: botones chat y establecer acuerdo */}
+              {i.estado === "CONSENSO" && (
+                <div
+                  style={{ marginTop: "10px", display: "flex", gap: "10px" }}
+                >
+                  {i.conversacionId && (
+                    <button
+                      onClick={() =>
+                        navigate(`/conversaciones/${i.conversacionId}`)
+                      }
+                      style={{
+                        flex: 1,
+                        padding: "8px 12px",
+                        backgroundColor: "#28a745",
+                        color: "white",
+                        border: "none",
+                        borderRadius: "5px",
+                        cursor: "pointer",
+                      }}
+                    >
+                      💬 Discutir acuerdo
+                    </button>
+                  )}
+
+                  <button
+                    onClick={() => navigate(`/acuerdos/${i.id}`)}
+                    style={{
+                      flex: 1,
+                      padding: "8px 12px",
+                      backgroundColor: "#007bff",
+                      color: "white",
+                      border: "none",
+                      borderRadius: "5px",
+                      cursor: "pointer",
+                    }}
+                  >
+                    📑 Establecer acuerdo
+                  </button>
+                </div>
+              )}
+
+              {/* EJECUCIÓN: botón finalizar */}
+              {tabActiva === "EJECUCION" && (
+                <button
+                  onClick={async () => {
+                    try {
+                      await finalizarAcuerdo(i.id, token);
+                      alert("✅ Acuerdo finalizado");
+                      const data = await obtenerMisIntercambiosUsuario(
+                        tabActiva,
+                        token
+                      );
+                      setIntercambios(data);
+                    } catch (err) {
+                      alert("❌ Error al finalizar: " + err.message);
+                    }
+                  }}
+                  style={{
+                    marginTop: "10px",
+                    padding: "8px 12px",
+                    backgroundColor: "#dc3545",
+                    color: "white",
+                    border: "none",
+                    borderRadius: "5px",
+                    cursor: "pointer",
+                  }}
+                >
+                  🔒 Finalizar
+                </button>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Modal opcional */}
       {seleccionado && (
         <div
           style={{
@@ -123,22 +199,32 @@ const IntercambiosPorEstado = () => {
             >
               ✖
             </button>
-            <h2>{seleccionado.titulo}</h2>
-            <p>
-              <strong>Descripción:</strong> {seleccionado.descripcion}
-            </p>
-            <p>
-              <strong>Horas:</strong> {seleccionado.horas}
-            </p>
+            <h2>{seleccionado.intercambioNombre}</h2>
             <p>
               <strong>Estado:</strong> {seleccionado.estado}
             </p>
             <p>
-              <strong>Tipo de intercambio:</strong> {seleccionado.tipoIntercambio}
+              <strong>Solicitante:</strong> {seleccionado.solicitanteNombre}
             </p>
-            <p>
-              <strong>Modalidad:</strong> {seleccionado.modalidad}
-            </p>
+            {seleccionado.estado === "CONSENSO" &&
+              seleccionado.conversacionId && (
+                <button
+                  onClick={() =>
+                    navigate(`/conversaciones/${seleccionado.conversacionId}`)
+                  }
+                  style={{
+                    marginTop: "15px",
+                    padding: "10px 14px",
+                    backgroundColor: "#28a745",
+                    color: "white",
+                    border: "none",
+                    borderRadius: "5px",
+                    cursor: "pointer",
+                  }}
+                >
+                  💬 Ir al chat
+                </button>
+              )}
           </div>
         </div>
       )}
@@ -147,3 +233,5 @@ const IntercambiosPorEstado = () => {
 };
 
 export default IntercambiosPorEstado;
+
+

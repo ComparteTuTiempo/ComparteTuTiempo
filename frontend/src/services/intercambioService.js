@@ -8,6 +8,46 @@ export const obtenerTodosLosIntercambios = async () => {
   return response.data;
 };
 
+export const obtenerMisIntercambiosUsuario = async (estado, token) => {
+  const response = await axios.get(
+    `${API_URL}/estado/${estado}`,
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
+  return response.data;
+};
+
+export async function guardarAcuerdo(intercambioUsuarioId, acuerdo, token) {
+  const response = await fetch(
+    `${API_URL}/${intercambioUsuarioId}/acuerdo`,
+    {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(acuerdo),
+    }
+  );
+  if (!response.ok) {
+    throw new Error("Error al guardar acuerdo");
+  }
+  return response.json();
+}
+
+export const finalizarAcuerdo = async (id, token) => {
+  const response = await axios.put(
+    `${API_URL}/${id}/finalizar`,
+    {},
+    { headers: { Authorization: `Bearer ${token}` } }
+  );
+  return response.data;
+};
+
+
 // 🔹 Obtener un intercambio por ID
 export const obtenerIntercambioPorId = async (id, token) => {
   const response = await axios.get(`${API_URL}/${id}`, {

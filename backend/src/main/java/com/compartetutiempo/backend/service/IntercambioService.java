@@ -77,7 +77,7 @@ public class IntercambioService {
         return intercambioRepository.findByUser(user);
     }
 
-    @Transactional
+        @Transactional
     public IntercambioDTO solicitarIntercambio(Integer intercambioId, String correoDemandante) {
         Usuario demandante = usuarioRepository.findByCorreo(correoDemandante)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
@@ -85,16 +85,21 @@ public class IntercambioService {
         Intercambio intercambio = intercambioRepository.findById(intercambioId)
                 .orElseThrow(() -> new RuntimeException("Intercambio no encontrado"));
 
-        Optional<IntercambioUsuario> solicitud = 
-            intercambioUsuarioRepository.findByIntercambioIdAndUsuarioId(intercambioId, demandante.getId());
-
-
+        // Validar que no sea el dueño
         if (intercambio.getUser().getId().equals(demandante.getId())) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"El dueño no puede solicitar intercambio consigo mismo");
-        }else if(solicitud.isPresent()){
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Ya has solicitado este intercambio");
         }
 
+        // Buscar si ya existe un intercambio activo para este usuario
+        List<IntercambioUsuario> solicitudesActivas = intercambioUsuarioRepository
+                .findActivosByIntercambioAndUsuario(intercambioId, demandante.getId());
+
+        if (!solicitudesActivas.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Ya tienes una solicitud o intercambio pendiente en esta oferta");
+        }
+
+        // Crear nueva solicitud
         IntercambioUsuario iu = new IntercambioUsuario();
         iu.setIntercambio(intercambio);
         iu.setUsuario(demandante);
@@ -106,5 +111,6 @@ public class IntercambioService {
         List<IntercambioUsuario> participantes = intercambioUsuarioRepository.findByIntercambioId(intercambioId);
         return IntercambioDTO.fromEntity(intercambio, participantes);
     }
+
     
 }

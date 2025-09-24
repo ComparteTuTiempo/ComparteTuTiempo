@@ -32,7 +32,7 @@ public class Intercambio extends BaseEntity{
     private Date fechaPublicacion;
 
     @Column(name = "numero_horas",precision = 2)
-    private Double numeroHoras;
+    private Double numeroHoras = 0.0;
 
     @Enumerated(value= EnumType.STRING)
     private EstadoIntercambio estado;
