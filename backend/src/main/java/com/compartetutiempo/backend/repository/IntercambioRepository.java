@@ -11,7 +11,7 @@ import com.compartetutiempo.backend.model.enums.EstadoIntercambio;
 import java.util.List;
 
 
-public interface IntercambioRepository extends JpaRepository<Intercambio, Long>, JpaSpecificationExecutor<Intercambio>{
+public interface IntercambioRepository extends JpaRepository<Intercambio, Integer>, JpaSpecificationExecutor<Intercambio>{
 
     List<Intercambio> findByUser(Usuario user);
     
