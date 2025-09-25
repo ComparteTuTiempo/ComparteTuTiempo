@@ -16,6 +16,11 @@ const IntercambiosPage = () => {
   const [categorias, setCategorias] = useState([]);
   const [categoriasDisponibles, setCategoriasDisponibles] = useState([]);
 
+  // reseñas
+  const [resenas, setResenas] = useState([]);
+  const [promedio, setPromedio] = useState(0);
+  const [nuevaResena, setNuevaResena] = useState({ puntuacion: 5, comentario: "" });
+
   // cargar categorías al inicio
   useEffect(() => {
     axios.get("http://localhost:8080/categorias")
@@ -67,6 +72,51 @@ const IntercambiosPage = () => {
     } catch (err) {
       console.error("❌ Error al eliminar intercambio:", err);
       alert("No se pudo eliminar el intercambio");
+    }
+  };
+
+  // cargar reseñas cuando se selecciona un intercambio
+  useEffect(() => {
+    if (seleccionado) {
+      axios.get(`http://localhost:8080/resenas/intercambios/${seleccionado.id}`)
+        .then(res => setResenas(res.data))
+        .catch(err => console.error("❌ Error al cargar reseñas:", err));
+
+      axios.get(`http://localhost:8080/resenas/intercambios/${seleccionado.id}/promedio`)
+        .then(res => setPromedio(res.data))
+        .catch(err => console.error("❌ Error al cargar promedio:", err));
+    }
+  }, [seleccionado]);
+
+  // comprobar si el usuario ya dejó reseña
+  const yaHaResenado = user && resenas.some(r => r.autor?.correo === user.correo);
+
+  // enviar reseña
+  const enviarResena = async () => {
+    if (!nuevaResena.comentario.trim()) {
+      alert("⚠ El comentario no puede estar vacío");
+      return;
+    }
+
+    try {
+      await axios.post(
+        `http://localhost:8080/resenas/intercambios/${seleccionado.id}`,
+        nuevaResena,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      alert("✅ Reseña enviada con éxito");
+
+      // refrescar reseñas
+      const res = await axios.get(`http://localhost:8080/resenas/intercambios/${seleccionado.id}`);
+      setResenas(res.data);
+
+      const avg = await axios.get(`http://localhost:8080/resenas/intercambios/${seleccionado.id}/promedio`);
+      setPromedio(avg.data);
+
+      setNuevaResena({ puntuacion: 5, comentario: "" });
+    } catch (err) {
+      console.error("❌ Error al enviar reseña:", err);
+      alert("No se pudo enviar la reseña");
     }
   };
 
@@ -195,7 +245,7 @@ const IntercambiosPage = () => {
           justifyContent: "center", alignItems: "center", zIndex: 1000
         }}>
           <div style={{
-            background: "#fff", padding: "30px", borderRadius: "10px", width: "400px",
+            background: "#fff", padding: "30px", borderRadius: "10px", width: "500px",
             position: "relative"
           }}>
             <button
@@ -213,6 +263,56 @@ const IntercambiosPage = () => {
             <p><strong>Tipo:</strong> {seleccionado.tipo}</p>
             <p><strong>Modalidad:</strong> {seleccionado.modalidad}</p>
             <p><strong>Categorías:</strong> {seleccionado.categorias?.map(c => c.nombre).join(", ") || "Ninguna"}</p>
+
+            {/* 👇 Mostrar calificación y reseñas solo si es OFERTA */}
+            {seleccionado.tipo === "OFERTA" && (
+              <>
+                <p><strong>⭐ Promedio reseñas:</strong> {promedio.toFixed(1)} / 5</p>
+
+                {/* Listado de reseñas */}
+                <div style={{ marginTop: "15px" }}>
+                  <h4>Reseñas:</h4>
+                  {resenas.length > 0 ? (
+                    resenas.map((r) => (
+                      <div key={r.id} style={{ borderBottom: "1px solid #ddd", padding: "5px 0" }}>
+                        <strong>{r.autor?.nombre || "Anónimo"}</strong> ⭐ {r.puntuacion}
+                        <p>{r.comentario}</p>
+                      </div>
+                    ))
+                  ) : (
+                    <p>No hay reseñas aún.</p>
+                  )}
+                </div>
+
+                {/* Formulario para nueva reseña */}
+                {user?.correo !== seleccionado.user?.correo && !yaHaResenado && (
+                  <div style={{ marginTop: "15px" }}>
+                    <h4>Dejar una reseña</h4>
+                    <select
+                      value={nuevaResena.puntuacion}
+                      onChange={(e) => setNuevaResena({ ...nuevaResena, puntuacion: parseInt(e.target.value) })}
+                      style={{ marginRight: "10px", padding: "5px" }}
+                    >
+                      {[1, 2, 3, 4, 5].map((n) => (
+                        <option key={n} value={n}>{n}</option>
+                      ))}
+                    </select>
+                    <textarea
+                      placeholder="Escribe tu comentario..."
+                      value={nuevaResena.comentario}
+                      onChange={(e) => setNuevaResena({ ...nuevaResena, comentario: e.target.value })}
+                      style={{ width: "100%", minHeight: "60px", marginTop: "10px", padding: "5px" }}
+                    />
+                    <button
+                      onClick={enviarResena}
+                      style={{ marginTop: "10px", backgroundColor: "#28a745", color: "white", border: "none", padding: "8px 12px", borderRadius: "6px", cursor: "pointer" }}
+                    >
+                      Enviar reseña
+                    </button>
+                  </div>
+                )}
+              </>
+            )}
 
             {/* Botón de eliminar si es admin */}
             {user?.roles?.includes("ADMIN") && (
@@ -234,6 +334,7 @@ const IntercambiosPage = () => {
           </div>
         </div>
       )}
+
     </div>
   );
 };
