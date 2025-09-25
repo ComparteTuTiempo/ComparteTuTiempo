@@ -3,7 +3,7 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Layout from "./components/Layout";
 import ProtectedRoute from "./utils/ProtectedRoute";
 import LandingPage from "./pages/LandingPage";
-import RegistroUsuario from "./pages/RegistroUsuario";
+import RegistroUsuarioForm from "./forms/RegistroUsuarioForm";
 import LoginPage from "./pages/LoginPage";
 import CrearOferta from "./forms/IntercambioForm";
 import UserProfile from "./pages/ProfileView";
@@ -34,7 +34,7 @@ function App() {
           <Routes>
             <Route element={<Layout />}>
               <Route path="/" element={<LandingPage />} />
-              <Route path="/registro" element={<RegistroUsuario />} />
+              <Route path="/registro" element={<RegistroUsuarioForm />} />
               <Route path="/login" element={<LoginPage />} />
               <Route path="/perfil" element={<UserProfile />} />
               <Route path="/perfil/:correo" element={<UserProfile />} />

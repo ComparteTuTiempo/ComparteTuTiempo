@@ -39,6 +39,7 @@ public class UsuarioController {
 
     @PostMapping
     public Usuario crearUsuario(@RequestBody Usuario usuario) {
+        usuario.setMetodoAutenticacion("CORREO");;
         return service.guardarUsuario(usuario);
     }
 

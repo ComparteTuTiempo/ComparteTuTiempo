@@ -82,67 +82,51 @@ const Layout = () => {
   );
 };
 
+// En Layout.js dentro de styles
 const styles = {
-  container: {
-    fontFamily: "'Arial', sans-serif",
-    backgroundColor: "#fff",
-    color: "#000",
-    minHeight: "100vh",
-    display: "flex",
-    flexDirection: "column",
-  },
   header: {
     display: "flex",
     justifyContent: "space-between",
     padding: "20px 50px",
-    borderBottom: "3px solid #ff6f00",
+    borderBottom: "3px solid #000",   // 🔹 negro
     alignItems: "center",
     position: "sticky",
     top: 0,
-    backgroundColor: "#fff",
+    backgroundColor: "#000",          // 🔹 negro de fondo
     zIndex: 100,
   },
   logo: {
-    color: "#ff6f00",
+    color: "#fff",                    // 🔹 logo en blanco
     fontSize: "28px",
   },
-  nav: {
-    display: "flex",
-    alignItems: "center",
-  },
   navLink: {
-    color: "#000",
+    color: "#fff",                    // 🔹 links en blanco
     marginLeft: "20px",
     textDecoration: "none",
     fontWeight: "bold",
-  },
-  userSection: {
-    display: "flex",
-    alignItems: "center",
-    marginLeft: "20px",
   },
   profileImg: {
     width: "40px",
     height: "40px",
     borderRadius: "50%",
-    border: "2px solid #ff6f00",
+    border: "2px solid #fff",         // 🔹 borde blanco
     marginRight: "10px",
   },
   profileIcon: {
     fontSize: "32px",
-    color: "#ff6f00",
+    color: "#fff",                    // 🔹 icono blanco
     marginRight: "10px",
   },
   username: {
     marginRight: "15px",
     fontWeight: "bold",
-    color: "#000",
+    color: "#fff",                    // 🔹 texto usuario blanco
   },
   loginBtn: {
     marginLeft: "20px",
     padding: "8px 15px",
-    backgroundColor: "#ff6f00",
-    color: "#fff",
+    backgroundColor: "#fff",          // 🔹 botón blanco
+    color: "#000",                    // 🔹 texto negro
     border: "none",
     borderRadius: "5px",
     fontWeight: "bold",
@@ -151,23 +135,12 @@ const styles = {
   },
   logoutBtn: {
     padding: "8px 15px",
-    backgroundColor: "#ff6f00",
-    color: "#fff",
+    backgroundColor: "#fff",          // 🔹 botón blanco
+    color: "#000",                    // 🔹 texto negro
     border: "none",
     borderRadius: "5px",
     fontWeight: "bold",
     cursor: "pointer",
-  },
-  main: {
-    flex: 1,
-    padding: "20px",
-  },
-  footer: {
-    textAlign: "center",
-    padding: "20px",
-    borderTop: "3px solid #ff6f00",
-    backgroundColor: "#fff",
-    color: "#000",
   },
 };
 
