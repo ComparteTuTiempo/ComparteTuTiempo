@@ -3,6 +3,7 @@ package com.compartetutiempo.backend.controller;
 import com.compartetutiempo.backend.model.Producto;
 import com.compartetutiempo.backend.model.Usuario;
 import com.compartetutiempo.backend.model.enums.EstadoProducto;
+import com.compartetutiempo.backend.model.enums.Role;
 import com.compartetutiempo.backend.service.ProductoService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -28,7 +29,7 @@ public class ProductoController {
 
     @PostMapping
     public ResponseEntity<Producto> crear(@RequestBody Producto producto,
-                                      @AuthenticationPrincipal Jwt jwt) {
+            @AuthenticationPrincipal Jwt jwt) {
         String email = jwt.getSubject(); // aquí está el correo/username del token
         Usuario user = usuarioService.obtenerPorCorreo(email);
 
@@ -50,35 +51,48 @@ public class ProductoController {
     }
 
     @GetMapping("/usuario")
-public ResponseEntity<List<Producto>> obtenerPorUsuario(@AuthenticationPrincipal Jwt jwt) {
-    String correo = jwt.getSubject(); // sacamos el correo del token
-    Usuario user = usuarioService.obtenerPorCorreo(correo);
-    List<Producto> productos = productoService.obtenerPorUsuario(user);
-    return ResponseEntity.ok(productos);
-}
+    public ResponseEntity<List<Producto>> obtenerPorUsuario(@AuthenticationPrincipal Jwt jwt) {
+        String correo = jwt.getSubject(); // sacamos el correo del token
+        Usuario user = usuarioService.obtenerPorCorreo(correo);
+        List<Producto> productos = productoService.obtenerPorUsuario(user);
+        return ResponseEntity.ok(productos);
+    }
 
-@PutMapping("/{id}")
-public ResponseEntity<Producto> actualizarProducto(
-        @PathVariable Long id,
-        @RequestBody Producto productoModificado,
-        @AuthenticationPrincipal Jwt jwt) {
+    @PutMapping("/{id}")
+    public ResponseEntity<Producto> actualizarProducto(
+            @PathVariable Long id,
+            @RequestBody Producto productoModificado,
+            @AuthenticationPrincipal Jwt jwt) {
 
-    String correo = jwt.getSubject();
-    Usuario user = usuarioService.obtenerPorCorreo(correo);
+        String correo = jwt.getSubject();
+        Usuario user = usuarioService.obtenerPorCorreo(correo);
 
-    Producto actualizado = productoService.actualizarProducto(id, productoModificado, user);
-    return ResponseEntity.ok(actualizado);
-}
+        Producto actualizado = productoService.actualizarProducto(id, productoModificado, user);
+        return ResponseEntity.ok(actualizado);
+    }
 
-@DeleteMapping("/{id}")
-public ResponseEntity<Void> eliminarProducto(
-        @PathVariable Long id,
-        @AuthenticationPrincipal Jwt jwt) {
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> eliminarProducto(
+            @PathVariable Long id,
+            @AuthenticationPrincipal Jwt jwt) {
 
-    String correo = jwt.getSubject();
-    Usuario user = usuarioService.obtenerPorCorreo(correo);
+        String correo = jwt.getSubject();
+        Usuario user = usuarioService.obtenerPorCorreo(correo);
 
-    productoService.eliminarProducto(id, user);
-    return ResponseEntity.noContent().build();
-}
+        // Si es ADMIN, eliminamos sin validar propietario
+        if (user.getRoles().contains(Role.ADMIN)) {
+            productoService.eliminarProductoComoAdmin(id);
+        } else {
+            productoService.eliminarProducto(id, user);
+        }
+
+        return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/historial")
+    public ResponseEntity<List<Producto>> obtenerHistorial(@AuthenticationPrincipal Jwt jwt) {
+        String correo = jwt.getSubject();
+        Usuario user = usuarioService.obtenerPorCorreo(correo);
+        return ResponseEntity.ok(productoService.obtenerHistorial(user));
+    }
 }

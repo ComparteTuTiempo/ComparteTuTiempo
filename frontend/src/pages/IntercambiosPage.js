@@ -1,28 +1,74 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
+import { useAuth } from "../utils/AuthContext";
 
 const IntercambiosPage = () => {
+  const { user, token } = useAuth();
   const [intercambios, setIntercambios] = useState([]);
   const [seleccionado, setSeleccionado] = useState(null);
-  const [tabActiva, setTabActiva] = useState("Oferta"); // pestaña activa
+  const [tabActiva, setTabActiva] = useState("OFERTA");
 
+  // filtros
+  const [modalidad, setModalidad] = useState("");
+  const [minHoras, setMinHoras] = useState("");
+  const [maxHoras, setMaxHoras] = useState("");
+  const [q, setQ] = useState("");
+  const [categorias, setCategorias] = useState([]);
+  const [categoriasDisponibles, setCategoriasDisponibles] = useState([]);
+
+  // cargar categorías al inicio
+  useEffect(() => {
+    axios.get("http://localhost:8080/categorias")
+      .then(res => setCategoriasDisponibles(res.data))
+      .catch(err => console.error("❌ Error al cargar categorías:", err));
+  }, []);
+
+  // cargar intercambios con filtros
   useEffect(() => {
     const obtenerIntercambios = async () => {
       try {
-        const response = await axios.get("http://localhost:8080/intercambios");
+        const params = {
+          tipo: tabActiva,
+          modalidad: modalidad || undefined,
+          minHoras: minHoras || undefined,
+          maxHoras: maxHoras || undefined,
+          q: q || undefined,
+          categorias: categorias.length > 0 ? categorias.join(",") : undefined,
+        };
+
+        const response = await axios.get("http://localhost:8080/intercambios/filtrar", { params });
         setIntercambios(response.data);
       } catch (error) {
-        console.error("Error al obtener intercambios:", error);
+        console.error("❌ Error al obtener intercambios:", error);
       }
     };
 
     obtenerIntercambios();
-  }, []);
+  }, [tabActiva, modalidad, minHoras, maxHoras, q, categorias]);
 
-const filtrados = intercambios.filter(
-  (i) => (i.tipo || "").toLowerCase() === tabActiva.toLowerCase()
-);
+  // manejar selección/deselección de categorías
+  const toggleCategoria = (id) => {
+    setCategorias((prev) =>
+      prev.includes(id) ? prev.filter((c) => c !== id) : [...prev, id]
+    );
+  };
 
+  // eliminar intercambio (admin o dueño)
+  const eliminarIntercambio = async (id) => {
+    if (!window.confirm("¿Seguro que deseas eliminar este intercambio?")) return;
+
+    try {
+      await axios.delete(`http://localhost:8080/intercambios/${id}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setIntercambios((prev) => prev.filter((i) => i.id !== id));
+      setSeleccionado(null);
+      alert("✅ Intercambio eliminado correctamente");
+    } catch (err) {
+      console.error("❌ Error al eliminar intercambio:", err);
+      alert("No se pudo eliminar el intercambio");
+    }
+  };
 
   return (
     <div style={{ padding: "20px" }}>
@@ -30,7 +76,7 @@ const filtrados = intercambios.filter(
 
       {/* Pestañas */}
       <div style={{ display: "flex", marginBottom: "20px" }}>
-        {["Oferta", "Peticion"].map((tipo) => (
+        {["OFERTA", "PETICION"].map((tipo) => (
           <button
             key={tipo}
             onClick={() => setTabActiva(tipo)}
@@ -50,6 +96,70 @@ const filtrados = intercambios.filter(
         ))}
       </div>
 
+      {/* Filtros */}
+      <div style={{
+        marginBottom: "20px",
+        padding: "15px",
+        border: "1px solid #ddd",
+        borderRadius: "8px",
+        backgroundColor: "#fafafa"
+      }}>
+        <h3>Filtros</h3>
+        <input
+          type="text"
+          placeholder="Buscar por texto..."
+          value={q}
+          onChange={(e) => setQ(e.target.value)}
+          style={{ marginRight: "10px", padding: "5px" }}
+        />
+        <select
+          value={modalidad}
+          onChange={(e) => setModalidad(e.target.value)}
+          style={{ marginRight: "10px", padding: "5px" }}
+        >
+          <option value="">Todas las modalidades</option>
+          <option value="VIRTUAL">Online</option>
+          <option value="PRESENCIAL">Presencial</option>
+        </select>
+        <input
+          type="number"
+          placeholder="Mín horas"
+          value={minHoras}
+          onChange={(e) => setMinHoras(e.target.value)}
+          style={{ width: "100px", marginRight: "10px", padding: "5px" }}
+        />
+        <input
+          type="number"
+          placeholder="Máx horas"
+          value={maxHoras}
+          onChange={(e) => setMaxHoras(e.target.value)}
+          style={{ width: "100px", marginRight: "10px", padding: "5px" }}
+        />
+
+        {/* Categorías */}
+        <div style={{ marginTop: "10px" }}>
+          <strong>Categorías:</strong>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: "10px", marginTop: "8px" }}>
+            {categoriasDisponibles.map((c) => (
+              <button
+                key={c.id}
+                onClick={() => toggleCategoria(c.id)}
+                style={{
+                  padding: "5px 10px",
+                  borderRadius: "5px",
+                  border: categorias.includes(c.id) ? "2px solid #007bff" : "1px solid #ccc",
+                  backgroundColor: categorias.includes(c.id) ? "#007bff" : "white",
+                  color: categorias.includes(c.id) ? "white" : "black",
+                  cursor: "pointer"
+                }}
+              >
+                {c.nombre}
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+
       {/* Lista */}
       <div style={{
         display: "grid",
@@ -57,7 +167,7 @@ const filtrados = intercambios.filter(
         gap: "20px",
         marginTop: "10px",
       }}>
-        {filtrados.map((i) => (
+        {intercambios.map((i) => (
           <div
             key={i.id}
             onClick={() => setSeleccionado(i)}
@@ -69,9 +179,10 @@ const filtrados = intercambios.filter(
               boxShadow: "0 2px 5px rgba(0,0,0,0.1)",
             }}
           >
-            <h3>{i.titulo}</h3>
+            <h3>{i.nombre}</h3>
             <p>{i.descripcion}</p>
-            <p><strong>{i.horas}</strong> horas</p>
+            <p><strong>{i.numeroHoras}</strong> horas</p>
+            <small>{i.modalidad}</small>
           </div>
         ))}
       </div>
@@ -96,11 +207,30 @@ const filtrados = intercambios.filter(
             >
               ✖
             </button>
-            <h2>{seleccionado.titulo}</h2>
+            <h2>{seleccionado.nombre}</h2>
             <p><strong>Descripción:</strong> {seleccionado.descripcion}</p>
-            <p><strong>Horas:</strong> {seleccionado.horas}</p>
-            <p><strong>Tipo de intercambio:</strong> {seleccionado.tipoIntercambio}</p>
+            <p><strong>Horas:</strong> {seleccionado.numeroHoras}</p>
+            <p><strong>Tipo:</strong> {seleccionado.tipo}</p>
             <p><strong>Modalidad:</strong> {seleccionado.modalidad}</p>
+            <p><strong>Categorías:</strong> {seleccionado.categorias?.map(c => c.nombre).join(", ") || "Ninguna"}</p>
+
+            {/* Botón de eliminar si es admin */}
+            {user?.roles?.includes("ADMIN") && (
+              <button
+                onClick={() => eliminarIntercambio(seleccionado.id)}
+                style={{
+                  marginTop: "15px",
+                  backgroundColor: "#dc3545",
+                  color: "white",
+                  border: "none",
+                  padding: "10px 15px",
+                  borderRadius: "6px",
+                  cursor: "pointer"
+                }}
+              >
+                Eliminar (Admin)
+              </button>
+            )}
           </div>
         </div>
       )}

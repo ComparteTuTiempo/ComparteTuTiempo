@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from "react";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import axios from "axios";
 import { useAuth } from "../utils/AuthContext";
 
 const UserProfile = () => {
   const navigate = useNavigate();
-  const { correo } = useParams(); // correo en la URL si es otro perfil
+  const { correo } = useParams();
   const { user, token } = useAuth();
 
   const [usuario, setUsuario] = useState(null);
@@ -17,11 +17,20 @@ const UserProfile = () => {
     ubicacion: "",
   });
 
+  // 📌 Reportes
+  const [showReportForm, setShowReportForm] = useState(false);
+  const [reportData, setReportData] = useState({ titulo: "", descripcion: "" });
+
+  // 📌 Reseñas
+  const [resenas, setResenas] = useState([]);
+  const [promedio, setPromedio] = useState(0);
+  const [nuevaResena, setNuevaResena] = useState({ puntuacion: 5, comentario: "" });
+
   useEffect(() => {
     const fetchUsuario = async () => {
       if (token) {
         try {
-          const targetCorreo = correo || user?.correo; // si no hay param, tu perfil
+          const targetCorreo = correo || user?.correo;
 
           const res = await axios.get(
             `http://localhost:8080/api/usuarios/${targetCorreo}`,
@@ -34,7 +43,6 @@ const UserProfile = () => {
             ubicacion: res.data.ubicacion || "",
           });
 
-          // solo ofertas si es tu perfil
           if (!correo && user?.correo) {
             const resOfertas = await axios.get(
               `http://localhost:8080/intercambios/usuario/${user.correo}`,
@@ -42,6 +50,19 @@ const UserProfile = () => {
             );
             setOfertas(resOfertas.data);
           }
+
+          // 👇 cargar reseñas y promedio
+          const resResenas = await axios.get(
+            `http://localhost:8080/api/resenas/${targetCorreo}`,
+            { headers: { Authorization: `Bearer ${token}` } }
+          );
+          setResenas(resResenas.data);
+
+          const resProm = await axios.get(
+            `http://localhost:8080/api/resenas/${targetCorreo}/promedio`,
+            { headers: { Authorization: `Bearer ${token}` } }
+          );
+          setPromedio(resProm.data);
         } catch (err) {
           console.error("❌ Error al cargar el usuario:", err);
         }
@@ -50,9 +71,8 @@ const UserProfile = () => {
     fetchUsuario();
   }, [correo, token, user]);
 
-  const handleChange = (e) => {
+  const handleChange = (e) =>
     setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
 
   const handleSave = async () => {
     try {
@@ -61,16 +81,62 @@ const UserProfile = () => {
         { ...usuario, ...formData },
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      const updated = res.data;
-      setUsuario(updated);
+      setUsuario(res.data);
       setEditing(false);
-      setFormData({
-        biografia: updated.biografia || "",
-        fechaNacimiento: updated.fechaNacimiento || "",
-        ubicacion: updated.ubicacion || "",
-      });
     } catch (err) {
       console.error("❌ Error al actualizar usuario:", err);
+    }
+  };
+
+  // 📌 enviar reporte
+  const handleReportSubmit = async () => {
+    try {
+      await axios.post(
+        `http://localhost:8080/api/reportes/${usuario.correo}`,
+        reportData,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      alert("✅ Reporte enviado con éxito");
+      setShowReportForm(false);
+      setReportData({ titulo: "", descripcion: "" });
+    } catch (err) {
+      console.error("❌ Error al enviar reporte:", err);
+      alert("Hubo un error al enviar el reporte");
+    }
+  };
+
+  // 📌 enviar reseña
+  const handleResenaSubmit = async () => {
+    try {
+      await axios.post(
+        `http://localhost:8080/api/resenas/${user.correo}/${usuario.correo}`,
+        null,
+        {
+          params: {
+            puntuacion: nuevaResena.puntuacion,
+            comentario: nuevaResena.comentario,
+          },
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      alert("✅ Reseña enviada");
+      setNuevaResena({ puntuacion: 5, comentario: "" });
+
+      // recargar reseñas
+      const resResenas = await axios.get(
+        `http://localhost:8080/api/resenas/${usuario.correo}`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setResenas(resResenas.data);
+
+      const resProm = await axios.get(
+        `http://localhost:8080/api/resenas/${usuario.correo}/promedio`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setPromedio(resProm.data);
+    } catch (err) {
+      console.error("❌ Error al enviar reseña:", err);
+      alert("Ya ha enviado una reseña para este usuario");
     }
   };
 
@@ -82,34 +148,15 @@ const UserProfile = () => {
 
   return (
     <div style={styles.container}>
-      {/* Sidebar */}
       <aside style={styles.sidebar}>
         <ul style={styles.menu}>
-          <li style={styles.menuItem}>Browse Offers</li>
-          {isOwnProfile && (
-            <li style={styles.menuItem}>
-              <Link to="/crear-oferta" style={{ textDecoration: "none", color: "inherit" }}>
-                Create Offer
-              </Link>
-            </li>
-          )}
-          <li style={{ ...styles.menuItem, ...styles.active }}>
-            {isOwnProfile ? "My Profile" : "Perfil de usuario"}
-          </li>
-          {isOwnProfile && (
-            <li style={styles.menuItem}>
-              <Link to="/conversaciones" style={{ textDecoration: "none", color: "inherit" }}>
-                Mis Chats
-              </Link>
-            </li>
-          )}
-          <li style={styles.menuItem}>Reviews</li>
+          <li style={styles.menuItem}>Inicio</li>
+          <li style={styles.menuItem}>Mensajes</li>
+          <li style={styles.menuItem}>Configuración</li>
         </ul>
       </aside>
 
-      {/* Main content */}
       <main style={styles.main}>
-        {/* Profile card */}
         <div style={styles.profileCard}>
           <img
             src={usuario.fotoPerfil || "https://via.placeholder.com/80"}
@@ -118,6 +165,8 @@ const UserProfile = () => {
           />
           <div style={styles.profileInfo}>
             <h2>{usuario.nombre}</h2>
+            {usuario.verificado && <p style={styles.verificado}>✔ Usuario verificado</p>}
+            {!usuario.activo && <p style={styles.baneado}>🚫 Usuario baneado</p>}
             <p style={styles.email}>{usuario.correo}</p>
 
             {editing ? (
@@ -144,6 +193,7 @@ const UserProfile = () => {
                   style={styles.input}
                   placeholder="Ubicación"
                 />
+                <button style={styles.saveBtn} onClick={handleSave}>Guardar</button>
               </>
             ) : (
               <>
@@ -156,24 +206,23 @@ const UserProfile = () => {
                   <strong>Ubicación:</strong>{" "}
                   {usuario.ubicacion || "No especificada"}
                 </p>
+
+                {isOwnProfile ? (
+                  <button style={styles.editBtn} onClick={() => setEditing(true)}>
+                    Editar perfil
+                  </button>
+                ) : (
+                  <button style={styles.reportBtn} onClick={() => setShowReportForm(true)}>
+                    Reportar usuario
+                  </button>
+                )}
               </>
             )}
           </div>
-
-          {isOwnProfile &&
-            (editing ? (
-              <button style={styles.saveBtn} onClick={handleSave}>
-                Guardar
-              </button>
-            ) : (
-              <button style={styles.editBtn} onClick={() => setEditing(true)}>
-                Edit Profile
-              </button>
-            ))}
         </div>
 
         {/* Ofertas */}
-        
+        {isOwnProfile && (
           <section style={styles.section}>
             <h3 style={styles.sectionTitle}>Mis Ofertas</h3>
             <div style={styles.cards}>
@@ -181,13 +230,8 @@ const UserProfile = () => {
                 ofertas.map((oferta) => (
                   <div key={oferta.id} style={styles.card}>
                     <h4>{oferta.nombre}</h4>
-                    <p>descripción : {oferta.descripcion}</p>
-                    <p>{oferta.tipo === "OFERTA" ? "" : "Horas:" + oferta.numeroHoras}</p>
-                    <p>{oferta.tipo === "OFERTA" ? "tipo : Oferta" : "tipo : Petición"}</p>
-                    <small>{new Date(oferta.fechaPublicacion).toLocaleDateString()}</small>
-                    <button onClick={() => navigate(`/intercambios/${oferta.id}/editar`)}>
-                      Editar
-                    </button>
+                    <p>{oferta.descripcion}</p>
+                    <p>{oferta.tipo} - {oferta.numeroHoras}h</p>
                   </div>
                 ))
               ) : (
@@ -195,25 +239,81 @@ const UserProfile = () => {
               )}
             </div>
           </section>
-        
+        )}
 
-        {/* Reviews */}
+        {/* Reseñas */}
         <section style={styles.section}>
-          <h3 style={styles.sectionTitle}>Reviews Received</h3>
+          <h3 style={styles.sectionTitle}>
+            Reseñas recibidas ({promedio.toFixed(1)} ⭐)
+          </h3>
           <div style={styles.cards}>
-            <div style={styles.card}>
-              <strong>Jane Smith</strong>
-              <p>John did an amazing job with my garden! Very thorough and knowledgeable.</p>
-              <small>2 days ago</small>
-            </div>
-            <div style={styles.card}>
-              <strong>Mike Johnson</strong>
-              <p>Helped me with a quick website fix. Professional and efficient.</p>
-              <small>1 week ago</small>
-            </div>
+            {resenas.length > 0 ? (
+              resenas.map((r) => (
+                <div key={r.id} style={styles.card}>
+                  <strong>{r.autor?.nombre || "Anónimo"}</strong>
+                  <p>{"⭐".repeat(r.puntuacion)}</p>
+                  <p>{r.comentario}</p>
+                  <small>{new Date(r.fecha).toLocaleDateString()}</small>
+                </div>
+              ))
+            ) : (
+              <p>Aún no hay reseñas</p>
+            )}
           </div>
+
+          {!isOwnProfile && usuario.activo && (
+            <div style={styles.card}>
+              <h4>Deja una reseña</h4>
+              <select
+                value={nuevaResena.puntuacion}
+                onChange={(e) =>
+                  setNuevaResena({ ...nuevaResena, puntuacion: Number(e.target.value) })
+                }
+                style={styles.input}
+              >
+                {[1, 2, 3, 4, 5].map((n) => (
+                  <option key={n} value={n}>{n} ⭐</option>
+                ))}
+              </select>
+              <textarea
+                placeholder="Escribe un comentario..."
+                value={nuevaResena.comentario}
+                onChange={(e) => setNuevaResena({ ...nuevaResena, comentario: e.target.value })}
+                style={styles.textarea}
+              />
+              <button style={styles.saveBtn} onClick={handleResenaSubmit}>
+                Enviar reseña
+              </button>
+            </div>
+          )}
         </section>
       </main>
+
+      {/* Modal Reporte */}
+      {showReportForm && (
+        <div style={styles.modal}>
+          <div style={styles.modalContent}>
+            <h3>Reportar a {usuario.nombre}</h3>
+            <input
+              type="text"
+              placeholder="Título del reporte"
+              value={reportData.titulo}
+              onChange={(e) => setReportData({ ...reportData, titulo: e.target.value })}
+              style={styles.input}
+            />
+            <textarea
+              placeholder="Describe el problema..."
+              value={reportData.descripcion}
+              onChange={(e) => setReportData({ ...reportData, descripcion: e.target.value })}
+              style={styles.textarea}
+            />
+            <div style={{ display: "flex", gap: "10px", marginTop: "10px" }}>
+              <button style={styles.saveBtn} onClick={handleReportSubmit}>Enviar</button>
+              <button style={styles.closeBtn} onClick={() => setShowReportForm(false)}>Cancelar</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
@@ -288,6 +388,14 @@ const styles = {
     borderRadius: "6px",
     cursor: "pointer",
   },
+  reportBtn: {
+    backgroundColor: "#dc3545",
+    border: "none",
+    color: "#fff",
+    padding: "8px 12px",
+    borderRadius: "6px",
+    cursor: "pointer",
+  },
   section: { marginBottom: "30px" },
   sectionTitle: { marginBottom: "15px" },
   cards: {
@@ -310,9 +418,40 @@ const styles = {
     borderRadius: "6px",
     cursor: "pointer",
   },
+  modal: {
+    position: "fixed",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: "rgba(0,0,0,0.5)",
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    zIndex: 1000,
+  },
+  modalContent: {
+    backgroundColor: "#fff",
+    padding: "20px",
+    borderRadius: "8px",
+    width: "400px",
+    maxWidth: "90%",
+    boxShadow: "0 4px 12px rgba(0,0,0,0.2)",
+  },
+  closeBtn: {
+    backgroundColor: "#6c757d",
+    border: "none",
+    color: "#fff",
+    padding: "8px 12px",
+    borderRadius: "6px",
+    cursor: "pointer",
+  },
+  verificado: {
+    fontSize: "12px",
+    color: "#28a745",
+    margin: "4px 0",
+  },
 };
 
+
 export default UserProfile;
-
-
-

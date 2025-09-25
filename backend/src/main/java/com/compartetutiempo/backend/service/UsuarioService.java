@@ -28,6 +28,10 @@ public class UsuarioService implements UserDetailsService{
         return repository.save(usuario);
     }
 
+    public Usuario guardar(Usuario usuario) {
+        return repository.save(usuario);
+    }
+
     public Usuario actualizarUsuario(String correo, Usuario nuevosDatos) {
         Usuario usuario = obtenerPorCorreo(correo);
 
@@ -56,5 +60,13 @@ public class UsuarioService implements UserDetailsService{
     public UserDetails loadUserByUsername(String correo) throws UsernameNotFoundException {
         return repository.findByCorreo(correo)
                 .orElseThrow(() -> new UsernameNotFoundException("No se pudo encontrar al usuario con correo : " + correo));
+    }
+
+    public Usuario obtenerPorId(Long id) {
+        return repository.findById(id).orElse(null);
+    }
+
+    public List<Usuario> buscarPorNombre(String nombre) {
+        return repository.findByNombreContainingIgnoreCase(nombre);
     }
 }

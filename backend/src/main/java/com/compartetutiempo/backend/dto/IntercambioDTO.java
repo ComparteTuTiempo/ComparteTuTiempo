@@ -17,12 +17,14 @@ public class IntercambioDTO {
     private Integer id;
     private String nombre;
     private String descripcion;
+    private String correoOfertante;
     private Date fechaPublicacion;
     private Double numeroHoras;
     private EstadoIntercambio estado;
     private TipoIntercambio tipo;
     private ModalidadServicio modalidad;
     private List<IntercambioUsuarioDTO> participantes; 
+    private List<Long> categorias;
 
     public static IntercambioDTO fromEntity(Intercambio intercambio, List<IntercambioUsuario> participantes) {
         IntercambioDTO dto = new IntercambioDTO();
@@ -34,6 +36,7 @@ public class IntercambioDTO {
         dto.setEstado(intercambio.getEstado());
         dto.setTipo(intercambio.getTipo());
         dto.setModalidad(intercambio.getModalidad());
+        dto.setCorreoOfertante(intercambio.getUser().getCorreo());
 
         dto.setParticipantes(
             participantes.stream()

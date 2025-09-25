@@ -6,13 +6,14 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -23,6 +24,9 @@ import com.compartetutiempo.backend.model.Intercambio;
 
 import com.compartetutiempo.backend.model.Usuario;
 import com.compartetutiempo.backend.model.enums.EstadoIntercambio;
+import com.compartetutiempo.backend.model.enums.ModalidadServicio;
+import com.compartetutiempo.backend.model.enums.Role;
+import com.compartetutiempo.backend.model.enums.TipoIntercambio;
 import com.compartetutiempo.backend.service.IntercambioService;
 import com.compartetutiempo.backend.service.IntercambioUsuarioService;
 import com.compartetutiempo.backend.service.UsuarioService;
@@ -48,10 +52,10 @@ public class IntercambioController {
 
     @PostMapping("/{correo}")
     public ResponseEntity<Intercambio> crear(
-        @PathVariable String correo,
-        @RequestBody Intercambio intercambio
-    ) {
-        Intercambio creado = intercambioService.crear(correo, intercambio);
+            @PathVariable String correo,
+            @RequestBody IntercambioDTO dto) {
+
+        Intercambio creado = intercambioService.crear(correo, dto);
         return ResponseEntity.status(HttpStatus.CREATED).body(creado);
     }
 
@@ -80,10 +84,9 @@ public class IntercambioController {
 
     @PutMapping("/{id}")
     public ResponseEntity<Intercambio> actualizarIntercambio(
-        @PathVariable Long id,
-        @RequestBody Intercambio intercambioModificado) {
-
-        Intercambio actualizado = intercambioService.actualizarIntercambio(id, intercambioModificado);
+            @PathVariable Integer id,
+            @RequestBody IntercambioDTO dto) {
+        Intercambio actualizado = intercambioService.actualizarIntercambio(id, dto);
         return ResponseEntity.ok(actualizado);
     }
 
@@ -100,7 +103,7 @@ public class IntercambioController {
         
         String correo = jwt.getSubject(); 
         Usuario user = usuarioService.obtenerPorCorreo(correo);
-    
+
         List<Intercambio> intercambios = intercambioService.obtenerPorUsuario(user);
         return ResponseEntity.ok(intercambios);
     }
@@ -173,4 +176,43 @@ public class IntercambioController {
     }
 
 
+    @GetMapping("/historial")
+    public ResponseEntity<List<Intercambio>> obtenerHistorial(@AuthenticationPrincipal Jwt jwt) {
+        String correo = jwt.getSubject();
+        Usuario user = usuarioService.obtenerPorCorreo(correo);
+        return ResponseEntity.ok(intercambioService.obtenerHistorial(user));
+    }
+
+    @GetMapping("/filtrar")
+    public ResponseEntity<List<Intercambio>> filtrar(
+            @RequestParam(required = false) TipoIntercambio tipo,
+            @RequestParam(required = false) ModalidadServicio modalidad,
+            @RequestParam(required = false) List<Long> categorias,
+            @RequestParam(required = false) Double minHoras,
+            @RequestParam(required = false) Double maxHoras,
+            @RequestParam(required = false) String q) {
+        return ResponseEntity.ok(
+                intercambioService.filtrar(tipo, modalidad, categorias, minHoras, maxHoras, q));
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> eliminarIntercambio(
+            @PathVariable Integer id,
+            @AuthenticationPrincipal Jwt jwt) {
+
+        String correo = jwt.getSubject();
+        Usuario user = usuarioService.obtenerPorCorreo(correo);
+
+        IntercambioDTO intercambio = intercambioService.obtenerPorId(id);
+
+        // Permitir eliminar si es el dueño o si es admin
+        boolean esAdmin = user.getRoles().contains(Role.ADMIN);
+
+        if (!intercambio.getCorreoOfertante().equals(correo) && !esAdmin) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+
+        intercambioService.eliminarIntercambio(id);
+        return ResponseEntity.noContent().build();
+    }
 }

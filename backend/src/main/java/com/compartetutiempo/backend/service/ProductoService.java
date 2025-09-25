@@ -2,6 +2,7 @@ package com.compartetutiempo.backend.service;
 
 import com.compartetutiempo.backend.model.Producto;
 import com.compartetutiempo.backend.model.Usuario;
+import com.compartetutiempo.backend.model.enums.EstadoProducto;
 import com.compartetutiempo.backend.repository.ProductoRepository;
 import org.springframework.stereotype.Service;
 
@@ -29,9 +30,9 @@ public class ProductoService {
     }
 
     public List<Producto> obtenerPorUsuario(Usuario user) {
-    return productoRepository.findByUser(user);
+        return productoRepository.findByUser(user);
     }
-    
+
     public Producto actualizarProducto(Long id, Producto productoModificado, Usuario user) {
         Producto producto = obtenerPorId(id);
 
@@ -54,6 +55,16 @@ public class ProductoService {
             throw new RuntimeException("No tienes permisos para eliminar este producto");
         }
 
+        productoRepository.delete(producto);
+    }
+
+    public List<Producto> obtenerHistorial(Usuario user) {
+        return productoRepository.findByUserAndEstado(user, EstadoProducto.ENTREGADO);
+    }
+
+    public void eliminarProductoComoAdmin(Long id) {
+        Producto producto = productoRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Producto no encontrado"));
         productoRepository.delete(producto);
     }
 

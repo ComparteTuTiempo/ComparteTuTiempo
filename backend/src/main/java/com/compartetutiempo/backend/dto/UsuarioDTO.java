@@ -12,5 +12,7 @@ public class UsuarioDTO {
     private String nombre;
     private String correo;
     private String ubicacion;
-    private String fotoPerfil; 
+    private String fotoPerfil;
+    private boolean verificado;
+    private boolean activo;
 }

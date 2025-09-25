@@ -2,21 +2,29 @@ package com.compartetutiempo.backend.model;
 
 import java.time.LocalDate;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import com.compartetutiempo.backend.model.enums.Role;
+
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
-import lombok.*;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.AllArgsConstructor;
+import lombok.Setter;
 
 @Entity
 @Table(name = "usuarios")
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class Usuario implements UserDetails{
+public class Usuario implements UserDetails {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -41,17 +49,30 @@ public class Usuario implements UserDetails{
     @Column
     private String fotoPerfil;
 
-    @Column(name = "numero_horas",precision = 2)
+    @Column(name = "numero_horas", precision = 2)
     private Double numeroHoras = 0.0;
 
     @Column
     private String ubicacion;
 
     @Column(nullable = false)
+    private boolean activo = true;   // 👈 controla si el usuario está habilitado
+
+    @Column(nullable = false)
     private String metodoAutenticacion;
 
-    private List<GrantedAuthority> authorities;
+    @ElementCollection(fetch = FetchType.EAGER)
+    @Enumerated(EnumType.STRING)
+    @Column(name = "roles")
+    private Set<Role> roles = new HashSet<>(Set.of(Role.USER));
 
+    @Column(nullable = false)
+    private boolean verificado = false; // verificación distinta del ban
+
+    @Transient
+    private List<GrantedAuthority> authorities; // no persistido en BD
+
+    // ---- Métodos UserDetails ----
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return authorities;
@@ -84,7 +105,6 @@ public class Usuario implements UserDetails{
 
     @Override
     public boolean isEnabled() { 
-        return true; 
+        return activo; // 👈 ahora depende del campo "activo"
     }
-    
 }
