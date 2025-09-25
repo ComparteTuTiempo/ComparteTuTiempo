@@ -1,5 +1,6 @@
 package com.compartetutiempo.backend.controller;
 
+import com.compartetutiempo.backend.dto.ProductoDTO;
 import com.compartetutiempo.backend.model.Producto;
 import com.compartetutiempo.backend.model.Usuario;
 import com.compartetutiempo.backend.model.enums.EstadoProducto;
@@ -46,20 +47,20 @@ public class ProductoController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Producto> obtenerPorId(@PathVariable Long id) {
+    public ResponseEntity<ProductoDTO> obtenerPorId(@PathVariable Long id) {
         return ResponseEntity.ok(productoService.obtenerPorId(id));
     }
 
     @GetMapping("/usuario")
     public ResponseEntity<List<Producto>> obtenerPorUsuario(@AuthenticationPrincipal Jwt jwt) {
-        String correo = jwt.getSubject(); // sacamos el correo del token
+        String correo = jwt.getSubject(); 
         Usuario user = usuarioService.obtenerPorCorreo(correo);
         List<Producto> productos = productoService.obtenerPorUsuario(user);
         return ResponseEntity.ok(productos);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Producto> actualizarProducto(
+    public ResponseEntity<ProductoDTO> actualizarProducto(
             @PathVariable Long id,
             @RequestBody Producto productoModificado,
             @AuthenticationPrincipal Jwt jwt) {
@@ -67,7 +68,7 @@ public class ProductoController {
         String correo = jwt.getSubject();
         Usuario user = usuarioService.obtenerPorCorreo(correo);
 
-        Producto actualizado = productoService.actualizarProducto(id, productoModificado, user);
+        ProductoDTO actualizado = productoService.actualizarProducto(id, productoModificado, user);
         return ResponseEntity.ok(actualizado);
     }
 

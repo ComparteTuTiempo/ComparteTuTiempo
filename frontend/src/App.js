@@ -32,6 +32,8 @@ import BuscarUsuarioPage from "./pages/BuscarUsuarioPage";
 import ReportesPage from "./pages/ReportesPage";
 import CategoriaForm from "./forms/CategoriaForm";
 
+import DetalleProducto from "./pages/ProductoDetails";
+
 
 function App() {
   return (
@@ -63,6 +65,7 @@ function App() {
                 <Route path="/solicitudes" element={<SolicitudesIntercambio />} />
                 <Route path="/intercambios/usuario" element={<IntercambiosPorEstado />} />
                 <Route path="/acuerdos/:id" element={<FormularioAcuerdo />} />
+                <Route path="/producto/:id" element={<DetalleProducto />} />
                 <Route element={<Layout />}>
 
                 {/* Ruta protegida: usuario normal */}

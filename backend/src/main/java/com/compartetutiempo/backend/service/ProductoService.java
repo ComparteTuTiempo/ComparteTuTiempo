@@ -1,5 +1,6 @@
 package com.compartetutiempo.backend.service;
 
+import com.compartetutiempo.backend.dto.ProductoDTO;
 import com.compartetutiempo.backend.model.Producto;
 import com.compartetutiempo.backend.model.Usuario;
 import com.compartetutiempo.backend.model.enums.EstadoProducto;
@@ -25,16 +26,17 @@ public class ProductoService {
         return productoRepository.findAll();
     }
 
-    public Producto obtenerPorId(Long id) {
-        return productoRepository.findById(id).orElseThrow();
+    public ProductoDTO obtenerPorId(Long id) {
+        Producto producto = productoRepository.findById(id).orElseThrow();
+        return ProductoDTO.fromEntity(producto);
     }
 
     public List<Producto> obtenerPorUsuario(Usuario user) {
         return productoRepository.findByUser(user);
     }
 
-    public Producto actualizarProducto(Long id, Producto productoModificado, Usuario user) {
-        Producto producto = obtenerPorId(id);
+    public ProductoDTO actualizarProducto(Long id, Producto productoModificado, Usuario user) {
+        Producto producto = productoRepository.findById(id).orElseThrow();
 
         if (!producto.getUser().getId().equals(user.getId())) {
             throw new RuntimeException("No tienes permisos para modificar este producto");
@@ -45,11 +47,12 @@ public class ProductoService {
         producto.setNumeroHoras(productoModificado.getNumeroHoras());
         producto.setEstado(productoModificado.getEstado());
 
-        return productoRepository.save(producto);
+        productoRepository.save(producto);
+        return ProductoDTO.fromEntity(producto);
     }
 
     public void eliminarProducto(Long id, Usuario user) {
-        Producto producto = obtenerPorId(id);
+        Producto producto = productoRepository.findById(id).orElseThrow();
 
         if (!producto.getUser().getId().equals(user.getId())) {
             throw new RuntimeException("No tienes permisos para eliminar este producto");
