@@ -3,6 +3,7 @@ package com.compartetutiempo.backend.controller;
 import com.compartetutiempo.backend.dto.ProductoUsuarioDTO;
 import com.compartetutiempo.backend.model.ProductoUsuario;
 import com.compartetutiempo.backend.model.Usuario;
+import com.compartetutiempo.backend.service.ProductoService;
 import com.compartetutiempo.backend.service.ProductoUsuarioService;
 import com.compartetutiempo.backend.service.UsuarioService;
 
@@ -20,7 +21,8 @@ public class ProductoUsuarioController {
     private final ProductoUsuarioService productoUsuarioService;
     private final UsuarioService usuarioService;
 
-    public ProductoUsuarioController(ProductoUsuarioService productoUsuarioService, UsuarioService usuarioService) {
+    public ProductoUsuarioController(ProductoUsuarioService productoUsuarioService, UsuarioService usuarioService,
+    ProductoService productoService) {
         this.productoUsuarioService = productoUsuarioService;
         this.usuarioService = usuarioService;
     }
@@ -52,4 +54,14 @@ public class ProductoUsuarioController {
         String correo = jwt.getSubject();
         return ResponseEntity.ok(productoUsuarioService.obtenerMisTransacciones(correo));
     }
+
+    @DeleteMapping("/transacciones/{id}/cancelar")
+    public ResponseEntity<Void> cancelarSolicitud(
+            @PathVariable Integer id,
+            @AuthenticationPrincipal Jwt jwt) {
+        String correo = jwt.getSubject();
+        productoUsuarioService.cancelarSolicitud(id, correo);
+        return ResponseEntity.noContent().build();
+    }
+
 }

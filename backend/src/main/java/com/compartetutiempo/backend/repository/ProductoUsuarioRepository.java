@@ -14,4 +14,6 @@ public interface ProductoUsuarioRepository extends JpaRepository<ProductoUsuario
 
     Optional<ProductoUsuario> findByProductoPropietarioAndComprador(Usuario propietario, Usuario comprador);
     
+    Optional<ProductoUsuario> findById(Integer id);
+    
 }

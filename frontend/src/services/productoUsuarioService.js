@@ -26,3 +26,9 @@ export const finalizarTransaccion = async (transaccionId, token) => {
   );
   return res.data;
 };
+
+export const cancelarSolicitud = async (transaccionId, token) => {
+  await axios.delete(`${API_URL}/transacciones/${transaccionId}/cancelar`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+};

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useAuth } from "../utils/AuthContext";
-import { obtenerMisTransacciones, finalizarTransaccion } from "../services/productoUsuarioService";
+import { obtenerMisTransacciones, finalizarTransaccion,cancelarSolicitud } from "../services/productoUsuarioService";
 import { useNavigate } from "react-router-dom";
 
 export default function MisTransaccionesProducto() {
@@ -94,6 +94,14 @@ export default function MisTransaccionesProducto() {
                 <strong>Horas:</strong> {t.productoHoras}
               </p>
 
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "flex-start",
+                gap: "10px",
+                marginTop: "10px",
+              }}
+            >
               {/* Botón de chat */}
               <button
                 onClick={() => navigate(`/conversaciones/${t.id}`)}
@@ -118,7 +126,7 @@ export default function MisTransaccionesProducto() {
                     style={{
                       marginTop: "10px",
                       padding: "8px 12px",
-                      backgroundColor: "#dc3545",
+                      backgroundColor: "#e67905ff",
                       color: "white",
                       border: "none",
                       borderRadius: "6px",
@@ -126,9 +134,36 @@ export default function MisTransaccionesProducto() {
                       width: "100%",
                     }}
                   >
-                    🔒 Finalizar
+                     Finalizar
                   </button>
                 )}
+                
+                {user.correo === t.propietarioCorreo && t.estado !== "FINALIZADA" && (
+                <button
+                  onClick={async () => {
+                    if (window.confirm("¿Seguro que quieres cancelar la solicitud?")) {
+                      await cancelarSolicitud(t.id, token);
+                      alert("✅ Solicitud cancelada");
+                      // refrescar lista
+                      const data = await obtenerMisTransacciones(token);
+                      setTransacciones(data);
+                    }
+                  }}
+                  style={{
+                    marginTop: "10px",
+                    backgroundColor: "#dc3545",
+                    color: "white",
+                    border: "none",
+                    padding: "8px 12px",
+                    borderRadius: "5px",
+                    cursor: "pointer",
+                    marginLeft: "10px"
+                  }}
+                >
+                  Cancelar
+                </button>
+              )}
+              </div>
             </div>
           ))}
         </div>

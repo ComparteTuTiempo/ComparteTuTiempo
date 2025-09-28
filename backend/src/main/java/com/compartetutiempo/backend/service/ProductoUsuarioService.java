@@ -13,6 +13,7 @@ import com.compartetutiempo.backend.repository.ProductoUsuarioRepository;
 import com.compartetutiempo.backend.repository.UsuarioRepository;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
@@ -102,6 +103,28 @@ public class ProductoUsuarioService {
 
         return productoUsuarioRepository.save(transaccion);
     }
+
+    @Transactional
+    public void cancelarSolicitud(Integer transaccionId, String correoPropietario) {
+        ProductoUsuario transaccion = productoUsuarioRepository.findById(transaccionId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Transacción no encontrada"));
+
+        Producto producto = transaccion.getProducto();
+
+        
+        if (!producto.getPropietario().getCorreo().equals(correoPropietario)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "No tienes permiso para cancelar esta transacción");
+        }else if (transaccion.getEstado() == EstadoProductoUsuario.FINALIZADA) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "No se puede cancelar una transacción finalizada");
+        }else if(transaccion.getEstado() == EstadoProductoUsuario.CANCELADA){
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Esta transacción ya ha sido cancelada");
+        }
+
+        productoUsuarioRepository.delete(transaccion);
+
+        productoRepository.save(producto);
+    }
+
 
     public List<ProductoUsuarioDTO> obtenerMisTransacciones(String correoUsuario) {
         Usuario usuario = usuarioRepository.findByCorreo(correoUsuario)
