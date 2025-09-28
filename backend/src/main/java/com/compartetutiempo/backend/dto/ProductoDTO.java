@@ -3,6 +3,7 @@ package com.compartetutiempo.backend.dto;
 import java.util.Date;
 
 import com.compartetutiempo.backend.model.Producto;
+import com.compartetutiempo.backend.model.ProductoUsuario;
 import com.compartetutiempo.backend.model.enums.EstadoProducto;
 
 import lombok.Data;
@@ -15,13 +16,14 @@ public class ProductoDTO {
     private Double numeroHoras;
     private EstadoProducto estado;
     private Date fechaPublicacion;
+    private Integer conversacionId;
 
     // Datos del usuario creador
     private Long usuarioId;
     private String usuarioNombre;
     private String usuarioCorreo;
 
-    public static ProductoDTO fromEntity(Producto producto) {
+    public static ProductoDTO fromEntity(Producto producto, ProductoUsuario transaccion) {
         ProductoDTO dto = new ProductoDTO();
         dto.setId(producto.getId());
         dto.setNombre(producto.getNombre());
@@ -30,10 +32,13 @@ public class ProductoDTO {
         dto.setEstado(producto.getEstado());
         dto.setFechaPublicacion(producto.getFechaPublicacion());
 
-        if (producto.getUser() != null) {
-            dto.setUsuarioId(producto.getUser().getId());
-            dto.setUsuarioNombre(producto.getUser().getNombre());
-            dto.setUsuarioCorreo(producto.getUser().getCorreo());
+        if (producto.getPropietario() != null) {
+            dto.setUsuarioId(producto.getPropietario().getId());
+            dto.setUsuarioNombre(producto.getPropietario().getNombre());
+            dto.setUsuarioCorreo(producto.getPropietario().getCorreo());
+        }
+        if(transaccion != null){
+            dto.setConversacionId(transaccion.getConversacion().getId());
         }
 
         return dto;

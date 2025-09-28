@@ -34,7 +34,7 @@ public class ProductoController {
         String email = jwt.getSubject(); // aquí está el correo/username del token
         Usuario user = usuarioService.obtenerPorCorreo(email);
 
-        producto.setUser(user);
+        producto.setPropietario(user);
         producto.setFechaPublicacion(new Date());
         producto.setEstado(EstadoProducto.DISPONIBLE);
 
@@ -72,6 +72,8 @@ public class ProductoController {
         return ResponseEntity.ok(actualizado);
     }
 
+    
+
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> eliminarProducto(
             @PathVariable Long id,
@@ -96,4 +98,5 @@ public class ProductoController {
         Usuario user = usuarioService.obtenerPorCorreo(correo);
         return ResponseEntity.ok(productoService.obtenerHistorial(user));
     }
+
 }

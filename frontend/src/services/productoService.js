@@ -51,3 +51,12 @@ export const obtenerHistorialProductos = async (token) => {
   });
   return response.data;
 };
+
+export const adquirirProducto = async (id, token) => {
+  const response = await axios.post(
+    `${API_URL}/${id}/adquirir`,
+    {},
+    { headers: { Authorization: `Bearer ${token}` } }
+  );
+  return response.data;
+};

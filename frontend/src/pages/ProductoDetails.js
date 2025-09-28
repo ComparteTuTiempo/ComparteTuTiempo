@@ -1,10 +1,14 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import { obtenerProductoPorId } from "../services/productoService";
+import {adquirirProducto} from "../services/productoUsuarioService";
+import {obtenerProductoPorId} from "../services/productoService";
+import { useAuth } from "../utils/AuthContext";
 
 export default function DetalleProducto() {
   const { id } = useParams();
   const [producto, setProducto] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const { user, token } = useAuth();
 
   useEffect(() => {
     obtenerProductoPorId(id)
@@ -12,9 +16,24 @@ export default function DetalleProducto() {
       .catch((err) => console.error("Error al cargar producto", err));
   }, [id]);
 
-  if (!producto) return <p style={{ textAlign: "center" }}>Cargando...</p>;
+  const handleAdquirir = async () => {
+    try {
+      setLoading(true);
+      const actualizado = await adquirirProducto(producto.id, token);
+      setProducto(actualizado);
+      alert("✅ Producto adquirido con éxito");
+    } catch (err) {
+      alert("❌ No se pudo adquirir el producto: " + (err.response?.data?.message || err.message));
+    } finally {
+      setLoading(false);
+    }
+  };
 
-  // 🎨 Estilos según estado
+  if (!producto)
+    return <p style={{ textAlign: "center" }}>Cargando...</p>;
+
+  const esPropietario = producto.usuarioCorreo === user.correo;
+
   const getEstadoStyle = (estado) => {
     switch (estado) {
       case "DISPONIBLE":
@@ -36,6 +55,7 @@ export default function DetalleProducto() {
         marginTop: "40px",
         padding: "20px",
       }}
+      
     >
       <div
         style={{
@@ -48,7 +68,7 @@ export default function DetalleProducto() {
         }}
       >
         <h1 style={{ marginBottom: "10px" }}>{producto.nombre}</h1>
-
+        {console.log(esPropietario)}
         {/* Badge de estado */}
         <span
           style={{
@@ -78,6 +98,24 @@ export default function DetalleProducto() {
           <strong>Publicado el:</strong>{" "}
           {new Date(producto.fechaPublicacion).toLocaleDateString()}
         </p>
+
+        {producto.estado === "DISPONIBLE" && !esPropietario && (
+          <button
+            onClick={handleAdquirir}
+            disabled={loading}
+            style={{
+              marginTop: "20px",
+              padding: "10px 20px",
+              backgroundColor: loading ? "#6c757d" : "#007bff",
+              color: "white",
+              border: "none",
+              borderRadius: "8px",
+              cursor: loading ? "not-allowed" : "pointer",
+            }}
+          >
+            {loading ? "Procesando..." : "🛒 Adquirir"}
+          </button>
+        )}
       </div>
     </div>
   );

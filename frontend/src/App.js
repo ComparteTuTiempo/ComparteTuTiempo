@@ -33,6 +33,7 @@ import ReportesPage from "./pages/ReportesPage";
 import CategoriaForm from "./forms/CategoriaForm";
 
 import DetalleProducto from "./pages/ProductoDetails";
+import ProductoUsuarioDetails from "./pages/ProductoUsuarioDetails";
 
 
 function App() {
@@ -66,6 +67,7 @@ function App() {
                 <Route path="/intercambios/usuario" element={<IntercambiosPorEstado />} />
                 <Route path="/acuerdos/:id" element={<FormularioAcuerdo />} />
                 <Route path="/producto/:id" element={<DetalleProducto />} />
+                <Route path="/productousuario/transacciones" element={<ProductoUsuarioDetails />} />
                 <Route element={<Layout />}>
 
                 {/* Ruta protegida: usuario normal */}
