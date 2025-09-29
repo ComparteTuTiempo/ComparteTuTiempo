@@ -21,7 +21,7 @@ public class ResenaIntercambioController {
 
     @PostMapping("/{intercambioId}")
     public ResponseEntity<ResenaIntercambio> crear(
-            @PathVariable Long intercambioId,
+            @PathVariable Integer intercambioId,
             @RequestBody ResenaIntercambio resena,
             @AuthenticationPrincipal Jwt jwt) {
 
@@ -30,12 +30,12 @@ public class ResenaIntercambioController {
     }
 
     @GetMapping("/{intercambioId}")
-    public ResponseEntity<List<ResenaIntercambio>> listar(@PathVariable Long intercambioId) {
+    public ResponseEntity<List<ResenaIntercambio>> listar(@PathVariable Integer intercambioId) {
         return ResponseEntity.ok(resenaService.obtenerPorIntercambio(intercambioId));
     }
 
     @GetMapping("/{intercambioId}/promedio")
-    public ResponseEntity<Double> promedio(@PathVariable Long intercambioId) {
+    public ResponseEntity<Double> promedio(@PathVariable Integer intercambioId) {
         return ResponseEntity.ok(resenaService.calcularPromedio(intercambioId));
     }
 }
