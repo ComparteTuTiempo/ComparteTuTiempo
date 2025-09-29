@@ -5,41 +5,43 @@ import {
   marcarTodasComoLeidas,
 } from "../services/notificacionService";
 import { useWebSocket } from "../utils/WebSocketProvider";
+import { useAuth } from "../utils/AuthContext";
 
 export default function NotificacionesPage() {
   const [notificaciones, setNotificaciones] = useState([]);
+  const { token } = useAuth(); 
   const { subscribe, connected } = useWebSocket();
 
   // Cargar notificaciones iniciales
   useEffect(() => {
-    getNotificaciones()
-      .then(res => setNotificaciones(res.data))
-      .catch(err => console.error(err));
-  }, []);
+    if (!token) return;
+    getNotificaciones(token)
+      .then((data) => setNotificaciones(data))
+      .catch((err) => console.error(err));
+  }, [token]);
 
   // Suscribirse a notificaciones en tiempo real
   useEffect(() => {
     if (!connected) return;
-
     const sub = subscribe("/user/queue/notifications", (notif) => {
-      setNotificaciones(prev => [notif, ...prev]);
+      setNotificaciones((prev) => [notif, ...prev]);
     });
-
     return () => sub?.unsubscribe();
   }, [connected, subscribe]);
 
   const handleMarcarLeida = (id) => {
-    marcarComoLeida(id).then(() => {
-      setNotificaciones(prev => prev.map(n => n.id === id ? { ...n, leida: true } : n));
+    marcarComoLeida(id, token).then(() => {
+      setNotificaciones((prev) =>
+        prev.map((n) => (n.id === id ? { ...n, leida: true } : n))
+      );
     });
   };
 
   const handleMarcarTodas = () => {
-    marcarTodasComoLeidas().then(() => {
-      setNotificaciones(prev => prev.map(n => ({ ...n, leida: true })));
+    marcarTodasComoLeidas(token).then(() => {
+      setNotificaciones((prev) => prev.map((n) => ({ ...n, leida: true })));
     });
   };
-
   return (
     <div className="max-w-3xl mx-auto p-6">
       <div className="flex justify-between items-center mb-4">

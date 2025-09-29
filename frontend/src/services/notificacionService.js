@@ -2,18 +2,31 @@ import axios from "axios";
 
 const API_URL = "/notificaciones";
 
-const headers = () => ({
-  Authorization: `Bearer ${localStorage.getItem("token")}`,
-});
-
-export const getNotificaciones = () => {
-  return axios.get(API_URL, { headers: headers() });
+const getAuthHeader = (token) => {
+  return token ? { Authorization: `Bearer ${token}` } : {};
 };
 
-export const marcarComoLeida = (id) => {
-  return axios.put(`${API_URL}/${id}/leer`, {}, { headers: headers() });
+export const getNotificaciones = async (token) => {
+  const response = await axios.get(API_URL, {
+    headers: getAuthHeader(token),
+  });
+  return response.data;
 };
 
-export const marcarTodasComoLeidas = () => {
-  return axios.put(`${API_URL}/leer-todas`, {}, { headers: headers() });
+export const marcarComoLeida = async (id, token) => {
+  const response = await axios.post(
+    `${API_URL}/${id}/leida`,
+    null,
+    { headers: getAuthHeader(token) }
+  );
+  return response.data;
+};
+
+export const marcarTodasComoLeidas = async (token) => {
+  const response = await axios.post(
+    `${API_URL}/leidas`,
+    null,
+    { headers: getAuthHeader(token) }
+  );
+  return response.data;
 };
