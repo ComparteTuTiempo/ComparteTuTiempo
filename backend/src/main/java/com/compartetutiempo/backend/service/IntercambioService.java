@@ -25,8 +25,6 @@ import com.compartetutiempo.backend.repository.IntercambioUsuarioRepository;
 import com.compartetutiempo.backend.repository.UsuarioRepository;
 import com.compartetutiempo.backend.specifications.IntercambioSpecifications;
 
-import jakarta.transaction.Transactional;
-
 @Service
 public class IntercambioService {
 
@@ -39,7 +37,8 @@ public class IntercambioService {
     public IntercambioService(IntercambioRepository intercambioRepository,
         UsuarioRepository usuarioRepository,
         IntercambioUsuarioRepository intercambioUsuarioRepository,
-        CategoriaRepository categoriaRepository){
+        CategoriaRepository categoriaRepository ,
+        ReseñaIntercambioRepository resenaIntercambioRepository) {
             this.intercambioRepository = intercambioRepository;
             this.usuarioRepository = usuarioRepository;
             this.intercambioUsuarioRepository = intercambioUsuarioRepository;
@@ -169,7 +168,7 @@ public class IntercambioService {
     }
 
     @Transactional
-    public void eliminarIntercambio(Long id) {
+    public void eliminarIntercambio(Integer id) {
         resenaIntercambioRepository.deleteByIntercambioId(id);
         if (!intercambioRepository.existsById(id)) {
             throw new RuntimeException("Intercambio no encontrado");
