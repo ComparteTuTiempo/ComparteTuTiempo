@@ -39,7 +39,8 @@ public class UsuarioController {
 
     @PostMapping
     public Usuario crearUsuario(@RequestBody Usuario usuario) {
-        usuario.setMetodoAutenticacion("CORREO");;
+        usuario.setMetodoAutenticacion("CORREO");
+        ;
         return service.guardarUsuario(usuario);
     }
 
@@ -53,6 +54,8 @@ public class UsuarioController {
         usuarioDTO.setUbicacion(usuario.getUbicacion());
         usuarioDTO.setVerificado(usuario.isVerificado());
         usuarioDTO.setActivo(usuario.isActivo());
+        usuarioDTO.setBiografia(usuario.getBiografia());
+        usuarioDTO.setFechaNacimiento(usuario.getFechaNacimiento());
         return usuarioDTO;
 
     }
@@ -102,74 +105,73 @@ public class UsuarioController {
     }
 
     @PostMapping("/login/google")
-public ResponseEntity<?> loginGoogle(@RequestBody Map<String, String> request) {
-    String correo = request.get("correo");
-    String nombre = request.get("nombre");
+    public ResponseEntity<?> loginGoogle(@RequestBody Map<String, String> request) {
+        String correo = request.get("correo");
+        String nombre = request.get("nombre");
 
-    Usuario usuario = service.obtenerPorCorreo(correo);
-    System.err.println("USUARIOS" + usuario);
-    if (usuario == null) {
-        usuario = new Usuario();
-        usuario.setCorreo(correo);
-        usuario.setNombre(nombre);
-        usuario.setMetodoAutenticacion("GOOGLE");
-        usuario.setActivo(true);
-        usuario.setVerificado(true);
-        usuario.setContrasena("GOOGLE_PASSWORD");
-        usuario.setRoles(Set.of(Role.USER));
-        usuario = service.guardarUsuario(usuario);
-    }
+        Usuario usuario = service.obtenerPorCorreo(correo);
+        System.err.println("USUARIOS" + usuario);
+        if (usuario == null) {
+            usuario = new Usuario();
+            usuario.setCorreo(correo);
+            usuario.setNombre(nombre);
+            usuario.setMetodoAutenticacion("GOOGLE");
+            usuario.setActivo(true);
+            usuario.setVerificado(true);
+            usuario.setContrasena("GOOGLE_PASSWORD");
+            usuario.setRoles(Set.of(Role.USER));
+            usuario = service.guardarUsuario(usuario);
+        }
 
-    if (!usuario.isActivo()) {
-        return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Usuario baneado");
-    }
-
-    // 👇 Generar token JWT igual que en el login normal
-    String token = jwtService.generateToken(usuario);
-
-    Map<String, Object> response = new HashMap<>();
-    response.put("token", token);
-    response.put("roles", usuario.getRoles());
-    response.put("correo", usuario.getCorreo());
-    response.put("nombre", usuario.getNombre());
-
-    return ResponseEntity.ok(response);
-}
-
-
-@PostMapping("/login/facebook")
-public ResponseEntity<?> loginFacebook(@RequestBody Map<String, String> request) {
-    String correo = request.get("correo");
-    String nombre = request.get("nombre");
-
-    Usuario usuario = service.obtenerPorCorreo(correo);
-     System.out.println("📩 Datos recibidos de Facebook: " + request);
-    if (usuario == null) {
-        usuario = new Usuario();
-        usuario.setCorreo(correo);
-        usuario.setNombre(nombre);
-        usuario.setMetodoAutenticacion("FACEBOOK");
-        usuario.setActivo(true);
-        usuario.setVerificado(true);
-        usuario.setContrasena("FACEBOOK_PASSWORD");
-        usuario.setRoles(Set.of(Role.USER));
-        usuario = service.guardar(usuario);
-    }
-
-    if (!usuario.isActivo()) {
-        return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Usuario baneado");
-    }
+        if (!usuario.isActivo()) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Usuario baneado");
+        }
 
         // 👇 Generar token JWT igual que en el login normal
-    String token = jwtService.generateToken(usuario);
+        String token = jwtService.generateToken(usuario);
 
-    Map<String, Object> response = new HashMap<>();
-    response.put("token", token);
-    response.put("roles", usuario.getRoles());
-    response.put("correo", usuario.getCorreo());
-    response.put("nombre", usuario.getNombre());
+        Map<String, Object> response = new HashMap<>();
+        response.put("token", token);
+        response.put("roles", usuario.getRoles());
+        response.put("correo", usuario.getCorreo());
+        response.put("nombre", usuario.getNombre());
 
-   return ResponseEntity.ok(response);
-}
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/login/facebook")
+    public ResponseEntity<?> loginFacebook(@RequestBody Map<String, String> request) {
+        String correo = request.get("correo");
+        String nombre = request.get("nombre");
+
+        Usuario usuario = service.obtenerPorCorreo(correo);
+        System.out.println("📩 Datos recibidos de Facebook: " + request);
+        if (usuario == null) {
+            usuario = new Usuario();
+            usuario.setCorreo(correo);
+            usuario.setNombre(nombre);
+            usuario.setMetodoAutenticacion("FACEBOOK");
+            usuario.setActivo(true);
+            usuario.setVerificado(true);
+            usuario.setContrasena("FACEBOOK_PASSWORD");
+            usuario.setRoles(Set.of(Role.USER));
+            usuario = service.guardar(usuario);
+        }
+
+        if (!usuario.isActivo()) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Usuario baneado");
+        }
+
+        // 👇 Generar token JWT igual que en el login normal
+        String token = jwtService.generateToken(usuario);
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("token", token);
+        response.put("roles", usuario.getRoles());
+        response.put("correo", usuario.getCorreo());
+        response.put("nombre", usuario.getNombre());
+
+        return ResponseEntity.ok(response);
+    }
 
 }

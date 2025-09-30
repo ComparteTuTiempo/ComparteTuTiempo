@@ -45,13 +45,14 @@ const PublicacionesPage = () => {
                 {type === "oferta"
                   ? "Service Offer"
                   : type === "peticion"
-                  ? "Service Request"
-                  : "Product"}
+                    ? "Service Request"
+                    : "Product"}
               </span>
             </div>
 
             {/* Descripción */}
             <p style={styles.cardText}>{p.descripcion || "Sin descripción"}</p>
+            <p style={styles.cardText}>{p.numeroHoras || 0} Horas</p>
 
             {/* Footer con avatar + botones */}
             <div style={styles.cardFooter}>
@@ -116,27 +117,43 @@ const PublicacionesPage = () => {
       <Sidebar />
 
       <main style={styles.main}>
-        <h2 style={styles.pageTitle}>My Publications</h2>
-
+        <div style={styles.headerRow}>
+          <h2 style={styles.pageTitle}>Mis Publicaciones
+          </h2>
+          <div style={styles.createButtons}>
+            <button
+              style={styles.createBtn}
+              onClick={() => navigate("/crear-oferta")}
+            >
+              Publicar Servicio
+            </button>
+            <button
+              style={styles.createBtn}
+              onClick={() => navigate("/producto/nuevo")}
+            >
+              Publicar Producto
+            </button>
+          </div>
+        </div>
         {/* Tabs */}
         <div style={styles.tabs}>
           <button
             style={tab === "ofertas" ? styles.activeTab : styles.tab}
             onClick={() => setTab("ofertas")}
           >
-            Offers
+            Ofertas
           </button>
           <button
             style={tab === "peticiones" ? styles.activeTab : styles.tab}
             onClick={() => setTab("peticiones")}
           >
-            Requests
+            Peticiones
           </button>
           <button
             style={tab === "productos" ? styles.activeTab : styles.tab}
             onClick={() => setTab("productos")}
           >
-            Products
+            Productos
           </button>
         </div>
 
@@ -225,6 +242,23 @@ const styles = {
     fontSize: "14px",
     fontWeight: "bold",
   },
+  headerRow: {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: "30px",
+  },
+  createButtons: { display: "flex", gap: "10px" },
+  createBtn: {
+    backgroundColor: "#28a745",
+    border: "none",
+    color: "#fff",
+    padding: "8px 14px",
+    borderRadius: "6px",
+    cursor: "pointer",
+    fontWeight: "bold",
+  },
+
 };
 
 export default PublicacionesPage;

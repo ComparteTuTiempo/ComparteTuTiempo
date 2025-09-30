@@ -46,7 +46,7 @@ function App() {
               {/* Todas las páginas usan Layout */}
                 <Route element={<Layout />}>
                 <Route path="/" element={<LandingPage />} />
-                <Route path="/registro" element={<RegistroUsuario />} />
+                <Route path="/registro" element={<RegistroUsuarioForm />} />
                 <Route path="/login" element={<LoginPage />} />
                 <Route path="/perfil" element={<UserProfile/>}/>
                 <Route path="/perfil/:correo" element={<UserProfile />} />
