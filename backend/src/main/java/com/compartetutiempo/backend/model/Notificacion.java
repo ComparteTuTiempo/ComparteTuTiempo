@@ -6,7 +6,6 @@ import org.hibernate.validator.constraints.Length;
 
 import com.compartetutiempo.backend.model.enums.TipoNotificacion;
 
-import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -25,9 +24,10 @@ public class Notificacion extends BaseEntity{
 
     @Enumerated(value = EnumType.STRING)
     private TipoNotificacion tipo;    
-    @Length( max = 64)
+
     @NotBlank  
     private String contenido;
+
     private Instant timestamp;
     @NotNull
     private boolean leida;
@@ -35,6 +35,5 @@ public class Notificacion extends BaseEntity{
     @ManyToOne
     private Usuario usuarioDestino;
 
-    @NotNull
     private Integer referenciaId; 
 }

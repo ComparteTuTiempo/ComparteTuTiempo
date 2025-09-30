@@ -21,14 +21,15 @@ import com.compartetutiempo.backend.dto.AcuerdoRequest;
 import com.compartetutiempo.backend.dto.IntercambioDTO;
 import com.compartetutiempo.backend.dto.IntercambioUsuarioDTO;
 import com.compartetutiempo.backend.model.Intercambio;
-
 import com.compartetutiempo.backend.model.Usuario;
 import com.compartetutiempo.backend.model.enums.EstadoIntercambio;
 import com.compartetutiempo.backend.model.enums.ModalidadServicio;
 import com.compartetutiempo.backend.model.enums.Role;
 import com.compartetutiempo.backend.model.enums.TipoIntercambio;
+import com.compartetutiempo.backend.model.enums.TipoNotificacion;
 import com.compartetutiempo.backend.service.IntercambioService;
 import com.compartetutiempo.backend.service.IntercambioUsuarioService;
+import com.compartetutiempo.backend.service.NotificacionService;
 import com.compartetutiempo.backend.service.UsuarioService;
 
 @RestController
@@ -41,13 +42,16 @@ public class IntercambioController {
 
     private final IntercambioUsuarioService intercambioUsuarioService;
 
+    private final NotificacionService notificacionService;
+
 
 
     public IntercambioController(IntercambioService intercambioService, UsuarioService usuarioService
-    , IntercambioUsuarioService intercambioUsuarioService ){
+    , IntercambioUsuarioService intercambioUsuarioService,NotificacionService notificacionService ){
         this.intercambioService = intercambioService;
         this.usuarioService = usuarioService;
         this.intercambioUsuarioService = intercambioUsuarioService;
+        this.notificacionService = notificacionService;
     }
 
     @PostMapping("/{correo}")
@@ -108,13 +112,18 @@ public class IntercambioController {
         return ResponseEntity.ok(intercambios);
     }
 
-    @PostMapping("/{eventoId}/solicitar")
+    @PostMapping("/{id}/solicitar")
     public ResponseEntity<IntercambioDTO> solicitarIntercambio(
-    @PathVariable Integer eventoId,
+    @PathVariable Integer id,
     @AuthenticationPrincipal Jwt jwt
     ) {
         String correoDemandante = jwt.getSubject();
-        IntercambioDTO dto = intercambioService.solicitarIntercambio(eventoId, correoDemandante);
+        IntercambioDTO dto = intercambioService.solicitarIntercambio(id, correoDemandante);
+        IntercambioUsuarioDTO iu = intercambioUsuarioService.obtenerPorIntercambioYUsuario(id, correoDemandante);
+            Usuario destinatario = usuarioService.obtenerPorCorreo(iu.getCreadorCorreo());
+            String mensaje = "El usuario " + iu.getCreadorNombre() + " ha finalizado el intercambio: " 
+                + iu.getIntercambioNombre();
+            notificacionService.crearYEnviar(destinatario, TipoNotificacion.INTERCAMBIO, mensaje, null);
         return ResponseEntity.status(HttpStatus.CREATED).body(dto);
     }
 
@@ -123,7 +132,6 @@ public class IntercambioController {
             @PathVariable Integer id,
             @RequestBody AcuerdoRequest request,
             @AuthenticationPrincipal Jwt jwt) {
-
 
         String correo = jwt.getSubject();
         IntercambioUsuarioDTO dto = intercambioUsuarioService.establecerAcuerdo(id, request, correo);
@@ -139,21 +147,33 @@ public class IntercambioController {
     }
 
     @PutMapping("/{id}/finalizar")
-    public ResponseEntity<IntercambioUsuarioDTO> finalizarAcuerdo(
+    public ResponseEntity<?> finalizarAcuerdo(
             @PathVariable Integer id,
             @AuthenticationPrincipal Jwt jwt) {
-
-        String correo = jwt.getSubject();
-        IntercambioUsuarioDTO dto = intercambioUsuarioService.finalizarAcuerdo(id, correo);
-        return ResponseEntity.ok(dto);
+        try{
+            IntercambioUsuarioDTO iu = intercambioUsuarioService.obtenerPorId(id);
+            Usuario destinatario = usuarioService.obtenerPorCorreo(iu.getSolicitanteCorreo());
+            String mensaje = "El usuario " + iu.getCreadorNombre() + " ha finalizado el intercambio: " 
+                + iu.getIntercambioNombre();
+            notificacionService.crearYEnviar(destinatario, TipoNotificacion.INTERCAMBIO, mensaje, null);
+            String correo = jwt.getSubject();
+            IntercambioUsuarioDTO dto = intercambioUsuarioService.finalizarAcuerdo(id, correo);
+            return ResponseEntity.ok(dto);
+        }catch(ResponseStatusException e){
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }  
     }
-
     @PutMapping("/solicitudes/{id}/aceptar")
     public ResponseEntity<?> aceptarSolicitud(
             @PathVariable Integer id,
             @AuthenticationPrincipal Jwt jwt) {
         try{
             String correo = jwt.getSubject();
+            IntercambioUsuarioDTO iu = intercambioUsuarioService.obtenerPorId(id);
+            Usuario destinatario = usuarioService.obtenerPorCorreo(iu.getSolicitanteCorreo());
+            String mensaje = "El usuario " + iu.getCreadorNombre() + " ha aceptado tu solicitud de intercambio: " 
+            + iu.getIntercambioNombre();
+            notificacionService.crearYEnviar(destinatario, TipoNotificacion.INTERCAMBIO, mensaje, null);
             IntercambioDTO dto = intercambioUsuarioService.aceptarSolicitud(id, correo);
             return ResponseEntity.ok(dto);
         }catch(ResponseStatusException e){
@@ -168,6 +188,12 @@ public class IntercambioController {
             @AuthenticationPrincipal Jwt jwt) {
         try{
             String correo = jwt.getSubject();
+            IntercambioUsuarioDTO iu = intercambioUsuarioService.obtenerPorId(id);
+            Usuario destinatario = usuarioService.obtenerPorCorreo(iu.getSolicitanteCorreo());
+            String mensaje = "El usuario " + iu.getCreadorNombre() + " ha rechazado tu solicitud de intercambio: " 
+            + iu.getIntercambioNombre();
+            notificacionService.crearYEnviar(destinatario, TipoNotificacion.INTERCAMBIO, mensaje, null);
+
             intercambioUsuarioService.rechazarSolicitud(id, correo);
             return ResponseEntity.noContent().build();
         }catch(ResponseStatusException e){

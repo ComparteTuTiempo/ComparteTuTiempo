@@ -4,6 +4,7 @@ public enum TipoNotificacion {
     MENSAJE,
     EVENTO,
     INTERCAMBIO,
-    SISTEMA
+    SISTEMA,
+    RESEÑA
     
 }

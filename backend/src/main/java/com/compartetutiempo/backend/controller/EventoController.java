@@ -18,7 +18,11 @@ import com.compartetutiempo.backend.dto.EventoResponse;
 import com.compartetutiempo.backend.dto.ParticipacionDTO;
 import com.compartetutiempo.backend.model.Evento;
 import com.compartetutiempo.backend.model.Participacion;
+import com.compartetutiempo.backend.model.Usuario;
+import com.compartetutiempo.backend.model.enums.TipoNotificacion;
 import com.compartetutiempo.backend.service.EventoService;
+import com.compartetutiempo.backend.service.NotificacionService;
+import com.compartetutiempo.backend.service.UsuarioService;
 
 import lombok.RequiredArgsConstructor;
 
@@ -28,6 +32,8 @@ import lombok.RequiredArgsConstructor;
 public class EventoController {
 
     private final EventoService eventoService;
+    private final UsuarioService usuarioService;
+    private final NotificacionService notificacionService;
 
     @PostMapping("/crear")
     public ResponseEntity<Evento> crearEvento(@RequestBody EventoRequest request) {
@@ -93,6 +99,13 @@ public class EventoController {
             @RequestParam String correoOrganizador) {
         try {
             EventoResponse evento = eventoService.finalizarEvento(eventoId, correoOrganizador);
+            List <ParticipacionDTO> participantes = eventoService.obtenerParticipacionesEvento(eventoId);
+
+            String mensaje = "El evento " + evento.getNombre() + " ha finalizado y se ha hecho el recuento de horas";
+            for(ParticipacionDTO participante: participantes){
+                Usuario usuarioParticipante = usuarioService.obtenerPorCorreo(participante.getCorreo());
+                notificacionService.crearYEnviar(usuarioParticipante, TipoNotificacion.EVENTO, mensaje, null);
+            }
             return ResponseEntity.ok(evento);
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
