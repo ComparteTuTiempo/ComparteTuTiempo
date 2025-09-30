@@ -40,6 +40,7 @@ const UserProfile = () => {
             biografia: res.data.biografia || "",
             ubicacion: res.data.ubicacion || "",
             fechaNacimiento: res.data.fechaNacimiento || "",
+            fotoPerfil: res.data.fotoPerfil || "",
           });
 
           // reseñas
@@ -82,6 +83,7 @@ const UserProfile = () => {
         biografia: formData.biografia,
         ubicacion: formData.ubicacion,
         fechaNacimiento: formData.fechaNacimiento,
+        fotoPerfil: formData.fotoPerfil,
       };
 
       const res = await axios.put(
@@ -295,6 +297,14 @@ const UserProfile = () => {
               name="fechaNacimiento"
               value={formData.fechaNacimiento}
               onChange={(e) => setFormData({ ...formData, fechaNacimiento: e.target.value })}
+              style={styles.input}
+            />
+            <input
+              type="text"
+              name="fotoPerfil"
+              value={formData.fotoPerfil}
+              onChange={(e) => setFormData({ ...formData, fotoPerfil: e.target.value })}
+              placeholder="URL de la foto de perfil"
               style={styles.input}
             />
             <div style={{ display: "flex", gap: "10px", marginTop: "15px" }}>
