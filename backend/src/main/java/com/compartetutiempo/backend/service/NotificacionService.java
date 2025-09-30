@@ -37,7 +37,6 @@ public class NotificacionService {
         notif.setContenido(contenido);
         notif.setReferenciaId(referenciaId);
         notif.setTimestamp(Instant.now());
-        notif.setLeida(false);
 
         notificacionRepository.save(notif);
 
