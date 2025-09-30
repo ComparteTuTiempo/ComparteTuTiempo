@@ -9,5 +9,5 @@ import java.util.List;
 public interface ReseñaIntercambioRepository extends JpaRepository<ResenaIntercambio, Long> {
     List<ResenaIntercambio> findByIntercambio(Intercambio intercambio);
     
-    void deleteByIntercambioId(Long intercambioId);
+    void deleteByIntercambioId(Integer intercambioId);
 }
