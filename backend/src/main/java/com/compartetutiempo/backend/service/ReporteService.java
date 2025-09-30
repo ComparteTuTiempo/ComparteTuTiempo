@@ -60,7 +60,7 @@ public class ReporteService {
         Usuario reportado = reporte.getUsuarioReportado();
 
         // eliminar productos
-        productoRepository.deleteAll(productoRepository.findByUser(reportado));
+        productoRepository.deleteAll(productoRepository.findByPropietario(reportado));
 
         // eliminar intercambios
         intercambioRepository.deleteAll(intercambioRepository.findByUser(reportado));

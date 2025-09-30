@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Link, Outlet, useNavigate } from "react-router-dom";
 import { FaUserCircle } from "react-icons/fa";
+import NotificacionesIcono from "./NotificacionesIcono";
 
 const Layout = () => {
   const [usuario, setUsuario] = useState(null);
@@ -127,6 +128,7 @@ const styles = {
     display: "flex",
     alignItems: "center",
     marginLeft: "20px",
+    gap:"10px"
   },
   profileImg: {
     width: "40px",

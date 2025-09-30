@@ -15,28 +15,43 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.server.ResponseStatusException;
 
+import com.compartetutiempo.backend.dto.AcuerdoRequest;
 import com.compartetutiempo.backend.dto.IntercambioDTO;
+import com.compartetutiempo.backend.dto.IntercambioUsuarioDTO;
 import com.compartetutiempo.backend.model.Intercambio;
 import com.compartetutiempo.backend.model.Usuario;
+import com.compartetutiempo.backend.model.enums.EstadoIntercambio;
 import com.compartetutiempo.backend.model.enums.ModalidadServicio;
 import com.compartetutiempo.backend.model.enums.Role;
 import com.compartetutiempo.backend.model.enums.TipoIntercambio;
+import com.compartetutiempo.backend.model.enums.TipoNotificacion;
 import com.compartetutiempo.backend.service.IntercambioService;
+import com.compartetutiempo.backend.service.IntercambioUsuarioService;
+import com.compartetutiempo.backend.service.NotificacionService;
 import com.compartetutiempo.backend.service.UsuarioService;
 
 @RestController
 @RequestMapping("/intercambios")
 public class IntercambioController {
 
-    private IntercambioService intercambioService;
+    private final IntercambioService intercambioService;
 
     private final UsuarioService usuarioService;
 
-    public IntercambioController(IntercambioService intercambioService, UsuarioService usuarioService) {
+    private final IntercambioUsuarioService intercambioUsuarioService;
+
+    private final NotificacionService notificacionService;
+
+
+
+    public IntercambioController(IntercambioService intercambioService, UsuarioService usuarioService
+    , IntercambioUsuarioService intercambioUsuarioService,NotificacionService notificacionService ){
         this.intercambioService = intercambioService;
         this.usuarioService = usuarioService;
-
+        this.intercambioUsuarioService = intercambioUsuarioService;
+        this.notificacionService = notificacionService;
     }
 
     @PostMapping("/{correo}")
@@ -60,29 +75,132 @@ public class IntercambioController {
         return ResponseEntity.ok(intercambios);
     }
 
+    @GetMapping("/estado/{estado}")
+    public ResponseEntity<List<IntercambioUsuarioDTO>> getByEstado(
+            @PathVariable EstadoIntercambio estado,
+            @AuthenticationPrincipal Jwt jwt) {
+
+        String correo = jwt.getSubject(); 
+        List<IntercambioUsuarioDTO> intercambios = intercambioUsuarioService. obtenerPorUsuarioOfertanteYEstado(correo, estado);
+
+        return ResponseEntity.ok(intercambios);
+    }
+
     @PutMapping("/{id}")
     public ResponseEntity<Intercambio> actualizarIntercambio(
-            @PathVariable Long id,
+            @PathVariable Integer id,
             @RequestBody IntercambioDTO dto) {
         Intercambio actualizado = intercambioService.actualizarIntercambio(id, dto);
         return ResponseEntity.ok(actualizado);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Intercambio> obtenerIntercambio(@PathVariable Long id) {
-        Intercambio intercambio = intercambioService.obtenerPorId(id);
+    public ResponseEntity<IntercambioDTO> obtenerIntercambio(@PathVariable Integer id) {
+        IntercambioDTO intercambio = intercambioService.obtenerPorId(id);
         return ResponseEntity.ok(intercambio);
     }
 
+
+    
     @GetMapping("/usuario")
     public ResponseEntity<List<Intercambio>> obtenerPorUsuario(@AuthenticationPrincipal Jwt jwt) {
-        // Sacamos el correo del token
-        String correo = jwt.getSubject();
+        
+        String correo = jwt.getSubject(); 
         Usuario user = usuarioService.obtenerPorCorreo(correo);
 
         List<Intercambio> intercambios = intercambioService.obtenerPorUsuario(user);
         return ResponseEntity.ok(intercambios);
     }
+
+    @PostMapping("/{id}/solicitar")
+    public ResponseEntity<IntercambioDTO> solicitarIntercambio(
+    @PathVariable Integer id,
+    @AuthenticationPrincipal Jwt jwt
+    ) {
+        String correoDemandante = jwt.getSubject();
+        IntercambioDTO dto = intercambioService.solicitarIntercambio(id, correoDemandante);
+        IntercambioUsuarioDTO iu = intercambioUsuarioService.obtenerPorIntercambioYUsuario(id, correoDemandante);
+            Usuario destinatario = usuarioService.obtenerPorCorreo(iu.getCreadorCorreo());
+            String mensaje = "El usuario " + iu.getCreadorNombre() + " ha finalizado el intercambio: " 
+                + iu.getIntercambioNombre();
+            notificacionService.crearYEnviar(destinatario, TipoNotificacion.INTERCAMBIO, mensaje, null);
+        return ResponseEntity.status(HttpStatus.CREATED).body(dto);
+    }
+
+    @PutMapping("/{id}/acuerdo")
+    public ResponseEntity<IntercambioUsuarioDTO> establecerAcuerdo(
+            @PathVariable Integer id,
+            @RequestBody AcuerdoRequest request,
+            @AuthenticationPrincipal Jwt jwt) {
+
+        String correo = jwt.getSubject();
+        IntercambioUsuarioDTO dto = intercambioUsuarioService.establecerAcuerdo(id, request, correo);
+        return ResponseEntity.ok(dto);
+    }
+
+    @GetMapping("/solicitudes")
+    public ResponseEntity<List<IntercambioUsuarioDTO>> obtenerSolicitudesPendientes(
+        @AuthenticationPrincipal Jwt jwt) {
+        String correo = jwt.getSubject();
+        List<IntercambioUsuarioDTO> solicitudes = intercambioUsuarioService.obtenerSolicitudesPendientes(correo);
+        return ResponseEntity.ok(solicitudes);
+    }
+
+    @PutMapping("/{id}/finalizar")
+    public ResponseEntity<?> finalizarAcuerdo(
+            @PathVariable Integer id,
+            @AuthenticationPrincipal Jwt jwt) {
+        try{
+            IntercambioUsuarioDTO iu = intercambioUsuarioService.obtenerPorId(id);
+            Usuario destinatario = usuarioService.obtenerPorCorreo(iu.getSolicitanteCorreo());
+            String mensaje = "El usuario " + iu.getCreadorNombre() + " ha finalizado el intercambio: " 
+                + iu.getIntercambioNombre();
+            notificacionService.crearYEnviar(destinatario, TipoNotificacion.INTERCAMBIO, mensaje, null);
+            String correo = jwt.getSubject();
+            IntercambioUsuarioDTO dto = intercambioUsuarioService.finalizarAcuerdo(id, correo);
+            return ResponseEntity.ok(dto);
+        }catch(ResponseStatusException e){
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }  
+    }
+    @PutMapping("/solicitudes/{id}/aceptar")
+    public ResponseEntity<?> aceptarSolicitud(
+            @PathVariable Integer id,
+            @AuthenticationPrincipal Jwt jwt) {
+        try{
+            String correo = jwt.getSubject();
+            IntercambioUsuarioDTO iu = intercambioUsuarioService.obtenerPorId(id);
+            Usuario destinatario = usuarioService.obtenerPorCorreo(iu.getSolicitanteCorreo());
+            String mensaje = "El usuario " + iu.getCreadorNombre() + " ha aceptado tu solicitud de intercambio: " 
+            + iu.getIntercambioNombre();
+            notificacionService.crearYEnviar(destinatario, TipoNotificacion.INTERCAMBIO, mensaje, null);
+            IntercambioDTO dto = intercambioUsuarioService.aceptarSolicitud(id, correo);
+            return ResponseEntity.ok(dto);
+        }catch(ResponseStatusException e){
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+        
+    }
+
+    @PutMapping("/solicitudes/{id}/rechazar")
+    public ResponseEntity<?> rechazarSolicitud(
+            @PathVariable Integer id,
+            @AuthenticationPrincipal Jwt jwt) {
+        try{
+            String correo = jwt.getSubject();
+            IntercambioUsuarioDTO iu = intercambioUsuarioService.obtenerPorId(id);
+            Usuario destinatario = usuarioService.obtenerPorCorreo(iu.getSolicitanteCorreo());
+            String mensaje = "El usuario " + iu.getCreadorNombre() + " ha rechazado tu solicitud de intercambio: " 
+            + iu.getIntercambioNombre();
+            notificacionService.crearYEnviar(destinatario, TipoNotificacion.INTERCAMBIO, mensaje, null);
+
+            intercambioUsuarioService.rechazarSolicitud(id, correo);
+            return ResponseEntity.noContent().build();
+        }catch(ResponseStatusException e){
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
 
     @GetMapping("/historial")
     public ResponseEntity<List<Intercambio>> obtenerHistorial(@AuthenticationPrincipal Jwt jwt) {
@@ -105,18 +223,18 @@ public class IntercambioController {
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> eliminarIntercambio(
-            @PathVariable Long id,
+            @PathVariable Integer id,
             @AuthenticationPrincipal Jwt jwt) {
 
         String correo = jwt.getSubject();
         Usuario user = usuarioService.obtenerPorCorreo(correo);
 
-        Intercambio intercambio = intercambioService.obtenerPorId(id);
+        IntercambioDTO intercambio = intercambioService.obtenerPorId(id);
 
         // Permitir eliminar si es el dueño o si es admin
         boolean esAdmin = user.getRoles().contains(Role.ADMIN);
 
-        if (!intercambio.getUser().getCorreo().equals(correo) && !esAdmin) {
+        if (!intercambio.getCorreoOfertante().equals(correo) && !esAdmin) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
 

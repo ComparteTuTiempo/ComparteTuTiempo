@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.compartetutiempo.backend.dto.ConversacionDTO;
 import com.compartetutiempo.backend.model.Conversacion;
 import com.compartetutiempo.backend.service.ConversacionService;
 
@@ -46,5 +47,18 @@ public class ConversacionController {
         }
         
     }
+
+    @PostMapping("/intercambio-usuario/{intercambioUsuarioId}")
+    public ResponseEntity<Conversacion> getOrCreateConversationForIntercambioUsuario(
+            @PathVariable Integer intercambioUsuarioId,
+            @RequestParam List<String> correos) {
+        return ResponseEntity.ok(conversationService.getOrCreateForIntercambioUsuario(intercambioUsuarioId, correos));
+    }
+
+    @GetMapping("/intercambio-usuario/{intercambioUsuarioId}")
+    public ResponseEntity<ConversacionDTO> getConversationForIntercambioUsuario(@PathVariable Integer intercambioUsuarioId) {
+        return ResponseEntity.ok(conversationService.findByIntercambioUsuarioId(intercambioUsuarioId));
+    }
+
 }
 
