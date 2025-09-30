@@ -20,9 +20,12 @@ import com.compartetutiempo.backend.model.enums.ModalidadServicio;
 import com.compartetutiempo.backend.model.enums.TipoIntercambio;
 import com.compartetutiempo.backend.repository.CategoriaRepository;
 import com.compartetutiempo.backend.repository.IntercambioRepository;
+import com.compartetutiempo.backend.repository.ReseñaIntercambioRepository;
 import com.compartetutiempo.backend.repository.IntercambioUsuarioRepository;
 import com.compartetutiempo.backend.repository.UsuarioRepository;
 import com.compartetutiempo.backend.specifications.IntercambioSpecifications;
+
+import jakarta.transaction.Transactional;
 
 @Service
 public class IntercambioService {
@@ -30,6 +33,7 @@ public class IntercambioService {
     private final IntercambioRepository intercambioRepository;
     private final UsuarioRepository usuarioRepository;
     private final CategoriaRepository categoriaRepository;
+    private final ReseñaIntercambioRepository resenaIntercambioRepository;
     private final IntercambioUsuarioRepository intercambioUsuarioRepository;
 
     public IntercambioService(IntercambioRepository intercambioRepository,
@@ -40,7 +44,9 @@ public class IntercambioService {
             this.usuarioRepository = usuarioRepository;
             this.intercambioUsuarioRepository = intercambioUsuarioRepository;
             this.categoriaRepository = categoriaRepository;
+            this.resenaIntercambioRepository = resenaIntercambioRepository;
         }
+
 
     public Intercambio crear(String correo, IntercambioDTO dto) {
         Usuario usuario = usuarioRepository.findByCorreo(correo)
@@ -162,7 +168,9 @@ public class IntercambioService {
         return intercambioRepository.findAll(spec); // ← ahora sí existe
     }
 
-    public void eliminarIntercambio(Integer id) {
+    @Transactional
+    public void eliminarIntercambio(Long id) {
+        resenaIntercambioRepository.deleteByIntercambioId(id);
         if (!intercambioRepository.existsById(id)) {
             throw new RuntimeException("Intercambio no encontrado");
         }

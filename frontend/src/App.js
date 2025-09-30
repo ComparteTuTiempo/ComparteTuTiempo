@@ -3,7 +3,7 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Layout from "./components/Layout";
 import ProtectedRoute from "./utils/ProtectedRoute";
 import LandingPage from "./pages/LandingPage";
-import RegistroUsuario from "./pages/RegistroUsuario";
+import RegistroUsuarioForm from "./forms/RegistroUsuarioForm";
 import LoginPage from "./pages/LoginPage";
 import CrearOferta from "./forms/IntercambioForm";
 import UserProfile from "./pages/ProfileView";
@@ -18,7 +18,7 @@ import VerificacionForm from "./forms/VerificacionForm";
 import AdminVerificationPage from "./pages/AdminVerificationPage";
 
 import IntercambiosPage from "./pages/IntercambiosPage";
-import MercadoPage from "./pages/MercadoPage";
+import MarketPage from "./pages/MarketPage";
 import ProductoPage from "./pages/ProductoPage";
 import PublicacionesPage from "./pages/PublicacionesPage";
 
@@ -39,7 +39,6 @@ import NotificacionesPage from "./pages/NotificacionesPage";
 
 function App() {
   return (
-
       <AuthProvider>
         <WebSocketProvider>
           <Router>
@@ -59,7 +58,7 @@ function App() {
                 <Route path="/eventos/:id" element={<EventoDetails  />} />
                 <Route path="/eventos/:id/participantes/lista" element={<ListaAsistencia  />} />                    
                 <Route path="/intercambios" element={<IntercambiosPage />} />
-                <Route path="/mercado" element={<MercadoPage />} /> 
+                <Route path="/mercado" element={<MarketPage />} />
                 <Route path="/producto/nuevo" element={<ProductoPage />} />
                 <Route path="/mispublicaciones" element={<PublicacionesPage />} />
                 <Route path="/productos/editar/:id" element={<ProductoPage />} />

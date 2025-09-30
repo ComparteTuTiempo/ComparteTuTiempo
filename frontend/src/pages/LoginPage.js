@@ -1,74 +1,55 @@
 import React, { useState } from "react";
 import axios from "axios";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { GoogleLogin } from "@react-oauth/google";
 import { jwtDecode } from "jwt-decode";
 import FacebookLoginButton from "../components/FacebookLoginButton";
+import { FaGoogle } from "react-icons/fa";
 
 const LoginPage = () => {
   const [credenciales, setCredenciales] = useState({ correo: "", contrasena: "" });
   const [error, setError] = useState("");
   const navigate = useNavigate();
 
-  // ---- Login clásico ----
   const handleChange = (e) => {
     setCredenciales({ ...credenciales, [e.target.name]: e.target.value });
   };
 
+  // 🔹 Login clásico
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
-
     try {
       const response = await axios.post("http://localhost:8080/auth/login", {
         correo: credenciales.correo,
         contraseña: credenciales.contrasena,
       });
-
-      localStorage.setItem(
-        "usuario",
-        JSON.stringify({
-          token: response.data.token,
-          roles: response.data.roles || ["USER"],
-        })
-      );
-
+      localStorage.setItem("usuario", JSON.stringify({
+        token: response.data.token,
+        roles: response.data.roles || ["USER"],
+      }));
+      window.dispatchEvent(new Event("usuario-actualizado"));
       navigate("/");
     } catch (err) {
-      if (err.response) {
-        if (err.response.status === 403) {
-          setError("Este usuario ha sido baneado ❌");
-        } else if (err.response.status === 401) {
-          setError("Correo o contraseña incorrectos");
-        } else {
-          setError("Error en el servidor, inténtalo más tarde");
-        }
-      } else {
-        setError("No se pudo conectar con el servidor");
-      }
+      setError("Correo o contraseña incorrectos");
     }
   };
 
-  // ---- Login con Google ----
+  // 🔹 Google login oficial
   const handleGoogleSuccess = async (credentialResponse) => {
     try {
       const decoded = jwtDecode(credentialResponse.credential);
-
       const response = await axios.post("http://localhost:8080/api/usuarios/login/google", {
         correo: decoded.email,
         nombre: decoded.name,
         fotoPerfil: decoded.picture,
         metodoAutenticacion: "GOOGLE",
       });
-
-      localStorage.setItem(
-        "usuario",
-        JSON.stringify({
-          token: response.data.token,
-          roles: response.data.roles || ["USER"],
-        })
-      );
-
+      localStorage.setItem("usuario", JSON.stringify({
+        token: response.data.token,
+        roles: response.data.roles || ["USER"],
+      }));
+      window.dispatchEvent(new Event("usuario-actualizado"));
       navigate("/");
     } catch (err) {
       console.error("❌ Google login error:", err);
@@ -80,7 +61,7 @@ const LoginPage = () => {
     setError("Error al autenticar con Google");
   };
 
-  // ---- Login con Facebook ----
+  // 🔹 Facebook login
   const handleFacebookResponse = async (facebookData) => {
     try {
       const response = await axios.post("http://localhost:8080/api/usuarios/login/facebook", {
@@ -89,15 +70,11 @@ const LoginPage = () => {
         fotoPerfil: facebookData.picture?.data?.url,
         metodoAutenticacion: "FACEBOOK",
       });
-
-      localStorage.setItem(
-        "usuario",
-        JSON.stringify({
-          token: response.data.token,
-          roles: response.data.roles || ["USER"],
-        })
-      );
-
+      localStorage.setItem("usuario", JSON.stringify({
+        token: response.data.token,
+        roles: response.data.roles || ["USER"],
+      }));
+      window.dispatchEvent(new Event("usuario-actualizado"));
       navigate("/");
     } catch (err) {
       console.error("❌ Facebook login error:", err);
@@ -106,53 +83,115 @@ const LoginPage = () => {
   };
 
   return (
-    <div className="flex justify-center items-center h-screen bg-gray-100">
-      <form
-        onSubmit={handleSubmit}
-        className="p-6 bg-white rounded shadow-md w-96 space-y-4"
-      >
-        <h2 className="text-2xl font-bold">Iniciar sesión</h2>
+    <div style={styles.container}>
+      <form onSubmit={handleSubmit} style={styles.form}>
+        <h2 style={styles.title}>Log In</h2>
 
-        {/* Login normal */}
+        <label style={styles.label}>Email</label>
         <input
           type="email"
           name="correo"
-          placeholder="Correo"
           value={credenciales.correo}
           onChange={handleChange}
-          className="w-full p-2 border rounded"
+          placeholder="Enter your email"
+          style={styles.input}
           required
         />
+
+        <label style={styles.label}>Password</label>
         <input
           type="password"
           name="contrasena"
-          placeholder="Contraseña"
           value={credenciales.contrasena}
           onChange={handleChange}
-          className="w-full p-2 border rounded"
+          placeholder="Enter your password"
+          style={styles.input}
           required
         />
-        <button
-          type="submit"
-          className="w-full p-2 bg-indigo-600 text-white rounded"
-        >
-          Entrar
+
+        {error && <p style={styles.error}>{error}</p>}
+
+        <button type="submit" style={styles.button}>
+          Log In
         </button>
 
+        <p style={styles.footerText}>
+          Don’t have an account?{" "}
+          <Link to="/registro" style={styles.link}>
+            Register
+          </Link>
+        </p>
+
         {/* Google */}
-        <div className="w-full flex justify-center mt-4">
-          <GoogleLogin onSuccess={handleGoogleSuccess} onError={handleGoogleError} />
+        <div style={{ marginTop: "15px" }}>
+          <GoogleLogin
+            onSuccess={handleGoogleSuccess}
+            onError={handleGoogleError}
+            useOneTap
+            // 🔹 Para mantener estilo de marca, Google ya ofrece su botón oficial.
+            // Si quieres custom, tendrías que usar un wrapper propio.
+          />
         </div>
 
         {/* Facebook */}
-        <div className="w-full flex justify-center mt-4">
+        <div style={{ marginTop: "10px" }}>
           <FacebookLoginButton onSuccess={handleFacebookResponse} />
         </div>
-
-        {error && <p className="text-red-500">{error}</p>}
       </form>
     </div>
   );
+};
+
+const styles = {
+  container: {
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    minHeight: "80vh",
+    backgroundColor: "#f9f9f9",
+  },
+  form: {
+    backgroundColor: "#fff",
+    padding: "40px",
+    borderRadius: "12px",
+    boxShadow: "0 2px 10px rgba(0,0,0,0.1)",
+    width: "100%",
+    maxWidth: "400px",
+    textAlign: "left",
+  },
+  title: {
+    fontSize: "24px",
+    fontWeight: "bold",
+    marginBottom: "20px",
+    textAlign: "center",
+  },
+  label: { fontSize: "14px", fontWeight: "bold", marginBottom: "6px" },
+  input: {
+    width: "100%",
+    padding: "10px",
+    marginBottom: "15px",
+    borderRadius: "6px",
+    border: "1px solid #ccc",
+    fontSize: "14px",
+  },
+  button: {
+    width: "100%",
+    padding: "12px",
+    border: "none",
+    borderRadius: "6px",
+    backgroundColor: "#ff6f00",
+    color: "#fff",
+    fontSize: "16px",
+    fontWeight: "bold",
+    cursor: "pointer",
+  },
+  footerText: {
+    marginTop: "15px",
+    fontSize: "14px",
+    textAlign: "center",
+  },
+  link: { color: "#ff6f00", textDecoration: "none", fontWeight: "bold" },
+  error: { color: "red", fontSize: "12px", marginBottom: "10px" },
 };
 
 export default LoginPage;

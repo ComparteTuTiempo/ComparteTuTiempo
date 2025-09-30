@@ -56,7 +56,7 @@ public class Usuario implements UserDetails {
     private String ubicacion;
 
     @Column(nullable = false)
-    private boolean activo = true;   // 👈 controla si el usuario está habilitado
+    private boolean activo = true;
 
     @Column(nullable = false)
     private String metodoAutenticacion;

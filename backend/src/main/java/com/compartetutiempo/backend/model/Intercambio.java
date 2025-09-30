@@ -60,7 +60,4 @@ public class Intercambio extends BaseEntity{
     )
     private Set<Categoria> categorias = new HashSet<>();
     
-
-    
-    
 }

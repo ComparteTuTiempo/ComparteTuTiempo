@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import axios from "axios";
+import { FaFacebookF } from "react-icons/fa";
 
 const FacebookLoginButton = ({ onSuccess }) => {
   useEffect(() => {
@@ -20,7 +20,7 @@ const FacebookLoginButton = ({ onSuccess }) => {
         if (response.authResponse) {
           window.FB.api("/me", { fields: "name,email,picture" }, function (userInfo) {
             console.log("✅ Datos Facebook:", userInfo);
-            onSuccess(userInfo); // 👈 pasamos datos a LoginPage
+            onSuccess(userInfo);
           });
         } else {
           console.error("❌ Error al autenticar con Facebook:", response);
@@ -31,13 +31,31 @@ const FacebookLoginButton = ({ onSuccess }) => {
   };
 
   return (
-    <button
-      onClick={handleLogin}
-      className="w-full p-2 bg-blue-600 text-white rounded mt-2"
-    >
-      Iniciar sesión con Facebook
+    <button onClick={handleLogin} style={styles.button}>
+      <FaFacebookF style={styles.icon} />
+      Continue with Facebook
     </button>
   );
+};
+
+const styles = {
+  button: {
+    width: "100%",
+    marginTop: "10px",
+    padding: "12px",
+    border: "none",
+    borderRadius: "6px",
+    backgroundColor: "#1877F2", // azul oficial
+    color: "#fff",
+    fontSize: "15px",
+    fontWeight: "500",
+    cursor: "pointer",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: "10px",
+  },
+  icon: { fontSize: "18px" },
 };
 
 export default FacebookLoginButton;

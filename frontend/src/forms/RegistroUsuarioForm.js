@@ -1,115 +1,125 @@
-import React from "react";
+import React, { useState } from "react";
+import axios from "axios";
+import { Link, useNavigate } from "react-router-dom";
 
-const UsuarioForm = ({ usuario, onChange, onSubmit, errores, modo = "registro", deshabilitarCorreo = false, mostrarContrasena = true }) => {
+const RegistroUsuario = () => {
+  const navigate = useNavigate();
+
+  const [usuario, setUsuario] = useState({
+    nombre: "",
+    correo: "",
+    contrasena: "",
+    confirmarContrasena: "",
+  });
+
+  const [errores, setErrores] = useState({});
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setUsuario({ ...usuario, [name]: value });
+  };
+
+  const validar = () => {
+    const errores = {};
+
+    if (usuario.contrasena !== usuario.confirmarContrasena) {
+      errores.confirmarContrasena = "Las contraseñas no coinciden";
+    }
+
+    // Contraseña segura: al menos 1 mayúscula, 1 número, 10 caracteres
+    const passRegex = /^(?=.*[A-Z])(?=.*\d).{10,}$/;
+    if (!passRegex.test(usuario.contrasena)) {
+      errores.contrasena =
+        "La contraseña debe tener al menos 10 caracteres, 1 mayúscula y 1 número";
+    }
+
+    setErrores(errores);
+    return Object.keys(errores).length === 0;
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!validar()) return;
+
+    try {
+      await axios.post("http://localhost:8080/api/usuarios", {
+        nombre: usuario.nombre,
+        correo: usuario.correo,
+        contrasena: usuario.contrasena,
+      });
+      alert("Usuario registrado con éxito 🚀");
+      navigate("/login");
+    } catch (error) {
+      console.error(error);
+      alert("Error al registrar usuario");
+    }
+  };
+
   return (
     <div style={styles.container}>
-      <h2 style={styles.title}>{modo === "registro" ? "Registro de Usuario" : "Editar Perfil"}</h2>
+      <form onSubmit={handleSubmit} style={styles.form}>
+        <h2 style={styles.title}>Create Your Account</h2>
 
-      <form onSubmit={onSubmit} style={styles.form}>
-        {/* Nombre */}
+        <label style={styles.label}>Name</label>
         <input
+          type="text"
           name="nombre"
-          placeholder="Nombre y Apellidos"
-          value={usuario.nombre || ""}
-          onChange={onChange}
+          value={usuario.nombre}
+          onChange={handleChange}
+          placeholder="Enter your name"
           style={styles.input}
           required
         />
-        {errores.nombre && <span style={styles.error}>{errores.nombre}</span>}
 
-        {/* Correo */}
+        <label style={styles.label}>Email</label>
         <input
-          name="correo"
-          placeholder="Correo electrónico"
           type="email"
-          value={usuario.correo || ""}
-          onChange={onChange}
+          name="correo"
+          value={usuario.correo}
+          onChange={handleChange}
+          placeholder="Enter your email"
           style={styles.input}
           required
-          disabled={deshabilitarCorreo}
         />
-        {errores.correo && <span style={styles.error}>{errores.correo}</span>}
 
-        {/* Contraseña */}
-        {mostrarContrasena && (
-          <>
-            <input
-              name="contrasena"
-              placeholder="Contraseña"
-              type="password"
-              value={usuario.contrasena || ""}
-              onChange={onChange}
-              style={styles.input}
-              required={modo === "registro"}
-            />
-            {errores.contrasena && <span style={styles.error}>{errores.contrasena}</span>}
-          </>
+        <label style={styles.label}>Password</label>
+        <input
+          type="password"
+          name="contrasena"
+          value={usuario.contrasena}
+          onChange={handleChange}
+          placeholder="Create a password"
+          style={styles.input}
+          required
+        />
+        {errores.contrasena && (
+          <p style={styles.error}>{errores.contrasena}</p>
         )}
 
-        {/* Fecha de nacimiento */}
+        <label style={styles.label}>Confirm Password</label>
         <input
-          name="fechaNacimiento"
-          placeholder="Fecha de Nacimiento"
-          type="date"
-          value={usuario.fechaNacimiento || ""}
-          onChange={onChange}
+          type="password"
+          name="confirmarContrasena"
+          value={usuario.confirmarContrasena}
+          onChange={handleChange}
+          placeholder="Confirm your password"
           style={styles.input}
+          required
         />
-        {errores.fechaNacimiento && <span style={styles.error}>{errores.fechaNacimiento}</span>}
-
-        {/* Biografía */}
-        <textarea
-          name="biografia"
-          placeholder="Biografía"
-          value={usuario.biografia || ""}
-          onChange={onChange}
-          style={{ ...styles.input, height: "80px" }}
-        />
-        {errores.biografia && <span style={styles.error}>{errores.biografia}</span>}
-
-        {/* Foto de perfil */}
-        <input
-          name="fotoPerfil"
-          type="file"
-          accept="image/*"
-          onChange={onChange}
-          style={styles.input}
-        />
-        <input
-          name="fotoPerfil"
-          placeholder="O pega una URL de la foto"
-          value={usuario.fotoPerfil?.startsWith("data:") ? "" : usuario.fotoPerfil || ""}
-          onChange={onChange}
-          style={styles.input}
-        />
-        {errores.fotoPerfil && <span style={styles.error}>{errores.fotoPerfil}</span>}
-
-        {/* Ubicación */}
-        <input
-          name="ubicacion"
-          placeholder="Ubicación"
-          value={usuario.ubicacion || ""}
-          onChange={onChange}
-          style={styles.input}
-        />
-        {errores.ubicacion && <span style={styles.error}>{errores.ubicacion}</span>}
-
-        {/* Método de autenticación */}
-        <select
-          name="metodoAutenticacion"
-          value={usuario.metodoAutenticacion || "correo"}
-          onChange={onChange}
-          style={styles.input}
-        >
-          <option value="correo">Correo</option>
-          <option value="google">Google</option>
-          <option value="facebook">Facebook</option>
-        </select>
-        {errores.metodoAutenticacion && <span style={styles.error}>{errores.metodoAutenticacion}</span>}
+        {errores.confirmarContrasena && (
+          <p style={styles.error}>{errores.confirmarContrasena}</p>
+        )}
 
         <button type="submit" style={styles.button}>
-          {modo === "registro" ? "Registrarse" : "Guardar cambios"}
+          Register
         </button>
+
+        <p style={styles.footerText}>
+          Already have an account?{" "}
+          <Link to="/login" style={styles.link}>
+            Log In
+          </Link>
+        </p>
       </form>
     </div>
   );
@@ -117,48 +127,54 @@ const UsuarioForm = ({ usuario, onChange, onSubmit, errores, modo = "registro", 
 
 const styles = {
   container: {
-    backgroundColor: "#000",
-    padding: "30px",
-    borderRadius: "12px",
-    boxShadow: "0 0 15px #ff6f00",
-    width: "100%",
-    maxWidth: "400px",
-    color: "#fff",
-  },
-  title: {
-    textAlign: "center",
-    color: "#ff6f00",
-    marginBottom: "20px",
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    minHeight: "80vh",
+    backgroundColor: "#f9f9f9",
   },
   form: {
-    display: "flex",
-    flexDirection: "column",
-    gap: "15px",
-  },
-  input: {
-    padding: "10px",
-    borderRadius: "6px",
-    border: "1px solid #ff6f00",
     backgroundColor: "#fff",
-    color: "#000",
+    padding: "40px",
+    borderRadius: "12px",
+    boxShadow: "0 2px 10px rgba(0,0,0,0.1)",
+    width: "100%",
+    maxWidth: "400px",
+    textAlign: "left",
+  },
+  title: {
+    fontSize: "24px",
+    fontWeight: "bold",
+    marginBottom: "20px",
+    textAlign: "center",
+  },
+  label: { fontSize: "14px", fontWeight: "bold", marginBottom: "6px" },
+  input: {
+    width: "100%",
+    padding: "10px",
+    marginBottom: "15px",
+    borderRadius: "6px",
+    border: "1px solid #ccc",
     fontSize: "14px",
   },
   button: {
+    width: "100%",
     padding: "12px",
-    borderRadius: "6px",
     border: "none",
+    borderRadius: "6px",
     backgroundColor: "#ff6f00",
     color: "#fff",
+    fontSize: "16px",
     fontWeight: "bold",
     cursor: "pointer",
-    transition: "0.3s",
   },
-  error: {
-    color: "#ff6f00",
-    fontSize: "12px",
-    marginTop: "-10px",
-    marginBottom: "10px",
+  footerText: {
+    marginTop: "15px",
+    fontSize: "14px",
+    textAlign: "center",
   },
+  link: { color: "#ff6f00", textDecoration: "none", fontWeight: "bold" },
+  error: { color: "red", fontSize: "12px", marginBottom: "10px" },
 };
 
-export default UsuarioForm;
+export default RegistroUsuario;
