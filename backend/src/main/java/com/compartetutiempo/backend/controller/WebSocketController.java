@@ -83,7 +83,9 @@ public class WebSocketController {
             remitente.getFotoPerfil(),
             null,
             remitente.isVerificado(),
-            remitente.isActivo()
+            remitente.isActivo(),
+            remitente.getBiografia(),
+            remitente.getFechaNacimiento()
         );
 
         MensajeDTO response = new MensajeDTO(

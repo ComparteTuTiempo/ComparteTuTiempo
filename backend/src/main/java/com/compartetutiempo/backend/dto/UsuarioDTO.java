@@ -1,5 +1,7 @@
 package com.compartetutiempo.backend.dto;
 
+import java.time.LocalDate;
+
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -15,4 +17,6 @@ public class UsuarioDTO {
     private String fotoPerfil;
     private boolean verificado;
     private boolean activo;
+    private String biografia;
+    private LocalDate fechaNacimiento;
 }
