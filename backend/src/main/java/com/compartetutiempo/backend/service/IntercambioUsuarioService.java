@@ -15,6 +15,7 @@ import com.compartetutiempo.backend.model.IntercambioUsuario;
 import com.compartetutiempo.backend.model.Usuario;
 import com.compartetutiempo.backend.model.enums.EstadoIntercambio;
 import com.compartetutiempo.backend.model.enums.TipoIntercambio;
+import com.compartetutiempo.backend.model.enums.TipoNotificacion;
 import com.compartetutiempo.backend.repository.IntercambioUsuarioRepository;
 import com.compartetutiempo.backend.repository.UsuarioRepository;
 
@@ -24,12 +25,15 @@ public class IntercambioUsuarioService {
     private final IntercambioUsuarioRepository intercambioUsuarioRepository;
     private final UsuarioRepository usuarioRepository;
     private final ConversacionService conversacionService;
+    private final NotificacionService notificacionService;
 
     public IntercambioUsuarioService(IntercambioUsuarioRepository intercambioUsuarioRepository,
-    UsuarioRepository usuarioRepository,ConversacionService conversacionService){
+    UsuarioRepository usuarioRepository,ConversacionService conversacionService
+    ,NotificacionService notificacionService){
         this.intercambioUsuarioRepository = intercambioUsuarioRepository;
         this.usuarioRepository = usuarioRepository;
         this.conversacionService = conversacionService;
+        this.notificacionService = notificacionService;
     }
 
     @Transactional
@@ -61,6 +65,11 @@ public class IntercambioUsuarioService {
             solicitud.getId(), correosParticipantes
         );
 
+        String mensaje = "Tu solicitud para el intercambio " + solicitud.getIntercambio().getNombre() + " ha sido aceptada";
+
+        notificacionService.crearYEnviar(solicitud.getUsuario(), TipoNotificacion.INTERCAMBIO, mensaje, null);
+
+
         solicitud.setEstado(EstadoIntercambio.CONSENSO);
         intercambioUsuarioRepository.save(solicitud);
 
@@ -68,6 +77,22 @@ public class IntercambioUsuarioService {
             solicitud.getIntercambio(),
             intercambioUsuarioRepository.findByIntercambioId(solicitud.getIntercambio().getId())
         );
+    }
+
+    @Transactional
+    public IntercambioUsuarioDTO obtenerPorId(Integer id){
+        IntercambioUsuario iu = intercambioUsuarioRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("IntercambioUsuario no encontrado"));
+
+        return IntercambioUsuarioDTO.fromEntity(iu);
+    }
+
+    @Transactional
+    public IntercambioUsuarioDTO obtenerPorIntercambioYUsuario(Integer intercambioId, String correo) {
+        IntercambioUsuario iu = intercambioUsuarioRepository.findByIntercambioIdAndUsuarioCorreo(intercambioId, correo)
+                .orElseThrow(() -> new RuntimeException("No existe relación entre el intercambio y este usuario"));
+
+        return IntercambioUsuarioDTO.fromEntity(iu);
     }
 
     @Transactional
@@ -86,10 +111,11 @@ public class IntercambioUsuarioService {
 
         iu.setHorasAsignadas(request.getHorasAsignadas());
         iu.setTerminos(request.getTerminos());
-
         iu.setEstado(EstadoIntercambio.EJECUCION);
-
         intercambioUsuarioRepository.save(iu);
+
+        String mensaje = "El intercambio " + iu.getIntercambio().getNombre() + "ha pasado de consenso a ejecución";
+        notificacionService.crearYEnviar(solicitante, TipoNotificacion.INTERCAMBIO, mensaje, null);
 
         return IntercambioUsuarioDTO.fromEntity(iu);
     }
@@ -126,6 +152,9 @@ public class IntercambioUsuarioService {
         }
 
         usuarioRepository.saveAll(List.of(usuarioSolicitante,usuarioOfertante));
+
+        String mensaje = "El intercambio " + iu.getIntercambio().getNombre() + "ha finalizado y la transacción de horas ha sido exitosa";
+        notificacionService.crearYEnviar(usuarioSolicitante, TipoNotificacion.INTERCAMBIO, mensaje, null);
         
         iu.setEstado(EstadoIntercambio.FINALIZADO);
 
@@ -145,6 +174,10 @@ public class IntercambioUsuarioService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"No tienes permiso para rechazar esta solicitud");
         }
 
+        String mensaje = "El usuario " + solicitud.getUsuario().getNombre() + "ha denegado tu solicitud para el intercambio " +
+        solicitud.getIntercambio().getNombre();
+        notificacionService.crearYEnviar(solicitud.getUsuario(), TipoNotificacion.INTERCAMBIO, mensaje, null);
+
         intercambioUsuarioRepository.delete(solicitud);
     }
     
@@ -160,4 +193,6 @@ public class IntercambioUsuarioService {
             .map(IntercambioUsuarioDTO::fromEntity)
             .toList();
     }
+
+
 }

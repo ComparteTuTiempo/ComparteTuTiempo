@@ -34,6 +34,7 @@ import CategoriaForm from "./forms/CategoriaForm";
 
 import DetalleProducto from "./pages/ProductoDetails";
 import ProductoUsuarioDetails from "./pages/ProductoUsuarioDetails";
+import NotificacionesPage from "./pages/NotificacionesPage";
 
 
 function App() {
@@ -44,7 +45,7 @@ function App() {
           <Router>
             <Routes>
               {/* Todas las páginas usan Layout */}
-              <Route element={<Layout />}>
+                <Route element={<Layout />}>
                 <Route path="/" element={<LandingPage />} />
                 <Route path="/registro" element={<RegistroUsuario />} />
                 <Route path="/login" element={<LoginPage />} />
@@ -68,6 +69,8 @@ function App() {
                 <Route path="/acuerdos/:id" element={<FormularioAcuerdo />} />
                 <Route path="/producto/:id" element={<DetalleProducto />} />
                 <Route path="/productousuario/transacciones" element={<ProductoUsuarioDetails />} />
+                <Route path="/notificaciones" element={<NotificacionesPage />} />
+
                 <Route element={<Layout />}>
 
                 {/* Ruta protegida: usuario normal */}

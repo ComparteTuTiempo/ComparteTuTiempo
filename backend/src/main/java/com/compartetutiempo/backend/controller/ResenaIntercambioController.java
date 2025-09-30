@@ -1,6 +1,9 @@
 package com.compartetutiempo.backend.controller;
 
 import com.compartetutiempo.backend.model.ResenaIntercambio;
+import com.compartetutiempo.backend.model.Usuario;
+import com.compartetutiempo.backend.model.enums.TipoNotificacion;
+import com.compartetutiempo.backend.service.NotificacionService;
 import com.compartetutiempo.backend.service.ResenaIntercambioService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -14,28 +17,37 @@ import java.util.List;
 public class ResenaIntercambioController {
 
     private final ResenaIntercambioService resenaService;
+    private final NotificacionService notificacionService;
 
-    public ResenaIntercambioController(ResenaIntercambioService resenaService) {
+    public ResenaIntercambioController(ResenaIntercambioService resenaService,
+    NotificacionService notificacionService) {
         this.resenaService = resenaService;
+        this.notificacionService = notificacionService;
     }
 
     @PostMapping("/{intercambioId}")
     public ResponseEntity<ResenaIntercambio> crear(
-            @PathVariable Long intercambioId,
+            @PathVariable Integer intercambioId,
             @RequestBody ResenaIntercambio resena,
             @AuthenticationPrincipal Jwt jwt) {
+
+        Usuario destinatario = resena.getIntercambio().getUser();
+
+        String mensaje = "El usuario " + resena.getAutor() + "ha escrito una reseña sobre el intercambio" 
+        + resena.getIntercambio().getNombre();
+        notificacionService.crearYEnviar(destinatario, TipoNotificacion.INTERCAMBIO, mensaje, null);
 
         String correoAutor = jwt.getSubject();
         return ResponseEntity.ok(resenaService.crear(intercambioId, correoAutor, resena));
     }
 
     @GetMapping("/{intercambioId}")
-    public ResponseEntity<List<ResenaIntercambio>> listar(@PathVariable Long intercambioId) {
+    public ResponseEntity<List<ResenaIntercambio>> listar(@PathVariable Integer intercambioId) {
         return ResponseEntity.ok(resenaService.obtenerPorIntercambio(intercambioId));
     }
 
     @GetMapping("/{intercambioId}/promedio")
-    public ResponseEntity<Double> promedio(@PathVariable Long intercambioId) {
+    public ResponseEntity<Double> promedio(@PathVariable Integer intercambioId) {
         return ResponseEntity.ok(resenaService.calcularPromedio(intercambioId));
     }
 }

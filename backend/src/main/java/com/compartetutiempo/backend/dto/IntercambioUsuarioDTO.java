@@ -21,6 +21,7 @@ public class IntercambioUsuarioDTO {
     private Long creadorId;
     private String creadorNombre;
     private String creadorCorreo;
+    private String solicitanteCorreo;
     private EstadoIntercambio estado;
     private Double horasAsignadas;
 
@@ -41,6 +42,7 @@ public class IntercambioUsuarioDTO {
         dto.setSolicitanteNombre(iu.getUsuario().getNombre());
         dto.setConversacionId(iu.getConversacion() ==null? null:iu.getConversacion().getId());
         dto.setTerminos(iu.getTerminos());
+        dto.setSolicitanteCorreo(iu.getUsuario().getCorreo());
         
         
         return dto;
