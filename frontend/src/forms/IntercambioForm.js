@@ -88,7 +88,7 @@ const IntercambioForm = () => {
           }
         );
       }
-      navigate("/profile");
+      navigate("/mispublicaciones");
     } catch (err) {
       console.error("❌ Error al guardar intercambio:", err);
     }

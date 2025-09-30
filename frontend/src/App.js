@@ -18,7 +18,7 @@ import VerificacionForm from "./forms/VerificacionForm";
 import AdminVerificationPage from "./pages/AdminVerificationPage";
 
 import IntercambiosPage from "./pages/IntercambiosPage";
-import MercadoPage from "./pages/MercadoPage";
+import MarketPage from "./pages/MarketPage";
 import ProductoPage from "./pages/ProductoPage";
 import PublicacionesPage from "./pages/PublicacionesPage";
 import HistorialPage from "./pages/HistorialPage";
@@ -46,7 +46,7 @@ function App() {
               <Route path="/eventos/:id" element={<EventoDetails />} />
               <Route path="/eventos/:id/participantes/lista" element={<ListaAsistencia />} />
               <Route path="/intercambios" element={<IntercambiosPage />} />
-              <Route path="/mercado" element={<MercadoPage />} />
+              <Route path="/mercado" element={<MarketPage />} />
               <Route path="/producto/nuevo" element={<ProductoPage />} />
               <Route path="/mispublicaciones" element={<PublicacionesPage />} />
               <Route path="/productos/editar/:id" element={<ProductoPage />} />

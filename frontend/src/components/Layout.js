@@ -25,7 +25,7 @@ const Layout = () => {
   const handleLogout = () => {
     localStorage.removeItem("usuario");
     setUsuario(null);
-    window.dispatchEvent(new Event("usuario-actualizado")); // informar al layout
+    window.dispatchEvent(new Event("usuario-actualizado"));
     navigate("/"); // volver a landing
   };
 
@@ -35,36 +35,43 @@ const Layout = () => {
       <header style={styles.header}>
         <h1 style={styles.logo}>ComparteTuTiempo</h1>
         <nav style={styles.nav}>
-          <Link to="/" style={styles.navLink}>
-            Inicio
-          </Link>
-          <Link to="/registro" style={styles.navLink}>
-            Registro
-          </Link>
+          <Link to="/" style={styles.navLink}>Inicio</Link>
 
           {usuario ? (
-            <div style={styles.userSection}>
-              <Link to="/perfil" style={{ textDecoration: "none" }}>
-              {usuario.fotoPerfil ? (
-                <img
-                  src={usuario.fotoPerfil}
-                  alt="perfil"
-                  style={styles.profileImg}
-                ></img>
-              ) : (
-                <FaUserCircle style={styles.profileIcon} />
-              )}
+            <>
+              <Link to="/mispublicaciones" style={styles.navLink}>
+                Mis Publicaciones
               </Link>
-              <span style={styles.username}>{usuario.nombre}</span>
+              <Link to="/eventos/crear" style={styles.navLink}>
+                Eventos
+              </Link>
+              <Link to="/mercado" style={styles.navLink}>
+                Intercambios
+              </Link>
 
-              <button onClick={handleLogout} style={styles.logoutBtn}>
-                Cerrar sesión
-              </button>
-            </div>
+              <div style={styles.userSection}>
+                <Link to="/perfil" style={{ textDecoration: "none" }}>
+                  {usuario.fotoPerfil ? (
+                    <img
+                      src={usuario.fotoPerfil}
+                      alt="perfil"
+                      style={styles.profileImg}
+                    />
+                  ) : (
+                    <FaUserCircle style={styles.profileIcon} />
+                  )}
+                </Link>
+                <span style={styles.username}>{usuario.nombre}</span>
+                <button onClick={handleLogout} style={styles.logoutBtn}>
+                  Cerrar sesión
+                </button>
+              </div>
+            </>
           ) : (
-            <Link to="/login" style={styles.loginBtn}>
-              Iniciar sesión
-            </Link>
+            <>
+              <Link to="/registro" style={styles.navLink}>Registro</Link>
+              <Link to="/login" style={styles.loginBtn}>Iniciar sesión</Link>
+            </>
           )}
         </nav>
       </header>
@@ -82,51 +89,66 @@ const Layout = () => {
   );
 };
 
-// En Layout.js dentro de styles
 const styles = {
+  container: {
+    fontFamily: "'Arial', sans-serif",
+    backgroundColor: "#fff",
+    color: "#000",
+    minHeight: "100vh",
+    display: "flex",
+    flexDirection: "column",
+  },
   header: {
     display: "flex",
     justifyContent: "space-between",
     padding: "20px 50px",
-    borderBottom: "3px solid #000",   // 🔹 negro
+    borderBottom: "3px solid #000",
     alignItems: "center",
     position: "sticky",
     top: 0,
-    backgroundColor: "#000",          // 🔹 negro de fondo
+    backgroundColor: "#000",
     zIndex: 100,
   },
   logo: {
-    color: "#fff",                    // 🔹 logo en blanco
+    color: "#fff",
     fontSize: "28px",
   },
+  nav: {
+    display: "flex",
+    alignItems: "center",
+    gap: "20px",
+  },
   navLink: {
-    color: "#fff",                    // 🔹 links en blanco
-    marginLeft: "20px",
+    color: "#fff",
     textDecoration: "none",
     fontWeight: "bold",
+  },
+  userSection: {
+    display: "flex",
+    alignItems: "center",
+    marginLeft: "20px",
   },
   profileImg: {
     width: "40px",
     height: "40px",
     borderRadius: "50%",
-    border: "2px solid #fff",         // 🔹 borde blanco
+    border: "2px solid #fff",
     marginRight: "10px",
   },
   profileIcon: {
     fontSize: "32px",
-    color: "#fff",                    // 🔹 icono blanco
+    color: "#fff",
     marginRight: "10px",
   },
   username: {
     marginRight: "15px",
     fontWeight: "bold",
-    color: "#fff",                    // 🔹 texto usuario blanco
+    color: "#fff",
   },
   loginBtn: {
-    marginLeft: "20px",
     padding: "8px 15px",
-    backgroundColor: "#fff",          // 🔹 botón blanco
-    color: "#000",                    // 🔹 texto negro
+    backgroundColor: "#ff6f00",
+    color: "#fff",
     border: "none",
     borderRadius: "5px",
     fontWeight: "bold",
@@ -135,12 +157,20 @@ const styles = {
   },
   logoutBtn: {
     padding: "8px 15px",
-    backgroundColor: "#fff",          // 🔹 botón blanco
-    color: "#000",                    // 🔹 texto negro
+    backgroundColor: "#ff6f00",
+    color: "#fff",
     border: "none",
     borderRadius: "5px",
     fontWeight: "bold",
     cursor: "pointer",
+  },
+  main: { flex: 1, padding: "20px" },
+  footer: {
+    textAlign: "center",
+    padding: "20px",
+    borderTop: "3px solid #000",
+    backgroundColor: "#000",
+    color: "#fff",
   },
 };
 

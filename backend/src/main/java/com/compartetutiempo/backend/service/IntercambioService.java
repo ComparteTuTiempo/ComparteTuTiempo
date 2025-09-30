@@ -16,8 +16,11 @@ import com.compartetutiempo.backend.model.enums.ModalidadServicio;
 import com.compartetutiempo.backend.model.enums.TipoIntercambio;
 import com.compartetutiempo.backend.repository.CategoriaRepository;
 import com.compartetutiempo.backend.repository.IntercambioRepository;
+import com.compartetutiempo.backend.repository.ReseñaIntercambioRepository;
 import com.compartetutiempo.backend.repository.UsuarioRepository;
 import com.compartetutiempo.backend.specifications.IntercambioSpecifications;
+
+import jakarta.transaction.Transactional;
 
 @Service
 public class IntercambioService {
@@ -25,12 +28,14 @@ public class IntercambioService {
     private final IntercambioRepository intercambioRepository;
     private final UsuarioRepository usuarioRepository;
     private final CategoriaRepository categoriaRepository;
+    private final ReseñaIntercambioRepository resenaIntercambioRepository;
 
-    public IntercambioService(IntercambioRepository intercambioRepository, UsuarioRepository usuarioRepository,
+    public IntercambioService(IntercambioRepository intercambioRepository, UsuarioRepository usuarioRepository , ReseñaIntercambioRepository resenaIntercambioRepository,
             CategoriaRepository categoriaRepository) {
         this.intercambioRepository = intercambioRepository;
         this.usuarioRepository = usuarioRepository;
         this.categoriaRepository = categoriaRepository;
+        this.resenaIntercambioRepository = resenaIntercambioRepository;
     }
 
     public Intercambio crear(String correo, IntercambioDTO dto) {
@@ -114,7 +119,9 @@ public class IntercambioService {
         return intercambioRepository.findAll(spec); // ← ahora sí existe
     }
 
+    @Transactional
     public void eliminarIntercambio(Long id) {
+        resenaIntercambioRepository.deleteByIntercambioId(id);
         if (!intercambioRepository.existsById(id)) {
             throw new RuntimeException("Intercambio no encontrado");
         }
