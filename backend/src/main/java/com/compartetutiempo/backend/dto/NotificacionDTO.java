@@ -26,7 +26,6 @@ public class NotificacionDTO {
         dto.setId(notificacion.getId());
         dto.setContenido(notificacion.getContenido());
         dto.setTimestamp(notificacion.getTimestamp());
-        dto.setLeida(notificacion.isLeida());
         dto.setReferenciaId(notificacion.getReferenciaId());
         dto.setTipo(notificacion.getTipo());
         

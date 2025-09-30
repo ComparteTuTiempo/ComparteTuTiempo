@@ -12,18 +12,21 @@ import com.compartetutiempo.backend.model.Notificacion;
 import com.compartetutiempo.backend.model.Usuario;
 import com.compartetutiempo.backend.model.enums.TipoNotificacion;
 import com.compartetutiempo.backend.repository.NotificacionRepository;
+import com.compartetutiempo.backend.repository.UsuarioRepository;
 
 @Service
 public class NotificacionService {
     private final NotificacionRepository notificacionRepository;
     private final UsuarioService usuarioService;
     private final SimpMessagingTemplate messagingTemplate;
+    private final UsuarioRepository usuarioRepository;
 
     public NotificacionService(NotificacionRepository repo, SimpMessagingTemplate template
-    ,UsuarioService usuarioService) {
+    ,UsuarioService usuarioService,UsuarioRepository usuarioRepository) {
         this.notificacionRepository = repo;
         this.messagingTemplate = template;
         this.usuarioService = usuarioService;
+        this.usuarioRepository = usuarioRepository;
     }
 
     @Transactional
@@ -55,24 +58,23 @@ public class NotificacionService {
     }
 
     public void marcarComoLeida(Integer id, String correoUsuario) {
-        Notificacion notif = notificacionRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Notificación no encontrada"));
+        Usuario usuario = usuarioRepository.findByCorreo(correoUsuario)
+            .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
-        if (!notif.getUsuarioDestino().getCorreo().equals(correoUsuario)) {
-            throw new RuntimeException("No autorizado");
-        }
+        Notificacion notificacion = notificacionRepository.findByIdAndUsuarioDestinoId(id, usuario.getId())
+            .orElseThrow(() -> new RuntimeException("Notificación no encontrada o no pertenece al usuario"));
 
-        notif.setLeida(true);
-        notificacionRepository.save(notif);
+        notificacionRepository.delete(notificacion);
     }
 
+
+@Transactional
     public void marcarTodasComoLeidas(String correoUsuario) {
         Usuario usuario = usuarioService.obtenerPorCorreo(correoUsuario);
         List<Notificacion> notifs = notificacionRepository.findByUsuarioDestinoOrderByTimestampDesc(usuario);
-        notifs.forEach(n -> n.setLeida(true));
-        notificacionRepository.saveAll(notifs);
-    }
 
+        notificacionRepository.deleteAll(notifs);
+    }
 
 }
 

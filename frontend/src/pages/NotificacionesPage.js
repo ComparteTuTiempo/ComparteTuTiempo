@@ -29,19 +29,12 @@ export default function NotificacionesPage() {
     return () => sub?.unsubscribe();
   }, [connected, subscribe]);
 
-  const handleMarcarLeida = (id) => {
-    marcarComoLeida(id, token).then(() => {
-      setNotificaciones((prev) =>
-        prev.map((n) => (n.id === id ? { ...n, leida: true } : n))
-      );
+  const handleMarcarTodas = () => {
+    marcarTodasComoLeidas(token).then(() => {
+      setNotificaciones([]);
     });
   };
 
-  const handleMarcarTodas = () => {
-    marcarTodasComoLeidas(token).then(() => {
-      setNotificaciones((prev) => prev.map((n) => ({ ...n, leida: true })));
-    });
-  };
   return (
     <div className="max-w-3xl mx-auto p-6">
       <div className="flex justify-between items-center mb-4">
@@ -63,10 +56,6 @@ export default function NotificacionesPage() {
           {notificaciones.map(notif => (
             <li
               key={notif.id}
-              onClick={() => handleMarcarLeida(notif.id)}
-              className={`p-4 rounded-lg border cursor-pointer transition-colors ${
-                notif.leida ? "bg-white" : "bg-orange-50 hover:bg-orange-100"
-              }`}
             >
               <p className="text-sm font-medium">{notif.contenido}</p>
               <span className="text-xs text-gray-400">

@@ -13,4 +13,7 @@ public interface NotificacionRepository extends JpaRepository<Notificacion,Integ
     List<Notificacion> findByUsuarioDestinoOrderByTimestampDesc(Usuario usuario);
 
     Optional<Notificacion> findById(Integer id);
+
+    Optional<Notificacion> findByIdAndUsuarioDestinoId(Integer id, Long usuarioId);
+
 }

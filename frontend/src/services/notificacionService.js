@@ -13,18 +13,9 @@ export const getNotificaciones = async (token) => {
   return response.data;
 };
 
-export const marcarComoLeida = async (id, token) => {
-  const response = await axios.post(
-    `${API_URL}/${id}/leida`,
-    null,
-    { headers: getAuthHeader(token) }
-  );
-  return response.data;
-};
-
 export const marcarTodasComoLeidas = async (token) => {
-  const response = await axios.post(
-    `${API_URL}/leidas`,
+  const response = await axios.put(
+    `${API_URL}/leer-todas`,
     null,
     { headers: getAuthHeader(token) }
   );

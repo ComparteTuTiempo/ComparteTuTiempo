@@ -2,8 +2,6 @@ package com.compartetutiempo.backend.model;
 
 import java.time.Instant;
 
-import org.hibernate.validator.constraints.Length;
-
 import com.compartetutiempo.backend.model.enums.TipoNotificacion;
 
 import jakarta.persistence.Entity;
@@ -12,7 +10,7 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
+
 import lombok.Getter;
 import lombok.Setter;
 
@@ -29,8 +27,6 @@ public class Notificacion extends BaseEntity{
     private String contenido;
 
     private Instant timestamp;
-    @NotNull
-    private boolean leida;
 
     @ManyToOne
     private Usuario usuarioDestino;
