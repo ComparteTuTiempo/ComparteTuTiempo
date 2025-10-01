@@ -52,7 +52,7 @@ public class IntercambioUsuarioService {
 
         if (!solicitud.getIntercambio().getUser().getCorreo().equals(correoOfertante)) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"No tienes permiso para aceptar esta solicitud");
-        } else if(solicitud.getIntercambio().getEstado() == EstadoIntercambio.CONSENSO) {
+        } else if(solicitud.getEstado() == EstadoIntercambio.CONSENSO) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Esta oferta ya está en consenso");
         }
 
