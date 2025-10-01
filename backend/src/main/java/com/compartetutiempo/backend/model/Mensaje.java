@@ -2,6 +2,8 @@ package com.compartetutiempo.backend.model;
 
 import java.time.Instant;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.JoinColumn;
@@ -18,6 +20,7 @@ public class Mensaje extends BaseEntity{
 
     @ManyToOne(optional = false)
     @JoinColumn(name = "conversacion_id", nullable = false)
+    @JsonIgnore
     private Conversacion conversacion;
 
     @ManyToOne(optional = false)

@@ -1,6 +1,6 @@
 import React from "react";
 import { Link, useLocation } from "react-router-dom";
-import { FaUser, FaExchangeAlt, FaBook, FaCalendarAlt, FaHistory, FaComments } from "react-icons/fa";
+import { FaUser, FaExchangeAlt, FaBook, FaCalendarAlt, FaHistory, FaComments, FaBinoculars } from "react-icons/fa";
 
 const Sidebar = () => {
   const location = useLocation();
@@ -12,6 +12,7 @@ const Sidebar = () => {
     { to: "/eventos/crear", label: "Eventos", icon: <FaCalendarAlt /> },
     { to: "/historial", label: "Historial", icon: <FaHistory /> },
     { to: "/conversaciones", label: "Chats", icon: <FaComments /> },
+    { to: "/buscarusuarios", label: "Usuarios", icon: <FaBinoculars /> },
   ];
 
   return (

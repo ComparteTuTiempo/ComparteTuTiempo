@@ -70,8 +70,6 @@ function App() {
                 <Route path="/productousuario/transacciones" element={<ProductoUsuarioDetails />} />
                 <Route path="/notificaciones" element={<NotificacionesPage />} />
 
-                <Route element={<Layout />}>
-
                 {/* Ruta protegida: usuario normal */}
                 <Route
                   path="/verificacion"
@@ -111,7 +109,6 @@ function App() {
                     </ProtectedRoute>
                   }
                 />
-              </Route>
               </Route>
             </Routes>
           </Router>
