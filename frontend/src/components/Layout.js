@@ -1,34 +1,23 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { Link, Outlet, useNavigate } from "react-router-dom";
 import { FaUserCircle } from "react-icons/fa";
+import { useAuth } from "../utils/AuthContext"; // 👈 usar AuthContext
 import NotificacionesIcono from "./NotificacionesIcono";
 
 const Layout = () => {
-  const [usuario, setUsuario] = useState(null);
+  const { user } = useAuth(); // 👈 obtenemos el usuario logueado
+  const [adminMenuOpen, setAdminMenuOpen] = useState(false);
   const navigate = useNavigate();
-
-  // Escucha cambios en localStorage para actualizar el estado del usuario
-  useEffect(() => {
-    const actualizarUsuario = () => {
-      const userData = localStorage.getItem("usuario");
-      if (userData) setUsuario(JSON.parse(userData));
-      else setUsuario(null);
-    };
-
-    window.addEventListener("usuario-actualizado", actualizarUsuario);
-
-    // Ejecutar al montar también
-    actualizarUsuario();
-
-    return () => window.removeEventListener("usuario-actualizado", actualizarUsuario);
-  }, []);
 
   const handleLogout = () => {
     localStorage.removeItem("usuario");
-    setUsuario(null);
+    localStorage.removeItem("token");
     window.dispatchEvent(new Event("usuario-actualizado"));
     navigate("/"); // volver a landing
   };
+
+  // 👇 igual que en Mercado
+  const esAdmin = user?.roles?.includes("ADMIN");
 
   return (
     <div style={styles.container}>
@@ -38,7 +27,7 @@ const Layout = () => {
         <nav style={styles.nav}>
           <Link to="/" style={styles.navLink}>Inicio</Link>
 
-          {usuario ? (
+          {user ? (
             <>
               <Link to="/mispublicaciones" style={styles.navLink}>
                 Mis Publicaciones
@@ -50,11 +39,36 @@ const Layout = () => {
                 Intercambios
               </Link>
 
+              {/* 👇 Menú administrador */}
+              {esAdmin && (
+                <div style={styles.adminMenu}>
+                  <span
+                    style={styles.adminLink}
+                    onClick={() => setAdminMenuOpen(!adminMenuOpen)}
+                  >
+                    Administrador ▾
+                  </span>
+                  {adminMenuOpen && (
+                    <div style={styles.adminDropdown}>
+                      <Link to="/admin/verificaciones" style={styles.dropdownItem}>
+                        Verificaciones
+                      </Link>
+                      <Link to="/admin/reportes" style={styles.dropdownItem}>
+                        Reportes
+                      </Link>
+                      <Link to="/admin/categorias" style={styles.dropdownItem}>
+                        Moderar Categorías
+                      </Link>
+                    </div>
+                  )}
+                </div>
+              )}
+
               <div style={styles.userSection}>
                 <Link to="/perfil" style={{ textDecoration: "none" }}>
-                  {usuario.fotoPerfil ? (
+                  {user.fotoPerfil ? (
                     <img
-                      src={usuario.fotoPerfil}
+                      src={user.fotoPerfil}
                       alt="perfil"
                       style={styles.profileImg}
                     />
@@ -62,7 +76,7 @@ const Layout = () => {
                     <FaUserCircle style={styles.profileIcon} />
                   )}
                 </Link>
-                <span style={styles.username}>{usuario.nombre}</span>
+                <span style={styles.username}>{user.nombre}</span>
                 <button onClick={handleLogout} style={styles.logoutBtn}>
                   Cerrar sesión
                 </button>
@@ -118,6 +132,7 @@ const styles = {
     display: "flex",
     alignItems: "center",
     gap: "20px",
+    position: "relative",
   },
   navLink: {
     color: "#fff",
@@ -128,7 +143,7 @@ const styles = {
     display: "flex",
     alignItems: "center",
     marginLeft: "20px",
-    gap:"10px"
+    gap: "10px",
   },
   profileImg: {
     width: "40px",
@@ -173,6 +188,36 @@ const styles = {
     borderTop: "3px solid #000",
     backgroundColor: "#000",
     color: "#fff",
+  },
+  adminMenu: {
+    position: "relative",
+    color: "#fff",
+    cursor: "pointer",
+    fontWeight: "bold",
+  },
+  adminLink: {
+    color: "#fff",
+    textDecoration: "none",
+  },
+  adminDropdown: {
+    position: "absolute",
+    top: "100%",
+    left: 0,
+    backgroundColor: "#222",
+    borderRadius: "5px",
+    padding: "10px",
+    display: "flex",
+    flexDirection: "column",
+    gap: "8px",
+    minWidth: "200px",
+    zIndex: 200,
+  },
+  dropdownItem: {
+    color: "#fff",
+    textDecoration: "none",
+    fontWeight: "normal",
+    padding: "5px 10px",
+    borderRadius: "4px",
   },
 };
 

@@ -1,12 +1,13 @@
 import React, { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { useAuth } from "../utils/AuthContext";
 import Sidebar from "../components/Sidebar";
 
 const UserProfile = () => {
   const { correo } = useParams();
-  const { user, token } = useAuth();
+  const { user, token } = useAuth(); // 👈 obtenemos user y token del contexto
+  const navigate = useNavigate();
 
   const [usuario, setUsuario] = useState(null);
   const [resenas, setResenas] = useState([]);
@@ -14,7 +15,9 @@ const UserProfile = () => {
   const [ofertas, setOfertas] = useState([]);
   const [tab, setTab] = useState("reviews");
 
-  // Modal edición
+  const [showReportForm, setShowReportForm] = useState(false);
+  const [reportReason, setReportReason] = useState("");
+
   const [showEditModal, setShowEditModal] = useState(false);
   const [formData, setFormData] = useState({
     biografia: "",
@@ -22,8 +25,10 @@ const UserProfile = () => {
     fechaNacimiento: "",
   });
 
-  // 📌 Nueva reseña
   const [nuevaResena, setNuevaResena] = useState({ puntuacion: 5, comentario: "" });
+
+  // 👇 comprobamos si el logueado es admin desde AuthContext
+  const isAdmin = user?.roles?.includes("ADMIN");
 
   useEffect(() => {
     const fetchUsuario = async () => {
@@ -43,7 +48,6 @@ const UserProfile = () => {
             fotoPerfil: res.data.fotoPerfil || "",
           });
 
-          // reseñas
           const resResenas = await axios.get(
             `http://localhost:8080/api/resenas/${targetCorreo}`,
             { headers: { Authorization: `Bearer ${token}` } }
@@ -56,7 +60,6 @@ const UserProfile = () => {
           );
           setPromedio(resProm.data);
 
-          // ofertas
           const resOfertas = await axios.get(
             `http://localhost:8080/intercambios/usuario/${targetCorreo}`,
             { headers: { Authorization: `Bearer ${token}` } }
@@ -71,12 +74,20 @@ const UserProfile = () => {
   }, [correo, token, user]);
 
   if (!usuario) {
-    return <p style={{ textAlign: "center", marginTop: "40px" }}>Cargando perfil...</p>;
+    navigate("/login");
+    return null;
+  }
+
+  if (!usuario.activo) {
+    return (
+      <div style={{ textAlign: "center", marginTop: "40px", fontSize: "20px", fontWeight: "bold", color: "#dc3545" }}>
+        🚫 Usuario baneado
+      </div>
+    );
   }
 
   const isOwnProfile = !correo || correo === user?.correo;
 
-  // Guardar cambios en perfil
   const handleSaveProfile = async () => {
     try {
       const payload = {
@@ -86,7 +97,7 @@ const UserProfile = () => {
         fotoPerfil: formData.fotoPerfil,
       };
 
-      const res = await axios.put(
+      await axios.put(
         `http://localhost:8080/api/usuarios/${user.correo}`,
         payload,
         { headers: { Authorization: `Bearer ${token}` } }
@@ -101,7 +112,6 @@ const UserProfile = () => {
     }
   };
 
-  // 📌 Enviar reseña
   const handleResenaSubmit = async () => {
     try {
       await axios.post(
@@ -118,7 +128,6 @@ const UserProfile = () => {
       alert("✅ Reseña enviada");
       setNuevaResena({ puntuacion: 5, comentario: "" });
 
-      // recargar reseñas
       const resResenas = await axios.get(
         `http://localhost:8080/api/resenas/${usuario.correo}`,
         { headers: { Authorization: `Bearer ${token}` } }
@@ -136,6 +145,40 @@ const UserProfile = () => {
     }
   };
 
+  const handleStartConversation = async () => {
+    try {
+      const res = await axios.post(
+        `http://localhost:8080/conversaciones?correos=${user.correo}&correos=${usuario.correo}`,
+        {},
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      navigate(`/conversaciones/${res.data.id}`);
+    } catch (err) {
+      console.error("❌ Error al iniciar conversación:", err);
+      alert("No se pudo iniciar la conversación");
+    }
+  };
+
+  const handleReport = async () => {
+    if (!reportReason.trim()) {
+      alert("Escribe un motivo antes de enviar el reporte");
+      return;
+    }
+    try {
+      await axios.post(
+        `http://localhost:8080/api/reportes/${usuario.correo}`,
+        { titulo: "Reporte de usuario", descripcion: reportReason },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      alert("✅ Reporte enviado, un administrador lo revisará.");
+      setReportReason("");
+      setShowReportForm(false);
+    } catch (err) {
+      console.error("❌ Error al enviar reporte:", err);
+      alert("Hubo un error al enviar el reporte");
+    }
+  };
+
   return (
     <div style={styles.container}>
       <Sidebar />
@@ -150,9 +193,8 @@ const UserProfile = () => {
           />
           <div>
             <h2 style={styles.name}>{usuario.nombre}</h2>
-            <p style={styles.bio}>
-              {usuario.biografia || "Sin biografía aún. Agrega algo sobre ti."}
-            </p>
+            {usuario.verificado && <p style={styles.verifiedText}>✅ Cuenta verificada</p>}
+            <p style={styles.bio}>{usuario.biografia || "Sin biografía aún. Agrega algo sobre ti."}</p>
             <p style={styles.location}>📍 {usuario.ubicacion || "Ubicación no especificada"}</p>
           </div>
         </div>
@@ -173,27 +215,64 @@ const UserProfile = () => {
           </div>
         </div>
 
-        {/* Botón Editar Perfil */}
+        {/* Botones extra */}
+        {!isOwnProfile && (
+          <div style={{ marginBottom: "20px", display: "flex", gap: "10px" }}>
+            <button style={styles.chatBtn} onClick={handleStartConversation}>
+              Iniciar conversación
+            </button>
+            <button style={styles.reportBtn} onClick={() => setShowReportForm(!showReportForm)}>
+              Reportar usuario
+            </button>
+          </div>
+        )}
+
+        {showReportForm && (
+          <div style={styles.card}>
+            <h4>Reportar usuario</h4>
+            <textarea
+              placeholder="Describe el motivo del reporte..."
+              value={reportReason}
+              onChange={(e) => setReportReason(e.target.value)}
+              style={styles.textarea}
+            />
+            <div style={{ display: "flex", gap: "10px" }}>
+              <button style={styles.saveBtn} onClick={handleReport}>
+                Enviar reporte
+              </button>
+              <button
+                style={styles.closeBtn}
+                onClick={() => {
+                  setShowReportForm(false);
+                  setReportReason("");
+                }}
+              >
+                Cancelar
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Botones de perfil propio */}
         {isOwnProfile && (
-          <div style={{ marginBottom: "20px" }}>
+          <div style={{ marginBottom: "20px", display: "flex", gap: "10px" }}>
             <button style={styles.editBtn} onClick={() => setShowEditModal(true)}>
               Edit Profile
             </button>
+            {!usuario.verificado && !isAdmin && (
+              <button style={styles.verifyBtn} onClick={() => navigate("/verificacion")}>
+                🔒 Verificar identidad
+              </button>
+            )}
           </div>
         )}
 
         {/* Tabs */}
         <div style={styles.tabs}>
-          <button
-            style={tab === "reviews" ? styles.activeTab : styles.tab}
-            onClick={() => setTab("reviews")}
-          >
+          <button style={tab === "reviews" ? styles.activeTab : styles.tab} onClick={() => setTab("reviews")}>
             Reviews
           </button>
-          <button
-            style={tab === "offers" ? styles.activeTab : styles.tab}
-            onClick={() => setTab("offers")}
-          >
+          <button style={tab === "offers" ? styles.activeTab : styles.tab} onClick={() => setTab("offers")}>
             Mis Ofertas
           </button>
         </div>
@@ -215,20 +294,18 @@ const UserProfile = () => {
               ) : (
                 <p>No hay reseñas aún</p>
               )}
-
-              {/* Formulario de reseñas */}
               {!isOwnProfile && usuario.activo && (
                 <div style={styles.card}>
                   <h4>Deja una reseña</h4>
                   <select
                     value={nuevaResena.puntuacion}
-                    onChange={(e) =>
-                      setNuevaResena({ ...nuevaResena, puntuacion: Number(e.target.value) })
-                    }
+                    onChange={(e) => setNuevaResena({ ...nuevaResena, puntuacion: Number(e.target.value) })}
                     style={styles.input}
                   >
                     {[1, 2, 3, 4, 5].map((n) => (
-                      <option key={n} value={n}>{n} ⭐</option>
+                      <option key={n} value={n}>
+                        {n} ⭐
+                      </option>
                     ))}
                   </select>
                   <textarea
@@ -257,10 +334,7 @@ const UserProfile = () => {
                       {o.tipo} – {o.numeroHoras}h
                     </p>
                     <small>
-                      Reseñas:{" "}
-                      {o.promedioResenas
-                        ? `${o.promedioResenas.toFixed(1)} ⭐`
-                        : "Sin reseñas"}
+                      Reseñas: {o.promedioResenas ? `${o.promedioResenas.toFixed(1)} ⭐` : "Sin reseñas"}
                     </small>
                   </div>
                 ))
@@ -272,7 +346,6 @@ const UserProfile = () => {
         </div>
       </main>
 
-      {/* 🔹 Modal de edición */}
       {showEditModal && (
         <div style={styles.modal}>
           <div style={styles.modalContent}>
@@ -361,6 +434,17 @@ const styles = {
     fontWeight: "bold",
     cursor: "pointer",
   },
+  verifyBtn: {
+    padding: "12px 20px",
+    backgroundColor: "#17a2b8", // celeste
+    color: "#fff",
+    border: "none",
+    borderRadius: "8px",
+    fontWeight: "bold",
+    cursor: "pointer",
+    boxShadow: "0 2px 4px rgba(0,0,0,0.2)",
+    transition: "background-color 0.2s ease",
+  },
   tabs: { display: "flex", gap: "10px", borderBottom: "2px solid #ddd", marginBottom: "20px" },
   tab: {
     padding: "10px 15px",
@@ -434,6 +518,30 @@ const styles = {
     borderRadius: "6px",
     padding: "10px",
     cursor: "pointer",
+  },
+  chatBtn: {
+    padding: "10px 16px",
+    backgroundColor: "#007bff",
+    color: "#fff",
+    border: "none",
+    borderRadius: "8px",
+    cursor: "pointer",
+    fontWeight: "bold",
+  },
+  reportBtn: {
+    padding: "10px 16px",
+    backgroundColor: "#dc3545",
+    color: "#fff",
+    border: "none",
+    borderRadius: "8px",
+    cursor: "pointer",
+    fontWeight: "bold",
+  },
+  verifiedText: {
+    fontSize: "14px",
+    fontWeight: "bold",
+    color: "#28a745",
+    marginTop: "4px",
   },
 };
 
