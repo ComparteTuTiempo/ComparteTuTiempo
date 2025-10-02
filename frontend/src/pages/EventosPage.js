@@ -106,7 +106,7 @@ const EventosPage = () => {
                       ...styles.estado,
                       background:
                         e.estadoEvento === "FINALIZADO"
-                          ? "#6c757d"
+                          ? "#f00606ff"
                           : e.estadoEvento === "EN_CURSO"
                           ? "#ffc107"
                           : "#28a745",
