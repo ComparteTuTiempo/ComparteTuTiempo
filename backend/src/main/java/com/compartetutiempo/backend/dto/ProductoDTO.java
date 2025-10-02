@@ -22,6 +22,7 @@ public class ProductoDTO {
     private Long usuarioId;
     private String usuarioNombre;
     private String usuarioCorreo;
+    private String usuarioFoto;
 
     public static ProductoDTO fromEntity(Producto producto, ProductoUsuario transaccion) {
         ProductoDTO dto = new ProductoDTO();
@@ -36,6 +37,7 @@ public class ProductoDTO {
             dto.setUsuarioId(producto.getPropietario().getId());
             dto.setUsuarioNombre(producto.getPropietario().getNombre());
             dto.setUsuarioCorreo(producto.getPropietario().getCorreo());
+            dto.setUsuarioFoto(producto.getPropietario().getFotoPerfil());
         }
         if(transaccion != null){
             dto.setConversacionId(transaccion.getConversacion().getId());

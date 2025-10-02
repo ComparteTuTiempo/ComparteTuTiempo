@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect } from "react";
 import { jwtDecode } from "jwt-decode";
+import axios from "axios";
 
 const AuthContext = createContext();
 
@@ -30,6 +31,24 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(initialUser);
   const [token, setToken] = useState(initialToken);
 
+  // 🔹 Llamar al backend para enriquecer el usuario
+  useEffect(() => {
+    if (token) {
+      axios
+        .get("http://localhost:8080/api/usuarios/me", {
+          headers: { Authorization: `Bearer ${token}` },
+        })
+        .then((res) => {
+          // Fusionar lo básico del token + lo que devuelve el backend
+          setUser((prev) => ({ ...prev, ...res.data }));
+        })
+        .catch((err) => {
+          console.error("❌ Error al cargar perfil del usuario:", err);
+        });
+    }
+  }, [token]);
+
+  // 🔹 Escuchar eventos de cambios en localStorage
   useEffect(() => {
     const handleUpdate = () => {
       const { user, token } = getStoredUser();

@@ -256,10 +256,3 @@ const styles = {
 };
 
 export default IntercambiosByEstado;
-
-
-
-
-
-
-

@@ -115,17 +115,14 @@ const IntercambioForm = () => {
           style={styles.textarea}
           required
         />
-        {formData.tipo === "PETICION" ? (
-          <input
-            type="number"
-            name="numeroHoras"
-            placeholder="Número de horas"
-            value={formData.numeroHoras}
-            onChange={handleChange}
-            style={styles.input}
-          />
-        ) : null}
-
+        <input
+          type="number"
+          name="numeroHoras"
+          placeholder="Número de horas"
+          value={formData.numeroHoras}
+          onChange={handleChange}
+          style={styles.input}
+        />
         <select
           name="tipo"
           value={formData.tipo}

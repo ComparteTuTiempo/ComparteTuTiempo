@@ -1,11 +1,11 @@
 import React, { useState } from "react";
 import { Link, Outlet, useNavigate } from "react-router-dom";
 import { FaUserCircle } from "react-icons/fa";
-import { useAuth } from "../utils/AuthContext"; // 👈 usar AuthContext
+import { useAuth } from "../utils/AuthContext";
 import NotificacionesIcono from "./NotificacionesIcono";
 
 const Layout = () => {
-  const { user } = useAuth(); // 👈 obtenemos el usuario logueado
+  const { user, logout } = useAuth();
   const [adminMenuOpen, setAdminMenuOpen] = useState(false);
   const navigate = useNavigate();
 
@@ -13,10 +13,9 @@ const Layout = () => {
     localStorage.removeItem("usuario");
     localStorage.removeItem("token");
     window.dispatchEvent(new Event("usuario-actualizado"));
-    navigate("/"); // volver a landing
+    navigate("/");
   };
 
-  // 👇 igual que en Mercado
   const esAdmin = user?.roles?.includes("ADMIN");
 
   return (
@@ -39,7 +38,7 @@ const Layout = () => {
                 Intercambios
               </Link>
 
-              {/* 👇 Menú administrador */}
+              {/* Menú administrador */}
               {esAdmin && (
                 <div style={styles.adminMenu}>
                   <span
@@ -65,6 +64,17 @@ const Layout = () => {
               )}
 
               <div style={styles.userSection}>
+                <span style={styles.username}>
+                  {user.nombre || user.correo}
+                </span>
+
+                {/* 🔹 Badge de horas */}
+                {console.log("Horas del usuario:", user.numeroHoras, user.horasDisponibles)}
+                {user.numeroHoras !== undefined && (
+                  <span style={styles.hoursBadge}>
+                     {user.numeroHoras} horas
+                  </span>
+                )}
                 <Link to="/perfil" style={{ textDecoration: "none" }}>
                   {user.fotoPerfil ? (
                     <img
@@ -76,7 +86,7 @@ const Layout = () => {
                     <FaUserCircle style={styles.profileIcon} />
                   )}
                 </Link>
-                <span style={styles.username}>{user.nombre}</span>
+
                 <button onClick={handleLogout} style={styles.logoutBtn}>
                   Cerrar sesión
                 </button>
@@ -161,6 +171,14 @@ const styles = {
     marginRight: "15px",
     fontWeight: "bold",
     color: "#fff",
+  },
+  hoursBadge: {
+    backgroundColor: "#ff6f00",
+    color: "#fff",
+    padding: "4px 10px",
+    borderRadius: "12px",
+    fontSize: "13px",
+    fontWeight: "bold",
   },
   loginBtn: {
     padding: "8px 15px",

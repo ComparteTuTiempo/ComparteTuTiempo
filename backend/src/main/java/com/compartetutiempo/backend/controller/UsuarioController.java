@@ -3,6 +3,7 @@ package com.compartetutiempo.backend.controller;
 import com.compartetutiempo.backend.config.JwtService;
 import com.compartetutiempo.backend.dto.LoginRequest;
 import com.compartetutiempo.backend.dto.UsuarioDTO;
+import com.compartetutiempo.backend.dto.UsuarioDetalleDTO;
 import com.compartetutiempo.backend.model.Usuario;
 import com.compartetutiempo.backend.model.enums.Role;
 import com.compartetutiempo.backend.repository.UsuarioRepository;
@@ -11,6 +12,8 @@ import com.compartetutiempo.backend.service.UsuarioService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
@@ -174,4 +177,37 @@ public class UsuarioController {
         return ResponseEntity.ok(response);
     }
 
+    @GetMapping("/me")
+public ResponseEntity<UsuarioDetalleDTO> getCurrentUser(@AuthenticationPrincipal Jwt jwt) {
+    String correo = jwt.getSubject();
+    Usuario usuario = service.obtenerPorCorreo(correo);
+
+    if (usuario == null) {
+        return ResponseEntity.notFound().build();
+    }
+
+    UsuarioDetalleDTO dto = new UsuarioDetalleDTO();
+    dto.setId(usuario.getId());
+    dto.setCorreo(usuario.getCorreo());
+    dto.setNombre(usuario.getNombre());
+    dto.setFotoPerfil(usuario.getFotoPerfil());
+    dto.setUbicacion(usuario.getUbicacion());
+    dto.setVerificado(usuario.isVerificado());
+    dto.setActivo(usuario.isActivo());
+    dto.setBiografia(usuario.getBiografia());
+    dto.setFechaNacimiento(usuario.getFechaNacimiento());
+
+    // 👇 Aquí se setean las horas disponibles (asegúrate que el campo exista en Usuario)
+    dto.setNumeroHoras(usuario.getNumeroHoras());  
+
+    // 👇 Roles como lista de strings
+    dto.setRoles(usuario.getRoles()
+        .stream()
+        .map(Enum::name)
+        .toList()
+    );
+    System.out.println("Horas usuario: " + usuario.getNumeroHoras());
+
+    return ResponseEntity.ok(dto);
+}
 }
