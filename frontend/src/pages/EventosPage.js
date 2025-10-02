@@ -144,7 +144,7 @@ const EventosPage = () => {
                         <button onClick={() => setSelected(null)} style={styles.closeBtn}>
                         ✖
                         </button>
-                            <EventoDetalle id ={e.id}/>
+                            <EventoDetalle id ={selected.id}/>
                     </div>
                     </div>
                 )}
