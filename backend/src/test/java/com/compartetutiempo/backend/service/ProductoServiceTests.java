@@ -9,7 +9,6 @@ import org.junit.jupiter.api.Test;
 import org.mockito.*;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.*;
@@ -48,55 +47,6 @@ class ProductoServiceTest {
         producto.setNumeroHoras(3.0);
         producto.setEstado(EstadoProducto.DISPONIBLE);
         producto.setPropietario(propietario);
-    }
-
-
-    @Test
-    void adquirirProducto_OK() {
-        when(productoRepository.findById(100L)).thenReturn(Optional.of(producto));
-        when(usuarioRepository.findByCorreo("comprador@mail.com")).thenReturn(Optional.of(comprador));
-        when(productoRepository.save(any())).thenAnswer(i -> i.getArgument(0));
-
-        Producto result = productoService.adquirirProducto(100L, "comprador@mail.com");
-
-        assertThat(result.getPropietario()).isEqualTo(comprador);
-        assertThat(result.getEstado()).isEqualTo(EstadoProducto.ENTREGADO);
-        assertThat(comprador.getNumeroHoras()).isEqualTo(7.0);
-        assertThat(propietario.getNumeroHoras()).isEqualTo(8.0);
-        verify(usuarioRepository).saveAll(List.of(comprador, propietario));
-        verify(productoRepository).save(producto);
-    }
-
-    @Test
-    void adquirirProducto_NoHoras_Throws() {
-        comprador.setNumeroHoras(2.0);
-        when(productoRepository.findById(100L)).thenReturn(Optional.of(producto));
-        when(usuarioRepository.findByCorreo("comprador@mail.com")).thenReturn(Optional.of(comprador));
-
-        assertThatThrownBy(() -> productoService.adquirirProducto(100L, "comprador@mail.com"))
-                .isInstanceOf(ResponseStatusException.class)
-                .hasMessageContaining("No dispones de las suficientes horas");
-    }
-
-    @Test
-    void adquirirProducto_Propietario_Throws() {
-        when(productoRepository.findById(100L)).thenReturn(Optional.of(producto));
-        when(usuarioRepository.findByCorreo("propietario@mail.com")).thenReturn(Optional.of(propietario));
-
-        assertThatThrownBy(() -> productoService.adquirirProducto(100L, "propietario@mail.com"))
-                .isInstanceOf(ResponseStatusException.class)
-                .hasMessageContaining("El propietario no puede comprar su propio producto");
-    }
-
-    @Test
-    void adquirirProducto_NoDisponible_Throws() {
-        producto.setEstado(EstadoProducto.ENTREGADO);
-        when(productoRepository.findById(100L)).thenReturn(Optional.of(producto));
-        when(usuarioRepository.findByCorreo("comprador@mail.com")).thenReturn(Optional.of(comprador));
-
-        assertThatThrownBy(() -> productoService.adquirirProducto(100L, "comprador@mail.com"))
-                .isInstanceOf(ResponseStatusException.class)
-                .hasMessageContaining("no está disponible");
     }
 
 

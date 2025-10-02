@@ -50,40 +50,6 @@ public class ProductoService {
         return ProductoDTO.fromEntity(producto,null);
     }
 
-    @Transactional
-    public Producto adquirirProducto(Long productoId, String correoUsuario) {
-
-        Producto producto = productoRepository.findById(productoId)
-                .orElseThrow(() -> new RuntimeException("Producto no encontrado"));
-
-        Usuario comprador = usuarioRepository.findByCorreo(correoUsuario)
-                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
-        
-        Usuario propietario = producto.getPropietario();
-
-        Double horasComprador = comprador.getNumeroHoras();
-        Double horasProducto = producto.getNumeroHoras();
-
-        
-
-        if (producto.getEstado() != EstadoProducto.DISPONIBLE) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "El producto no está disponible");
-        }else if(comprador.equals(propietario)){
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "El propietario no puede comprar su propio producto");
-        }else if(horasComprador < horasProducto){
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "No dispones de las suficientes horas para efectuar la compra");
-        }
-
-        comprador.setNumeroHoras(comprador.getNumeroHoras() - horasProducto);
-        propietario.setNumeroHoras(propietario.getNumeroHoras() + horasProducto);
-
-        usuarioRepository.saveAll(List.of(comprador,propietario));
-   
-        producto.setEstado(EstadoProducto.ENTREGADO);
-        producto.setPropietario(comprador); 
-
-        return productoRepository.save(producto);
-    }
 
     @Transactional
     public ProductoDTO solicitarProducto(Long productoId, String correoComprador) {
