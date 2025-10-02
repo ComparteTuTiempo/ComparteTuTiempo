@@ -133,6 +133,12 @@ const PublicacionesPage = () => {
             >
               Publicar Producto
             </button>
+            <button
+              style={styles.IntercambiosPendientesBtn}
+              onClick={() => navigate("/intercambios/usuario")}
+            >
+              Ver Intercambios Pendientes
+            </button>
           </div>
         </div>
         {/* Tabs */}
@@ -258,6 +264,15 @@ const styles = {
     cursor: "pointer",
     fontWeight: "bold",
   },
+  IntercambiosPendientesBtn: {
+    backgroundColor: "#0866e9ff",
+    border: "none",
+    color: "#fff",
+    padding: "8px 14px",
+    borderRadius: "6px",
+    cursor: "pointer",
+    fontWeight: "bold",
+  }
 
 };
 

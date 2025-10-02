@@ -8,6 +8,15 @@ export const obtenerTodosLosIntercambios = async () => {
   return response.data;
 };
 
+export const obtenerDetalleIntercambioUsuario = async (id, token) => {
+  const response = await axios.get(`${API_URL}/intercambiousuario/${id}`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+  return response.data;
+};
+
 export const obtenerMisIntercambiosUsuario = async (estado, token) => {
   const response = await axios.get(
     `${API_URL}/estado/${estado}`,
