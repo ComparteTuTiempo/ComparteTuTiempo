@@ -52,7 +52,7 @@ public class IntercambioUsuarioService {
 
         if (!solicitud.getIntercambio().getUser().getCorreo().equals(correoOfertante)) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"No tienes permiso para aceptar esta solicitud");
-        } else if(solicitud.getIntercambio().getEstado() == EstadoIntercambio.CONSENSO) {
+        } else if(solicitud.getEstado() == EstadoIntercambio.CONSENSO) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Esta oferta ya está en consenso");
         }
 
@@ -88,8 +88,8 @@ public class IntercambioUsuarioService {
     }
 
     @Transactional
-    public IntercambioUsuarioDTO obtenerPorIntercambioYUsuario(Integer intercambioId, String correo) {
-        IntercambioUsuario iu = intercambioUsuarioRepository.findByIntercambioIdAndUsuarioCorreo(intercambioId, correo)
+    public IntercambioUsuarioDTO obtenerPorIntercambioUsuarioEstado(Integer intercambioId, String correo,EstadoIntercambio estado) {
+        IntercambioUsuario iu = intercambioUsuarioRepository.findByIntercambioIdAndUsuarioCorreoAndEstado(intercambioId, correo,estado)
                 .orElseThrow(() -> new RuntimeException("No existe relación entre el intercambio y este usuario"));
 
         return IntercambioUsuarioDTO.fromEntity(iu);
