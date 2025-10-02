@@ -34,10 +34,10 @@ const EventosPage = () => {
 
   // Separar
   const misEventos = eventos.filter(
-    (e) => e.organizador.correo === user?.correo
+    (e) => e.organizador.correo === user?.correo && e.estadoEvento != "FINALIZADO"
   );
   const otrosEventos = eventos.filter(
-    (e) => e.organizador.correo !== user?.correo
+    (e) => e.organizador.correo !== user?.correo && e.estadoEvento != "FINALIZADO"
   );
 
   // Elegir qué mostrar
