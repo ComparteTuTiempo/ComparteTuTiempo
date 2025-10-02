@@ -47,9 +47,6 @@ export default function SolicitudesIntercambio() {
   return (
     <div style={{ maxWidth: "800px", margin: "40px auto" }}>
       <h1>Solicitudes de Intercambio</h1>
-      {solicitudes.length === 0 ? (
-        <p>No tienes solicitudes pendientes.</p>
-      ) : (
         <ul style={{ listStyle: "none", padding: 0 }}>
           {solicitudes.map((s) => (
             <li
@@ -65,7 +62,7 @@ export default function SolicitudesIntercambio() {
               }}
             >
               <span>
-                <strong>{s.usuarioNombre}</strong> quiere unirse a{" "}
+                <strong>{s.solicitanteNombre}</strong> quiere unirse a{" "}
                 <em>{s.intercambioNombre}</em>
               </span>
               <div style={{ display: "flex", gap: "8px" }}>
@@ -99,7 +96,6 @@ export default function SolicitudesIntercambio() {
             </li>
           ))}
         </ul>
-      )}
     </div>
   );
 }
