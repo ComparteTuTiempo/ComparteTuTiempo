@@ -20,7 +20,7 @@ public class ResenaIntercambioController {
     private final NotificacionService notificacionService;
 
     public ResenaIntercambioController(ResenaIntercambioService resenaService,
-    NotificacionService notificacionService) {
+            NotificacionService notificacionService) {
         this.resenaService = resenaService;
         this.notificacionService = notificacionService;
     }
@@ -31,14 +31,21 @@ public class ResenaIntercambioController {
             @RequestBody ResenaIntercambio resena,
             @AuthenticationPrincipal Jwt jwt) {
 
-        Usuario destinatario = resena.getIntercambio().getUser();
+        String correoAutor = jwt.getSubject();
 
-        String mensaje = "El usuario " + resena.getAutor() + "ha escrito una reseña sobre el intercambio" 
-        + resena.getIntercambio().getNombre();
+        // delega en el service para que setee intercambio y autor
+        ResenaIntercambio guardada = resenaService.crear(intercambioId, correoAutor, resena);
+
+        // ahora sí, el intercambio ya no es null
+        Usuario destinatario = guardada.getIntercambio().getUser();
+
+        String mensaje = "El usuario " + guardada.getAutor().getNombre()
+                + " ha escrito una reseña sobre el intercambio "
+                + guardada.getIntercambio().getNombre();
+
         notificacionService.crearYEnviar(destinatario, TipoNotificacion.INTERCAMBIO, mensaje, null);
 
-        String correoAutor = jwt.getSubject();
-        return ResponseEntity.ok(resenaService.crear(intercambioId, correoAutor, resena));
+        return ResponseEntity.ok(guardada);
     }
 
     @GetMapping("/{intercambioId}")

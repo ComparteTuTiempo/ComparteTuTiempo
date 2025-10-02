@@ -5,6 +5,7 @@ import {
   obtenerIntercambioPorId,
   solicitarIntercambio
 } from "../services/intercambioService";
+import axios from "axios";
 
 export default function IntercambioDetalle() {
   const { id } = useParams();
@@ -12,6 +13,11 @@ export default function IntercambioDetalle() {
   const [intercambio, setIntercambio] = useState(null);
   const [loading, setLoading] = useState(true);
   const [esParticipante, setEsParticipante] = useState(false);
+
+  // reseñas
+  const [resenas, setResenas] = useState([]);
+  const [promedio, setPromedio] = useState(0);
+  const [nuevaResena, setNuevaResena] = useState({ puntuacion: 5, comentario: "" });
 
   useEffect(() => {
     if (token) {
@@ -22,6 +28,16 @@ export default function IntercambioDetalle() {
             (p) => p.usuarioId === user.id
           );
           setEsParticipante(usuarioEsParticipante);
+
+          // cargar reseñas
+          axios.get(`http://localhost:8080/resenas/intercambios/${id}`)
+            .then(res => setResenas(res.data))
+            .catch(err => console.error("❌ Error al cargar reseñas:", err));
+
+          axios.get(`http://localhost:8080/resenas/intercambios/${id}/promedio`)
+            .then(res => setPromedio(res.data))
+            .catch(err => console.error("❌ Error al cargar promedio:", err));
+
           setLoading(false);
         })
         .catch((err) => {
@@ -43,6 +59,34 @@ export default function IntercambioDetalle() {
     }
   };
 
+  const enviarResena = async () => {
+    if (!nuevaResena.comentario.trim()) {
+      alert("⚠ El comentario no puede estar vacío");
+      return;
+    }
+    try {
+      await axios.post(
+        `http://localhost:8080/resenas/intercambios/${id}`,
+        {
+          ...nuevaResena,
+          intercambio: { id: parseInt(id, 10) } // 👈 añadimos el intercambio
+        },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      // refrescar reseñas y promedio
+      const res = await axios.get(`http://localhost:8080/resenas/intercambios/${id}`);
+      setResenas(res.data);
+      const avg = await axios.get(`http://localhost:8080/resenas/intercambios/${id}/promedio`);
+      setPromedio(avg.data);
+
+      setNuevaResena({ puntuacion: 5, comentario: "" });
+    } catch (err) {
+      console.error("❌ Error al enviar reseña:", err);
+      alert("No se pudo enviar la reseña");
+    }
+  };
+
   if (loading) {
     return <p style={{ textAlign: "center", marginTop: "20px" }}>Cargando intercambio...</p>;
   }
@@ -57,6 +101,9 @@ export default function IntercambioDetalle() {
 
   // Verificar si el usuario es el creador del intercambio
   const esCreador = user?.correo === intercambio.usuarioCorreo;
+
+  // Verificar si ya reseñó
+  const yaHaResenado = user && resenas.some(r => r.autor?.correo === user.correo);
 
   return (
     <div style={styles.container}>
@@ -87,13 +134,10 @@ export default function IntercambioDetalle() {
           alt="Foto de perfil"
           style={styles.avatar}
         />
-        <span>{intercambio.usuarioNombre}</span>
+        <span>{intercambio.usuarioNombre || intercambio.usuarioCorreo}</span>
       </div>
 
-      {/* Mostrar botón de solicitud si:
-          - No es el creador
-          - El intercambio no está finalizado
-      */}
+      {/* Botón de solicitud */}
       {!esCreador && intercambio.estado !== "FINALIZADO" && (
         <div>
           <button onClick={handleSolicitar} style={styles.solicitarBtn}>
@@ -104,6 +148,61 @@ export default function IntercambioDetalle() {
 
       {intercambio.estado === "FINALIZADO" && (
         <p style={styles.finalizado}>✅ Este intercambio ha finalizado.</p>
+      )}
+
+      {/* Reseñas */}
+      {intercambio.tipo === "OFERTA" && (
+        <div style={styles.reviews}>
+          <h3>⭐ Promedio reseñas: {promedio.toFixed(1)} / 5</h3>
+
+          {resenas.length > 0 ? (
+            resenas.map((r) => (
+              <div key={r.id} style={styles.review}>
+                <strong>{r.autor?.nombre || "Anónimo"}</strong> ⭐ {r.puntuacion}
+                <p>{r.comentario}</p>
+              </div>
+            ))
+          ) : (
+            <p>No hay reseñas aún.</p>
+          )}
+
+          {!esCreador && !yaHaResenado && (
+            <div style={styles.newReview}>
+              <h4>Dejar una reseña</h4>
+              <select
+                value={nuevaResena.puntuacion}
+                onChange={(e) =>
+                  setNuevaResena({ ...nuevaResena, puntuacion: parseInt(e.target.value) })
+                }
+                style={{ marginRight: "10px", padding: "5px" }}
+              >
+                {[1, 2, 3, 4, 5].map((n) => (
+                  <option key={n} value={n}>{n}</option>
+                ))}
+              </select>
+              <textarea
+                placeholder="Escribe tu comentario..."
+                value={nuevaResena.comentario}
+                onChange={(e) => setNuevaResena({ ...nuevaResena, comentario: e.target.value })}
+                style={{ width: "100%", minHeight: "60px", marginTop: "10px", padding: "5px" }}
+              />
+              <button
+                onClick={enviarResena}
+                style={{
+                  marginTop: "10px",
+                  backgroundColor: "#28a745",
+                  color: "white",
+                  border: "none",
+                  padding: "8px 12px",
+                  borderRadius: "6px",
+                  cursor: "pointer"
+                }}
+              >
+                Enviar reseña
+              </button>
+            </div>
+          )}
+        </div>
       )}
     </div>
   );
@@ -149,4 +248,7 @@ const styles = {
     marginBottom: "20px",
   },
   finalizado: { textAlign: "center", color: "#16a34a", fontWeight: "600" },
+  reviews: { marginTop: "20px", padding: "15px", borderTop: "1px solid #ddd" },
+  review: { borderBottom: "1px solid #eee", padding: "6px 0" },
+  newReview: { marginTop: "15px" },
 };
