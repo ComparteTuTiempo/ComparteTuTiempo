@@ -36,6 +36,8 @@ import DetalleProducto from "./pages/ProductoDetails";
 import ProductoUsuarioDetails from "./pages/ProductoUsuarioDetails";
 import NotificacionesPage from "./pages/NotificacionesPage";
 
+import EventosPage from "./pages/EventosPage";
+
 
 function App() {
   return (
@@ -69,6 +71,7 @@ function App() {
                 <Route path="/producto/:id" element={<DetalleProducto />} />
                 <Route path="/productousuario/transacciones" element={<ProductoUsuarioDetails />} />
                 <Route path="/notificaciones" element={<NotificacionesPage />} />
+                <Route path="/eventos" element={<EventosPage />} />
 
                 {/* Ruta protegida: usuario normal */}
                 <Route

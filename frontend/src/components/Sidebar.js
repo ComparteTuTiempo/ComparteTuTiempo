@@ -9,7 +9,7 @@ const Sidebar = () => {
     { to: "/perfil", label: "Mi Perfil", icon: <FaUser /> },
     { to: "/mercado", label: "Intercambios", icon: <FaExchangeAlt /> },
     { to: "/mispublicaciones", label: "Mis Publicaciones", icon: <FaBook /> },
-    { to: "/eventos/crear", label: "Eventos", icon: <FaCalendarAlt /> },
+    { to: "/eventos", label: "Eventos", icon: <FaCalendarAlt /> },
     { to: "/historial", label: "Historial", icon: <FaHistory /> },
     { to: "/conversaciones", label: "Chats", icon: <FaComments /> },
     { to: "/buscarusuarios", label: "Usuarios", icon: <FaBinoculars /> },
