@@ -121,7 +121,7 @@ public class IntercambioController {
         IntercambioDTO dto = intercambioService.solicitarIntercambio(id, correoDemandante);
         IntercambioUsuarioDTO iu = intercambioUsuarioService.obtenerPorIntercambioUsuarioEstado(id, correoDemandante,EstadoIntercambio.EMPAREJAMIENTO);
             Usuario destinatario = usuarioService.obtenerPorCorreo(iu.getCreadorCorreo());
-            String mensaje = "El usuario " + iu.getCreadorNombre() + " ha finalizado el intercambio: " 
+            String mensaje = "El usuario " + iu.getCreadorNombre() + " ha solicitado el intercambio: " 
                 + iu.getIntercambioNombre();
             notificacionService.crearYEnviar(destinatario, TipoNotificacion.INTERCAMBIO, mensaje, null);
         return ResponseEntity.status(HttpStatus.CREATED).body(dto);
