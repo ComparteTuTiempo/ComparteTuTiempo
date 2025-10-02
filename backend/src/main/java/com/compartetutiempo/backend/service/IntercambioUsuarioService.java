@@ -88,8 +88,8 @@ public class IntercambioUsuarioService {
     }
 
     @Transactional
-    public IntercambioUsuarioDTO obtenerPorIntercambioYUsuario(Integer intercambioId, String correo) {
-        IntercambioUsuario iu = intercambioUsuarioRepository.findByIntercambioIdAndUsuarioCorreo(intercambioId, correo)
+    public IntercambioUsuarioDTO obtenerPorIntercambioUsuarioEstado(Integer intercambioId, String correo,EstadoIntercambio estado) {
+        IntercambioUsuario iu = intercambioUsuarioRepository.findByIntercambioIdAndUsuarioCorreoAndEstado(intercambioId, correo,estado)
                 .orElseThrow(() -> new RuntimeException("No existe relación entre el intercambio y este usuario"));
 
         return IntercambioUsuarioDTO.fromEntity(iu);

@@ -31,6 +31,7 @@ public interface IntercambioUsuarioRepository extends JpaRepository<IntercambioU
 
     List<IntercambioUsuario> findByIntercambioUserCorreoAndEstado(String correoOfertante, EstadoIntercambio estado);
 
-    Optional<IntercambioUsuario> findByIntercambioIdAndUsuarioCorreo(Integer intercambioId, String correo);
+    Optional<IntercambioUsuario> findByIntercambioIdAndUsuarioCorreoAndEstado(Integer intercambioId,String correo,
+        EstadoIntercambio estado);
 
 }

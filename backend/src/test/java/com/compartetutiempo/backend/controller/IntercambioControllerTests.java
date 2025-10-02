@@ -6,6 +6,7 @@ import com.compartetutiempo.backend.dto.IntercambioUsuarioDTO;
 import com.compartetutiempo.backend.dto.NotificacionDTO;
 import com.compartetutiempo.backend.model.Intercambio;
 import com.compartetutiempo.backend.model.Usuario;
+import com.compartetutiempo.backend.model.enums.EstadoIntercambio;
 import com.compartetutiempo.backend.model.enums.Role;
 import com.compartetutiempo.backend.service.IntercambioService;
 import com.compartetutiempo.backend.service.IntercambioUsuarioService;
@@ -215,7 +216,7 @@ class IntercambioControllerTest {
     void solicitar_OK() throws Exception {
         when(intercambioService.solicitarIntercambio(eq(1), eq("user@mail.com")))
             .thenReturn(intercambioDTO);
-        when(intercambioUsuarioService.obtenerPorIntercambioYUsuario(eq(1), eq("user@mail.com")))
+        when(intercambioUsuarioService.obtenerPorIntercambioUsuarioEstado(eq(1), eq("user@mail.com"),eq(EstadoIntercambio.EMPAREJAMIENTO)))
             .thenReturn(intercambioUsuarioDTO);
         when(usuarioService.obtenerPorCorreo(anyString())).thenReturn(usuario);
         when(notificacionService.crearYEnviar(any(), any(), any(), any()))

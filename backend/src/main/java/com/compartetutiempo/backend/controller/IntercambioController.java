@@ -119,7 +119,7 @@ public class IntercambioController {
     ) {
         String correoDemandante = jwt.getSubject();
         IntercambioDTO dto = intercambioService.solicitarIntercambio(id, correoDemandante);
-        IntercambioUsuarioDTO iu = intercambioUsuarioService.obtenerPorIntercambioYUsuario(id, correoDemandante);
+        IntercambioUsuarioDTO iu = intercambioUsuarioService.obtenerPorIntercambioUsuarioEstado(id, correoDemandante,EstadoIntercambio.EMPAREJAMIENTO);
             Usuario destinatario = usuarioService.obtenerPorCorreo(iu.getCreadorCorreo());
             String mensaje = "El usuario " + iu.getCreadorNombre() + " ha finalizado el intercambio: " 
                 + iu.getIntercambioNombre();
