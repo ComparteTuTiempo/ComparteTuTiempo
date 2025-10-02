@@ -1,150 +1,144 @@
 import React, { useEffect, useState } from "react";
 import { useAuth } from "../utils/AuthContext";
+import { useNavigate } from "react-router-dom";
 import {
   obtenerMisIntercambiosUsuario,
   finalizarAcuerdo,
 } from "../services/intercambioService";
-import { useNavigate } from "react-router-dom";
-import SolicitudesIntercambio from "./SolicitudesIntercambioList"; 
 import Sidebar from "../components/Sidebar";
+import DetalleIntercambioUsuario from "./IntercambioUsuarioDetails";
+import SolicitudesIntercambio from "./SolicitudesIntercambioList";
 
-const IntercambiosPorEstado = () => {
+const IntercambiosByEstado = () => {
   const { token } = useAuth();
-  const [intercambios, setIntercambios] = useState([]);
-  const [seleccionado, setSeleccionado] = useState(null);
-  const [tabActiva, setTabActiva] = useState("CONSENSO");
   const navigate = useNavigate();
+  const [tab, setTab] = useState("CONSENSO"); 
+  const [intercambios, setIntercambios] = useState([]);
+  const [selected, setSelected] = useState(null);
 
   useEffect(() => {
     if (!token) return;
 
     const fetchIntercambios = async () => {
       try {
-        if (tabActiva === "EMPAREJAMIENTO") return; 
-        const data = await obtenerMisIntercambiosUsuario(tabActiva, token);
+        if (tab === "EMPAREJAMIENTO") return; // las solicitudes se manejan aparte
+        const data = await obtenerMisIntercambiosUsuario(tab, token);
         setIntercambios(data);
-      } catch (error) {
-        console.error("Error al obtener intercambios:", error);
+      } catch (err) {
+        console.error("❌ Error al cargar intercambios:", err);
       }
     };
-
     fetchIntercambios();
-  }, [token, tabActiva]);
+  }, [tab, token]);
+
+  const handleFinalizar = async (id) => {
+    try {
+      await finalizarAcuerdo(id, token);
+      alert("✅ Intercambio finalizado");
+      const data = await obtenerMisIntercambiosUsuario(tab, token);
+      setIntercambios(data);
+    } catch (err) {
+      alert("❌ Error al finalizar: " + (err.response?.data?.message || err.message));
+    }
+  };
+
+  const handleEstablecerConsenso = (id) => {
+    navigate(`/intercambios/${id}/consenso`);
+  };
+
+  const getEstadoStyle = (estado) => {
+    switch (estado) {
+      case "FINALIZADO": return { background: "#f01202ff" };
+      case "EJECUCION": return { background: "#96a728ff" };
+      case "CONSENSO": return { background: "#007bff" };
+      case "EMPAREJAMIENTO": return { background: "#ffc107" };
+      default: return { background: "#6c757d" };
+    }
+  };
 
   return (
     <div style={styles.layout}>
       <Sidebar />
       <main style={styles.main}>
-        <h2 style={styles.pageTitle}>Mis Intercambios</h2>
+        <h2 style={{ marginBottom: "20px" }}>Mis Intercambios</h2>
 
-        {/* Pestañas por estado */}
+        {/* Tabs */}
         <div style={styles.tabs}>
-          {["EMPAREJAMIENTO", "CONSENSO", "EJECUCION"].map((estado) => (
+          {["EMPAREJAMIENTO", "CONSENSO", "EJECUCION", "FINALIZADO"].map((estado) => (
             <button
               key={estado}
-              onClick={() => setTabActiva(estado)}
-              style={tabActiva === estado ? styles.activeTab : styles.tab}
+              onClick={() => setTab(estado)}
+              style={tab === estado ? styles.activeTab : styles.tab}
             >
               {estado}
             </button>
           ))}
         </div>
 
-        {/* Vista para cada estado */}
-        {tabActiva === "EMPAREJAMIENTO" ? (
-          <SolicitudesIntercambio /> 
-        ) : (
-          <div style={styles.cardsContainer}>
+        {/* EMPAREJAMIENTO: solicitudes */}
+        {tab === "EMPAREJAMIENTO" && <SolicitudesIntercambio />}
+
+        {/* Grid de intercambios */}
+        {tab !== "EMPAREJAMIENTO" && (
+          <div style={{ ...styles.list, gridTemplateColumns: "repeat(auto-fill, minmax(250px, 1fr))" }}>
             {intercambios.length > 0 ? (
               intercambios.map((i) => (
                 <div key={i.id} style={styles.card}>
                   <div style={styles.cardHeader}>
-                    <h3 style={styles.cardTitle}>{i.intercambioNombre}</h3>
-                    <span style={styles.badge}>{i.estado}</span>
+                    <h3 style={{ margin: 0 }}>{i.intercambioNombre}</h3>
+                    <span style={{ ...styles.estado, ...getEstadoStyle(i.estado) }}>
+                      {i.estado}
+                    </span>
                   </div>
-                  <p style={styles.cardText}>
-                    <strong>Solicitante:</strong> {i.solicitanteNombre}
+                  <p style={{ margin: "8px 0 0 0" }}>
+                    <strong>Solicitante:</strong> {i.solicitanteNombre || i.solicitanteCorreo}
                   </p>
+                  <p><strong>Horas asignadas:</strong> {i.horasAsignadas}</p>
 
-                  {/* CONSENSO: botones chat y acuerdo */}
-                  {i.estado === "CONSENSO" && (
-                    <div style={styles.actions}>
-                      {i.conversacionId && (
-                        <button
-                          onClick={() =>
-                            navigate(`/conversaciones/${i.conversacionId}`)
-                          }
-                          style={styles.chatBtn}
-                        >
-                          💬 Discutir acuerdo
-                        </button>
-                      )}
-                      <button
-                        onClick={() => navigate(`/acuerdos/${i.id}`)}
-                        style={styles.primaryBtn}
-                      >
-                        📑 Establecer acuerdo
-                      </button>
-                    </div>
-                  )}
-
-                  {/* EJECUCIÓN: botón finalizar */}
-                  {tabActiva === "EJECUCION" && (
-                    <button
-                      onClick={async () => {
-                        try {
-                          await finalizarAcuerdo(i.id, token);
-                          alert("✅ Acuerdo finalizado");
-                          const data = await obtenerMisIntercambiosUsuario(
-                            tabActiva,
-                            token
-                          );
-                          setIntercambios(data);
-                        } catch (err) {
-                          alert("❌ Error al finalizar: " + err.message);
-                        }
-                      }}
-                      style={styles.deleteBtn}
-                    >
-                      🔒 Finalizar
+                  <div style={styles.actions}>
+                    <button style={styles.viewBtn} onClick={() => setSelected(i)}>
+                      Ver detalles
                     </button>
-                  )}
+
+                    {tab === "EJECUCION" && (
+                      <button style={styles.finalizarBtn} onClick={() => handleFinalizar(i.id)}>
+                        Finalizar
+                      </button>
+                    )}
+
+                    {tab === "CONSENSO" && (
+                      <>
+                        {i.conversacionId && (
+                          <button
+                            style={styles.chatBtn}
+                            onClick={() => navigate(`/conversaciones/${i.conversacionId}`)}
+                          >
+                            💬 Discutir acuerdo
+                          </button>
+                        )}
+                        <button
+                          style={styles.consensoBtn}
+                          onClick={() => handleEstablecerConsenso(i.id)}
+                        >
+                          Establecer Consenso
+                        </button>
+                      </>
+                    )}
+                  </div>
                 </div>
               ))
             ) : (
-              <p>No tienes intercambios en este estado.</p>
+              <p>No hay intercambios</p>
             )}
           </div>
         )}
 
-        {/* Modal opcional */}
-        {seleccionado && (
-          <div style={styles.modalOverlay}>
+        {/* Modal detalle */}
+        {selected && (
+          <div style={styles.modal}>
             <div style={styles.modalContent}>
-              <button
-                onClick={() => setSeleccionado(null)}
-                style={styles.closeBtn}
-              >
-                ✖
-              </button>
-              <h2>{seleccionado.intercambioNombre}</h2>
-              <p>
-                <strong>Estado:</strong> {seleccionado.estado}
-              </p>
-              <p>
-                <strong>Solicitante:</strong> {seleccionado.solicitanteNombre}
-              </p>
-              {seleccionado.estado === "CONSENSO" &&
-                seleccionado.conversacionId && (
-                  <button
-                    onClick={() =>
-                      navigate(`/conversaciones/${seleccionado.conversacionId}`)
-                    }
-                    style={styles.chatBtn}
-                  >
-                    💬 Ir al chat
-                  </button>
-                )}
+              <button onClick={() => setSelected(null)} style={styles.closeBtn}>✖</button>
+              <DetalleIntercambioUsuario id={selected.id} />
             </div>
           </div>
         )}
@@ -156,32 +150,30 @@ const IntercambiosPorEstado = () => {
 const styles = {
   layout: { display: "flex", minHeight: "100vh", backgroundColor: "#f9f9f9" },
   main: { flex: 1, padding: "30px", fontFamily: "Arial, sans-serif" },
-  pageTitle: { fontSize: "22px", fontWeight: "bold", marginBottom: "20px" },
-  tabs: { display: "flex", gap: "20px", marginBottom: "20px" },
+  tabs: { display: "flex", gap: "10px", marginBottom: "20px" },
   tab: {
-    background: "transparent",
+    padding: "10px 15px",
     border: "none",
-    fontSize: "16px",
+    borderRadius: "6px",
+    background: "#eee",
     cursor: "pointer",
-    color: "#666",
-    paddingBottom: "6px",
   },
   activeTab: {
-    background: "transparent",
+    padding: "10px 15px",
     border: "none",
-    fontSize: "16px",
-    cursor: "pointer",
-    color: "#ff6f00",
-    paddingBottom: "6px",
-    borderBottom: "2px solid #ff6f00",
+    borderRadius: "6px",
+    background: "#ff6f00",
+    color: "#fff",
     fontWeight: "bold",
   },
-  cardsContainer: { display: "flex", flexDirection: "column", gap: "16px" },
+  list: { display: "grid", gap: "15px" },
   card: {
     background: "#fff",
-    padding: "20px",
-    borderRadius: "12px",
-    boxShadow: "0 2px 6px rgba(0,0,0,0.08)",
+    padding: "15px",
+    borderRadius: "10px",
+    boxShadow: "0 2px 6px rgba(0,0,0,0.1)",
+    display: "flex",
+    flexDirection: "column",
   },
   cardHeader: {
     display: "flex",
@@ -189,64 +181,68 @@ const styles = {
     alignItems: "center",
     marginBottom: "8px",
   },
-  cardTitle: { fontSize: "18px", fontWeight: "bold", margin: 0 },
-  badge: {
-    fontSize: "12px",
-    padding: "4px 8px",
+  estado: {
+    padding: "2px 8px",
     borderRadius: "6px",
-    backgroundColor: "#f5f5f5",
-    color: "#555",
-    fontWeight: "500",
-  },
-  cardText: { fontSize: "14px", color: "#555", marginBottom: "12px" },
-  actions: { display: "flex", gap: "10px", marginTop: "10px" },
-  primaryBtn: {
-    background: "#007bff",
-    border: "none",
+    fontSize: "12px",
     color: "#fff",
-    padding: "8px 14px",
+    fontWeight: "bold",
+    textTransform: "capitalize",
+  },
+  actions: { display: "flex", gap: "10px", marginTop: "10px", flexWrap: "wrap" },
+  viewBtn: {
+    padding: "6px 12px",
+    border: "1px solid #ddd",
+    background: "#fff",
     borderRadius: "6px",
     cursor: "pointer",
-    fontWeight: "bold",
+  },
+  finalizarBtn: {
+    padding: "6px 12px",
+    border: "none",
+    borderRadius: "6px",
+    background: "#28a745",
+    color: "#fff",
+    cursor: "pointer",
+  },
+  consensoBtn: {
+    padding: "6px 12px",
+    border: "none",
+    borderRadius: "6px",
+    background: "#007bff",
+    color: "#fff",
+    cursor: "pointer",
   },
   chatBtn: {
+    padding: "6px 12px",
+    border: "none",
+    borderRadius: "6px",
     background: "#28a745",
-    border: "none",
     color: "#fff",
-    padding: "8px 14px",
-    borderRadius: "6px",
     cursor: "pointer",
-    fontWeight: "bold",
   },
-  deleteBtn: {
-    marginTop: "10px",
-    background: "#dc3545",
-    border: "none",
-    color: "#fff",
-    padding: "8px 14px",
-    borderRadius: "6px",
-    cursor: "pointer",
-    fontWeight: "bold",
-  },
-  modalOverlay: {
+  modal: {
     position: "fixed",
     top: 0,
     left: 0,
     right: 0,
     bottom: 0,
-    backgroundColor: "rgba(0,0,0,0.5)",
+    background: "rgba(0,0,0,0.5)",
     display: "flex",
     justifyContent: "center",
     alignItems: "center",
     zIndex: 1000,
+    overflowY: "auto",
   },
   modalContent: {
     background: "#fff",
-    padding: "30px",
+    padding: "20px",
     borderRadius: "10px",
-    width: "400px",
+    maxWidth: "900px",
+    width: "95%",
+    maxHeight: "80vh",
+    overflowY: "auto",
     position: "relative",
-    boxShadow: "0 2px 8px rgba(0,0,0,0.2)",
   },
   closeBtn: {
     position: "absolute",
@@ -259,4 +255,4 @@ const styles = {
   },
 };
 
-export default IntercambiosPorEstado;
+export default IntercambiosByEstado;

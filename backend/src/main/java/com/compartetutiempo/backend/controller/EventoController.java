@@ -48,6 +48,12 @@ public class EventoController {
         return ResponseEntity.ok(creado);
     }
 
+    @GetMapping("/mis-participaciones")
+    public ResponseEntity<List<EventoResponse>> listarMisParticipaciones(
+            @RequestParam String correo) {
+        return ResponseEntity.ok(eventoService.listarEventosDondeParticipo(correo));
+    }
+
     @GetMapping
     public ResponseEntity<List<EventoResponse>> listarEventos() {
         return ResponseEntity.ok(eventoService.listarEventos());

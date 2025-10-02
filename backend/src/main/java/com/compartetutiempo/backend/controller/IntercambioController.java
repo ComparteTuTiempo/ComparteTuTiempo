@@ -63,6 +63,22 @@ public class IntercambioController {
         return ResponseEntity.status(HttpStatus.CREATED).body(creado);
     }
 
+    @GetMapping("/intercambiousuario/{id}")
+    public ResponseEntity<IntercambioUsuarioDTO> obtenerDetalleIntercambioUsuario(
+            @PathVariable Integer id,
+            @AuthenticationPrincipal Jwt jwt) {
+
+        String correo = jwt.getSubject(); 
+        IntercambioUsuarioDTO dto = intercambioUsuarioService.obtenerPorId(id);
+
+        if (!dto.getCreadorCorreo().equals(correo) && !dto.getSolicitanteCorreo().equals(correo)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "No tienes permiso para ver este intercambio");
+        }
+
+        return ResponseEntity.ok(dto);
+    }
+
+
     @GetMapping
     public ResponseEntity<List<Intercambio>> obtenerTodos() {
         List<Intercambio> intercambios = intercambioService.obtenerTodos();
@@ -119,9 +135,9 @@ public class IntercambioController {
     ) {
         String correoDemandante = jwt.getSubject();
         IntercambioDTO dto = intercambioService.solicitarIntercambio(id, correoDemandante);
-        IntercambioUsuarioDTO iu = intercambioUsuarioService.obtenerPorIntercambioYUsuario(id, correoDemandante);
+        IntercambioUsuarioDTO iu = intercambioUsuarioService.obtenerPorIntercambioUsuarioEstado(id, correoDemandante,EstadoIntercambio.EMPAREJAMIENTO);
             Usuario destinatario = usuarioService.obtenerPorCorreo(iu.getCreadorCorreo());
-            String mensaje = "El usuario " + iu.getCreadorNombre() + " ha finalizado el intercambio: " 
+            String mensaje = "El usuario " + iu.getCreadorNombre() + " ha solicitado el intercambio: " 
                 + iu.getIntercambioNombre();
             notificacionService.crearYEnviar(destinatario, TipoNotificacion.INTERCAMBIO, mensaje, null);
         return ResponseEntity.status(HttpStatus.CREATED).body(dto);

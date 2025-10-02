@@ -11,6 +11,14 @@ export const listarEventos = async () => {
   return response.data;
 };
 
+export const listarMisParticipaciones = async (correo, token) => {
+  const response = await axios.get(`${API_URL}/mis-participaciones`, {
+    params: { correo },
+    headers: getAuthHeader(token),
+  });
+  return response.data;
+};
+
 export const getEventoById = async (id) => {
   const response = await axios.get(`${API_URL}/${id}`);
   return response.data;

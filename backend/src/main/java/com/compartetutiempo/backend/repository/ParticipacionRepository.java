@@ -11,4 +11,6 @@ public interface ParticipacionRepository extends JpaRepository<Participacion, In
     List<Participacion> findByEventoId(Integer eventoId);
 
     Optional<Participacion> findByEventoIdAndUsuarioCorreo(Integer eventoId, String correoParticipante);
+
+    List<Participacion> findByUsuarioCorreo(String correo);
 }

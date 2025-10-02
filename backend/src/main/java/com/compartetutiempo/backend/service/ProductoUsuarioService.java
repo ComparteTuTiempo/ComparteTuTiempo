@@ -58,8 +58,6 @@ public class ProductoUsuarioService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "No tienes las suficientes horas para realizar esta transacción");
         }
 
-        // Marcar el producto como reservado
-
         Conversacion conversacion = new Conversacion();
         conversacion.setParticipantes(List.of(producto.getPropietario(), comprador)); 
         conversacion.setTitulo(producto.getNombre() + " - " + comprador.getNombre() + " & " + producto.getPropietario().getNombre());;
@@ -120,6 +118,7 @@ public class ProductoUsuarioService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Esta transacción ya ha sido cancelada");
         }
 
+        producto.setEstado(EstadoProducto.DISPONIBLE);
         productoUsuarioRepository.delete(transaccion);
 
         productoRepository.save(producto);
