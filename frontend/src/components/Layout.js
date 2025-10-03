@@ -5,7 +5,7 @@ import { useAuth } from "../utils/AuthContext";
 import NotificacionesIcono from "./NotificacionesIcono";
 
 const Layout = () => {
-  const { user, logout } = useAuth();
+  const { user } = useAuth();
   const [adminMenuOpen, setAdminMenuOpen] = useState(false);
   const navigate = useNavigate();
 
@@ -64,17 +64,20 @@ const Layout = () => {
               )}
 
               <div style={styles.userSection}>
+                {/* 🔔 Campana de notificaciones */}
+                <NotificacionesIcono />
+
                 <span style={styles.username}>
                   {user.nombre || user.correo}
                 </span>
 
                 {/* 🔹 Badge de horas */}
-                {console.log("Horas del usuario:", user.numeroHoras, user.horasDisponibles)}
                 {user.numeroHoras !== undefined && (
                   <span style={styles.hoursBadge}>
-                     {user.numeroHoras} horas
+                    {user.numeroHoras} horas
                   </span>
                 )}
+
                 <Link to="/perfil" style={{ textDecoration: "none" }}>
                   {user.fotoPerfil ? (
                     <img
