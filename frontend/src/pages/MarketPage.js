@@ -62,6 +62,33 @@ const MarketPage = () => {
     );
   };
 
+  // Dentro de MarketPage
+
+  const handleDelete = async (id) => {
+    if (!window.confirm("¿Seguro que quieres eliminar este elemento?")) return;
+
+    try {
+      if (tab === "products") {
+        await axios.delete(`http://localhost:8080/productos/${id}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+      } else {
+        await axios.delete(`http://localhost:8080/intercambios/${id}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+      }
+
+      // Filtrar lista local
+      setItems((prev) => prev.filter((item) => item.id !== id));
+
+      alert("Elemento eliminado ✅");
+    } catch (err) {
+      console.error("❌ Error al eliminar:", err);
+      alert("No se pudo eliminar el elemento");
+    }
+  };
+
+
   return (
     <div style={styles.layout}>
       <Sidebar />
@@ -149,7 +176,18 @@ const MarketPage = () => {
                       View
                     </button>
                   )}
+
+                  {/* 🔹 Solo admin puede eliminar */}
+                  {user?.roles?.includes("ADMIN") && (
+                    <button
+                      style={styles.deleteBtn}
+                      onClick={() => handleDelete(i.id)}
+                    >
+                      Eliminar
+                    </button>
+                  )}
                 </div>
+
               </div>
             ))
           ) : (
@@ -343,6 +381,15 @@ const styles = {
     fontWeight: "bold",
     cursor: "pointer",
   },
+  deleteBtn: {
+  padding: "6px 12px",
+  border: "none",
+  background: "#dc3545",
+  color: "#fff",
+  borderRadius: "6px",
+  cursor: "pointer",
+  fontWeight: "bold",
+},
 };
 
 export default MarketPage;
