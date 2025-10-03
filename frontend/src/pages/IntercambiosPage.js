@@ -23,7 +23,7 @@ const IntercambiosPage = () => {
 
   // cargar categorías al inicio
   useEffect(() => {
-    axios.get("http://localhost:8080/categorias")
+    axios.get(`${process.env.REACT_APP_API_URL}/categorias`)
       .then(res => setCategoriasDisponibles(res.data))
       .catch(err => console.error("❌ Error al cargar categorías:", err));
   }, []);
@@ -41,7 +41,7 @@ const IntercambiosPage = () => {
           categorias: categorias.length > 0 ? categorias.join(",") : undefined,
         };
 
-        const response = await axios.get("http://localhost:8080/intercambios/filtrar", { params });
+        const response = await axios.get(`${process.env.REACT_APP_API_URL}/intercambios/filtrar`, { params });
         setIntercambios(response.data);
       } catch (error) {
         console.error("❌ Error al obtener intercambios:", error);
@@ -63,7 +63,7 @@ const IntercambiosPage = () => {
     if (!window.confirm("¿Seguro que deseas eliminar este intercambio?")) return;
 
     try {
-      await axios.delete(`http://localhost:8080/intercambios/${id}`, {
+      await axios.delete(`${process.env.REACT_APP_API_URL}/intercambios/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       setIntercambios((prev) => prev.filter((i) => i.id !== id));
@@ -78,11 +78,11 @@ const IntercambiosPage = () => {
   // cargar reseñas cuando se selecciona un intercambio
   useEffect(() => {
     if (seleccionado) {
-      axios.get(`http://localhost:8080/resenas/intercambios/${seleccionado.id}`)
+      axios.get(`${process.env.REACT_APP_API_URL}/resenas/intercambios/${seleccionado.id}`)
         .then(res => setResenas(res.data))
         .catch(err => console.error("❌ Error al cargar reseñas:", err));
 
-      axios.get(`http://localhost:8080/resenas/intercambios/${seleccionado.id}/promedio`)
+      axios.get(`${process.env.REACT_APP_API_URL}/resenas/intercambios/${seleccionado.id}/promedio`)
         .then(res => setPromedio(res.data))
         .catch(err => console.error("❌ Error al cargar promedio:", err));
     }
@@ -100,17 +100,17 @@ const IntercambiosPage = () => {
 
     try {
       await axios.post(
-        `http://localhost:8080/resenas/intercambios/${seleccionado.id}`,
+        `${process.env.REACT_APP_API_URL}/resenas/intercambios/${seleccionado.id}`,
         nuevaResena,
         { headers: { Authorization: `Bearer ${token}` } }
       );
       alert("✅ Reseña enviada con éxito");
 
       // refrescar reseñas
-      const res = await axios.get(`http://localhost:8080/resenas/intercambios/${seleccionado.id}`);
+      const res = await axios.get(`${process.env.REACT_APP_API_URL}/resenas/intercambios/${seleccionado.id}`);
       setResenas(res.data);
 
-      const avg = await axios.get(`http://localhost:8080/resenas/intercambios/${seleccionado.id}/promedio`);
+      const avg = await axios.get(`${process.env.REACT_APP_API_URL}/resenas/intercambios/${seleccionado.id}/promedio`);
       setPromedio(avg.data);
 
       setNuevaResena({ puntuacion: 5, comentario: "" });

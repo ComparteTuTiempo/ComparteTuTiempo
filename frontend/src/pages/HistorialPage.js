@@ -12,7 +12,7 @@ const HistorialPage = () => {
   useEffect(() => {
     // Cargar intercambios FINALIZADOS
     axios
-      .get("http://localhost:8080/intercambios/historial", {
+      .get(`${process.env.REACT_APP_API_URL}/intercambios/historial`, {
         headers: { Authorization: `Bearer ${token}` },
       })
       .then((res) => setIntercambios(res.data))
@@ -22,7 +22,7 @@ const HistorialPage = () => {
 
     // Cargar productos ENTREGADOS
     axios
-      .get("http://localhost:8080/productos/historial", {
+      .get(`${process.env.REACT_APP_API_URL}/productos/historial`, {
         headers: { Authorization: `Bearer ${token}` },
       })
       .then((res) => setProductos(res.data))

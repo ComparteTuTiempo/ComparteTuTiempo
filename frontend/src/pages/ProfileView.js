@@ -37,7 +37,7 @@ const UserProfile = () => {
           const targetCorreo = correo || user?.correo;
 
           const res = await axios.get(
-            `http://localhost:8080/api/usuarios/${targetCorreo}`,
+            `${process.env.REACT_APP_API_URL}/api/usuarios/${targetCorreo}`,
             { headers: { Authorization: `Bearer ${token}` } }
           );
           setUsuario(res.data);
@@ -49,19 +49,19 @@ const UserProfile = () => {
           });
 
           const resResenas = await axios.get(
-            `http://localhost:8080/api/resenas/${targetCorreo}`,
+            `${process.env.REACT_APP_API_URL}/api/resenas/${targetCorreo}`,
             { headers: { Authorization: `Bearer ${token}` } }
           );
           setResenas(resResenas.data);
 
           const resProm = await axios.get(
-            `http://localhost:8080/api/resenas/${targetCorreo}/promedio`,
+            `${process.env.REACT_APP_API_URL}/api/resenas/${targetCorreo}/promedio`,
             { headers: { Authorization: `Bearer ${token}` } }
           );
           setPromedio(resProm.data);
 
           const resOfertas = await axios.get(
-            `http://localhost:8080/intercambios/usuario/${targetCorreo}`,
+            `${process.env.REACT_APP_API_URL}/intercambios/usuario/${targetCorreo}`,
             { headers: { Authorization: `Bearer ${token}` } }
           );
           setOfertas(resOfertas.data);
@@ -98,7 +98,7 @@ const UserProfile = () => {
       };
 
       await axios.put(
-        `http://localhost:8080/api/usuarios/${user.correo}`,
+        `${process.env.REACT_APP_API_URL}/api/usuarios/${user.correo}`,
         payload,
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -115,7 +115,7 @@ const UserProfile = () => {
   const handleResenaSubmit = async () => {
     try {
       await axios.post(
-        `http://localhost:8080/api/resenas/${user.correo}/${usuario.correo}`,
+        `${process.env.REACT_APP_API_URL}/api/resenas/${user.correo}/${usuario.correo}`,
         null,
         {
           params: {
@@ -129,13 +129,13 @@ const UserProfile = () => {
       setNuevaResena({ puntuacion: 5, comentario: "" });
 
       const resResenas = await axios.get(
-        `http://localhost:8080/api/resenas/${usuario.correo}`,
+        `${process.env.REACT_APP_API_URL}/api/resenas/${usuario.correo}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
       setResenas(resResenas.data);
 
       const resProm = await axios.get(
-        `http://localhost:8080/api/resenas/${usuario.correo}/promedio`,
+        `${process.env.REACT_APP_API_URL}/api/resenas/${usuario.correo}/promedio`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
       setPromedio(resProm.data);
@@ -148,7 +148,7 @@ const UserProfile = () => {
   const handleStartConversation = async () => {
     try {
       const res = await axios.post(
-        `http://localhost:8080/conversaciones?correos=${user.correo}&correos=${usuario.correo}`,
+        `${process.env.REACT_APP_API_URL}/conversaciones?correos=${user.correo}&correos=${usuario.correo}`,
         {},
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -166,7 +166,7 @@ const UserProfile = () => {
     }
     try {
       await axios.post(
-        `http://localhost:8080/api/reportes/${usuario.correo}`,
+        `${process.env.REACT_APP_API_URL}/api/reportes/${usuario.correo}`,
         { titulo: "Reporte de usuario", descripcion: reportReason },
         { headers: { Authorization: `Bearer ${token}` } }
       );

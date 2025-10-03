@@ -10,7 +10,7 @@ const Mercado = () => {
   // cargar productos
   useEffect(() => {
     axios
-      .get("http://localhost:8080/productos")
+      .get(`${process.env.REACT_APP_API_URL}/productos`)
       .then((res) => setProductos(res.data))
       .catch((err) => console.error("❌ Error al cargar productos:", err));
   }, []);
@@ -19,7 +19,7 @@ const Mercado = () => {
   const eliminarProducto = async (id) => {
     if (!window.confirm("¿Seguro que quieres eliminar este producto?")) return;
     try {
-      await axios.delete(`http://localhost:8080/productos/${id}`, {
+      await axios.delete(`${process.env.REACT_APP_API_URL}/productos/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       setProductos((prev) => prev.filter((p) => p.id !== id)); // actualizar lista
