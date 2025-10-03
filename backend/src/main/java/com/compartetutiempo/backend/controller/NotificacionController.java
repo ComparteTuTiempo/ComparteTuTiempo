@@ -4,6 +4,7 @@ import com.compartetutiempo.backend.dto.NotificacionDTO;
 import com.compartetutiempo.backend.model.Notificacion;
 import com.compartetutiempo.backend.service.NotificacionService;
 
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
@@ -29,15 +30,25 @@ public class NotificacionController {
     }
     
     @PutMapping("/{id}/leer")
-    public void marcarComoLeida(@PathVariable Integer id, @AuthenticationPrincipal Jwt jwt) {
+    public ResponseEntity<Void> marcarComoLeida(@PathVariable Integer id, @AuthenticationPrincipal Jwt jwt) {
         String correoUsuario = jwt.getSubject();
-        notificacionService.marcarComoLeida(id, correoUsuario);
+        try {
+            notificacionService.marcarComoLeida(id, correoUsuario);
+            return ResponseEntity.ok().build();
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     @PutMapping("/leer-todas")
-    public void marcarTodasComoLeidas(@AuthenticationPrincipal Jwt jwt) {
+    public ResponseEntity<Void> marcarTodasComoLeidas(@AuthenticationPrincipal Jwt jwt) {
         String correoUsuario = jwt.getSubject();
-        notificacionService.marcarTodasComoLeidas(correoUsuario);
+        try {
+            notificacionService.marcarTodasComoLeidas(correoUsuario);
+            return ResponseEntity.ok().build();
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(400).build();
+        }
     }
 }
 
