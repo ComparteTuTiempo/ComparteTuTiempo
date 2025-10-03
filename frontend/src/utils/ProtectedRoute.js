@@ -8,7 +8,7 @@ const ProtectedRoute = ({ children, roles }) => {
   // Si todavía no se ha cargado el usuario desde localStorage, mostramos null o un loader
   console.log("ProtectedRoute - user:", user);
   if (user === null) {
-    return null; // o un spinner: <div>Cargando...</div>
+    return <Navigate to="/login" replace />; // o un spinner: <div>Cargando...</div>
   }
 
   // Si no hay usuario logueado, redirigimos al login
