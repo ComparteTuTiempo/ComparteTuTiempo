@@ -36,16 +36,21 @@ public class EventoController {
     private final NotificacionService notificacionService;
 
     @PostMapping("/crear")
-    public ResponseEntity<Evento> crearEvento(@RequestBody EventoRequest request) {
-        Evento evento = new Evento();
-        evento.setNombre(request.getNombre());
-        evento.setDescripcion(request.getDescripcion());
-        evento.setFechaEvento(request.getFechaEvento());
-        evento.setUbicacion(request.getUbicacion());
-        evento.setDuracion(request.getDuracion());
+    public ResponseEntity<?> crearEvento(@RequestBody EventoRequest request) {
+        try{
+            Evento evento = new Evento();
+            evento.setNombre(request.getNombre());
+            evento.setDescripcion(request.getDescripcion());
+            evento.setFechaEvento(request.getFechaEvento());
+            evento.setUbicacion(request.getUbicacion());
+            evento.setDuracion(request.getDuracion());
 
-        Evento creado = eventoService.crearEvento(evento, request.getCorreoOrganizador());
-        return ResponseEntity.ok(creado);
+            Evento creado = eventoService.crearEvento(evento, request.getCorreoOrganizador());
+            return ResponseEntity.ok(creado);
+        }catch(RuntimeException e){
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+        
     }
 
     @GetMapping("/mis-participaciones")
@@ -60,9 +65,13 @@ public class EventoController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<EventoResponse> obtenerEvento(@PathVariable Integer id) {
-        EventoResponse evento = eventoService.obtenerEventoPorId(id);
-        return ResponseEntity.ok(evento);
+    public ResponseEntity<?> obtenerEvento(@PathVariable Integer id) {
+        try{
+            EventoResponse evento = eventoService.obtenerEventoPorId(id);
+            return ResponseEntity.ok(evento);
+        }catch(RuntimeException e){
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
     }
 
     @GetMapping("/{id}/participantes")
