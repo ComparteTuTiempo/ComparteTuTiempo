@@ -16,6 +16,7 @@ import EventoDetails from "./pages/EventoDetails";
 import ListaAsistencia from "./pages/AsistenciaList";
 import VerificacionForm from "./forms/VerificacionForm";
 import AdminVerificationPage from "./pages/AdminVerificationPage";
+import PublicRoute from "./utils/PublicRoute";
 
 import IntercambiosPage from "./pages/IntercambiosPage";
 import MarketPage from "./pages/MarketPage";
@@ -48,30 +49,29 @@ function App() {
               {/* Todas las páginas usan Layout */}
                 <Route element={<Layout />}>
                 <Route path="/" element={<LandingPage />} />
-                <Route path="/registro" element={<RegistroUsuarioForm />} />
-                <Route path="/login" element={<LoginPage />} />
-                <Route path="/perfil" element={<UserProfile/>}/>
-                <Route path="/perfil/:correo" element={<UserProfile />} />
-                <Route path="/crear-oferta" element={<CrearOferta />} />
-                <Route path="/intercambios/:id/editar" element={<CrearOferta />} />
-                <Route path="/conversaciones" element={<ConversacionList />} />
-                <Route path="/conversaciones/:id" element={<ConversacionView />} />
-                <Route path="/eventos/crear" element={<CrearEventoForm  />} />
-                <Route path="/eventos/:id" element={<EventoDetails  />} />
-                <Route path="/eventos/:id/participantes/lista" element={<ListaAsistencia  />} />                    
-                <Route path="/intercambios" element={<IntercambiosPage />} />
+                <Route path="/registro" element={<PublicRoute><RegistroUsuarioForm /></PublicRoute>} />
+                <Route path="/login" element={<PublicRoute><LoginPage /></PublicRoute>} />
+                <Route path="/perfil" element={<ProtectedRoute><UserProfile/></ProtectedRoute>}/>
+                <Route path="/perfil/:correo" element={<ProtectedRoute><UserProfile /></ProtectedRoute>} />
+                <Route path="/crear-oferta" element={<ProtectedRoute><CrearOferta /></ProtectedRoute>} />
+                <Route path="/intercambios/:id/editar" element={<ProtectedRoute><CrearOferta /></ProtectedRoute>} />
+                <Route path="/conversaciones" element={<ProtectedRoute><ConversacionList /></ProtectedRoute>} />
+                <Route path="/conversaciones/:id" element={<ProtectedRoute><ConversacionView /></ProtectedRoute>} />
+                <Route path="/eventos/crear" element={<ProtectedRoute><CrearEventoForm  /></ProtectedRoute>} />
+                <Route path="/eventos/:id" element={<ProtectedRoute><EventoDetails  /></ProtectedRoute>} />
+                <Route path="/eventos/:id/participantes/lista" element={<ProtectedRoute><ListaAsistencia  /></ProtectedRoute>} />                    
                 <Route path="/mercado" element={<MarketPage />} />
-                <Route path="/producto/nuevo" element={<ProductoPage />} />
-                <Route path="/mispublicaciones" element={<PublicacionesPage />} />
-                <Route path="/productos/editar/:id" element={<ProductoPage />} />
-                <Route path="/intercambio/:id" element={<IntercambioDetails />} />
-                <Route path="/solicitudes" element={<SolicitudesIntercambio />} />
-                <Route path="/intercambios/usuario" element={<IntercambiosPorEstado />} />
-                <Route path="/acuerdos/:id" element={<FormularioAcuerdo />} />
-                <Route path="/producto/:id" element={<DetalleProducto />} />
-                <Route path="/productousuario/transacciones" element={<ProductoUsuarioDetails />} />
-                <Route path="/notificaciones" element={<NotificacionesPage />} />
-                <Route path="/eventos" element={<EventosPage />} />
+                <Route path="/producto/nuevo" element={<ProtectedRoute><ProductoPage /></ProtectedRoute>} />
+                <Route path="/mispublicaciones" element={<ProtectedRoute><PublicacionesPage /></ProtectedRoute>} />
+                <Route path="/productos/editar/:id" element={<ProtectedRoute><ProductoPage /></ProtectedRoute>} />
+                <Route path="/intercambio/:id" element={<ProtectedRoute><IntercambioDetails /></ProtectedRoute>} />
+                <Route path="/solicitudes" element={<ProtectedRoute><SolicitudesIntercambio /></ProtectedRoute>} />
+                <Route path="/intercambios/usuario" element={<ProtectedRoute><IntercambiosPorEstado /></ProtectedRoute>} />
+                <Route path="/acuerdos/:id" element={<ProtectedRoute><FormularioAcuerdo /></ProtectedRoute>} />
+                <Route path="/producto/:id" element={<ProtectedRoute><DetalleProducto /></ProtectedRoute>} />
+                <Route path="/productousuario/transacciones" element={<ProtectedRoute><ProductoUsuarioDetails /></ProtectedRoute>} />
+                <Route path="/notificaciones" element={<ProtectedRoute><NotificacionesPage /></ProtectedRoute>} />
+                <Route path="/eventos" element={<ProtectedRoute><EventosPage /></ProtectedRoute>} />
 
                 {/* Ruta protegida: usuario normal */}
                 <Route

@@ -202,14 +202,6 @@ const UserProfile = () => {
         {/* Stats */}
         <div style={styles.stats}>
           <div style={styles.statBox}>
-            <h3>Time Banked</h3>
-            <p>{usuario.horasAcumuladas || 0} hours</p>
-          </div>
-          <div style={styles.statBox}>
-            <h3>Exchanges Completed</h3>
-            <p>{usuario.intercambiosCompletados || 0}</p>
-          </div>
-          <div style={styles.statBox}>
             <h3>Reputation Score</h3>
             <p>{promedio.toFixed(1)} ⭐</p>
           </div>

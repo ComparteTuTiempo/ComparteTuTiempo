@@ -81,8 +81,8 @@ const MarketPage = () => {
               {t === "offers"
                 ? "Offers"
                 : t === "requests"
-                ? "Requests"
-                : "Products"}
+                  ? "Requests"
+                  : "Products"}
             </button>
           ))}
         </div>
@@ -101,7 +101,7 @@ const MarketPage = () => {
                         tab === "products"
                           ? i.usuarioFoto || "https://via.placeholder.com/32"
                           : i.user?.fotoPerfil ||
-                            "https://via.placeholder.com/32"
+                          "https://via.placeholder.com/32"
                       }
                       alt="user"
                       style={styles.avatar}
@@ -137,16 +137,18 @@ const MarketPage = () => {
 
                 {/* Acciones */}
                 <div style={styles.actions}>
-                  <button
-                    style={styles.viewBtn}
-                    onClick={() =>
-                      tab === "products"
-                        ? navigate(`/producto/${i.id}`)
-                        : navigate(`/intercambio/${i.id}`)
-                    }
-                  >
-                    View
-                  </button>
+                  {user && (
+                    <button
+                      style={styles.viewBtn}
+                      onClick={() =>
+                        tab === "products"
+                          ? navigate(`/producto/${i.id}`)
+                          : navigate(`/intercambio/${i.id}`)
+                      }
+                    >
+                      View
+                    </button>
+                  )}
                 </div>
               </div>
             ))

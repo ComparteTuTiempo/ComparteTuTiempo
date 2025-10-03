@@ -6,9 +6,13 @@ import com.compartetutiempo.backend.model.Usuario;
 import com.compartetutiempo.backend.model.enums.EstadoProducto;
 import com.compartetutiempo.backend.model.enums.Role;
 import com.compartetutiempo.backend.service.ProductoService;
+
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
+
 import com.compartetutiempo.backend.service.UsuarioService;
 import org.springframework.security.oauth2.jwt.Jwt;
 
@@ -53,7 +57,7 @@ public class ProductoController {
 
     @GetMapping("/usuario")
     public ResponseEntity<List<Producto>> obtenerPorUsuario(@AuthenticationPrincipal Jwt jwt) {
-        String correo = jwt.getSubject(); 
+        String correo = jwt.getSubject();
         Usuario user = usuarioService.obtenerPorCorreo(correo);
         List<Producto> productos = productoService.obtenerPorUsuario(user);
         return ResponseEntity.ok(productos);
@@ -71,8 +75,6 @@ public class ProductoController {
         ProductoDTO actualizado = productoService.actualizarProducto(id, productoModificado, user);
         return ResponseEntity.ok(actualizado);
     }
-
-    
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> eliminarProducto(
@@ -99,4 +101,25 @@ public class ProductoController {
         return ResponseEntity.ok(productoService.obtenerHistorial(user));
     }
 
+    @GetMapping("/{id}/editar")
+    public ResponseEntity<ProductoDTO> obtenerProductoParaEditar(
+            @PathVariable Long id,
+            @AuthenticationPrincipal Jwt jwt) {
+
+        ProductoDTO producto = productoService.obtenerPorId(id);
+        if (producto == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Producto no encontrado");
+        }
+
+        String correo = jwt.getSubject();
+        Usuario user = usuarioService.obtenerPorCorreo(correo);
+        boolean esAdmin = user.getRoles().contains(Role.ADMIN);
+
+        if (!producto.getUsuarioCorreo().equals(correo) && !esAdmin) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN,
+                    "No tienes permiso para editar este producto");
+        }
+
+        return ResponseEntity.ok(producto);
+    }
 }
