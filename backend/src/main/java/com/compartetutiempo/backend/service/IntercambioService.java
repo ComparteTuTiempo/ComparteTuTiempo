@@ -169,10 +169,12 @@ public class IntercambioService {
 
     @Transactional
     public void eliminarIntercambio(Integer id) {
-        resenaIntercambioRepository.deleteByIntercambioId(id);
-        if (!intercambioRepository.existsById(id)) {
+        Intercambio intercambio = intercambioRepository.findById(id).orElse(null);
+        if (intercambio == null) {
             throw new RuntimeException("Intercambio no encontrado");
         }
-        intercambioRepository.deleteById(id);
+        resenaIntercambioRepository.deleteByIntercambio(intercambio);
+        intercambioUsuarioRepository.deleteByIntercambio(intercambio);
+        intercambioRepository.delete(intercambio);
     }
 }

@@ -116,6 +116,7 @@ public class ProductoService {
             throw new RuntimeException("No tienes permisos para eliminar este producto");
         }
 
+        productoUsuarioRepository.deleteByProducto(producto);
         productoRepository.delete(producto);
     }
 
@@ -126,6 +127,7 @@ public class ProductoService {
     public void eliminarProductoComoAdmin(Long id) {
         Producto producto = productoRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Producto no encontrado"));
+        productoUsuarioRepository.deleteByProducto(producto);
         productoRepository.delete(producto);
     }
 
