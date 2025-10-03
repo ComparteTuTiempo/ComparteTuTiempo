@@ -18,7 +18,11 @@ import com.compartetutiempo.backend.dto.EventoResponse;
 import com.compartetutiempo.backend.dto.ParticipacionDTO;
 import com.compartetutiempo.backend.model.Evento;
 import com.compartetutiempo.backend.model.Participacion;
+import com.compartetutiempo.backend.model.Usuario;
+import com.compartetutiempo.backend.model.enums.TipoNotificacion;
 import com.compartetutiempo.backend.service.EventoService;
+import com.compartetutiempo.backend.service.NotificacionService;
+import com.compartetutiempo.backend.service.UsuarioService;
 
 import lombok.RequiredArgsConstructor;
 
@@ -28,18 +32,31 @@ import lombok.RequiredArgsConstructor;
 public class EventoController {
 
     private final EventoService eventoService;
+    private final UsuarioService usuarioService;
+    private final NotificacionService notificacionService;
 
     @PostMapping("/crear")
-    public ResponseEntity<Evento> crearEvento(@RequestBody EventoRequest request) {
-        Evento evento = new Evento();
-        evento.setNombre(request.getNombre());
-        evento.setDescripcion(request.getDescripcion());
-        evento.setFechaEvento(request.getFechaEvento());
-        evento.setUbicacion(request.getUbicacion());
-        evento.setDuracion(request.getDuracion());
+    public ResponseEntity<?> crearEvento(@RequestBody EventoRequest request) {
+        try{
+            Evento evento = new Evento();
+            evento.setNombre(request.getNombre());
+            evento.setDescripcion(request.getDescripcion());
+            evento.setFechaEvento(request.getFechaEvento());
+            evento.setUbicacion(request.getUbicacion());
+            evento.setDuracion(request.getDuracion());
 
-        Evento creado = eventoService.crearEvento(evento, request.getCorreoOrganizador());
-        return ResponseEntity.ok(creado);
+            Evento creado = eventoService.crearEvento(evento, request.getCorreoOrganizador());
+            return ResponseEntity.ok(creado);
+        }catch(RuntimeException e){
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+        
+    }
+
+    @GetMapping("/mis-participaciones")
+    public ResponseEntity<List<EventoResponse>> listarMisParticipaciones(
+            @RequestParam String correo) {
+        return ResponseEntity.ok(eventoService.listarEventosDondeParticipo(correo));
     }
 
     @GetMapping
@@ -48,9 +65,13 @@ public class EventoController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<EventoResponse> obtenerEvento(@PathVariable Integer id) {
-        EventoResponse evento = eventoService.obtenerEventoPorId(id);
-        return ResponseEntity.ok(evento);
+    public ResponseEntity<?> obtenerEvento(@PathVariable Integer id) {
+        try{
+            EventoResponse evento = eventoService.obtenerEventoPorId(id);
+            return ResponseEntity.ok(evento);
+        }catch(RuntimeException e){
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
     }
 
     @GetMapping("/{id}/participantes")
@@ -93,6 +114,13 @@ public class EventoController {
             @RequestParam String correoOrganizador) {
         try {
             EventoResponse evento = eventoService.finalizarEvento(eventoId, correoOrganizador);
+            List <ParticipacionDTO> participantes = eventoService.obtenerParticipacionesEvento(eventoId);
+
+            String mensaje = "El evento " + evento.getNombre() + " ha finalizado y se ha hecho el recuento de horas";
+            for(ParticipacionDTO participante: participantes){
+                Usuario usuarioParticipante = usuarioService.obtenerPorCorreo(participante.getCorreo());
+                notificacionService.crearYEnviar(usuarioParticipante, TipoNotificacion.EVENTO, mensaje, null);
+            }
             return ResponseEntity.ok(evento);
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(e.getMessage());

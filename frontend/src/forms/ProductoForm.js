@@ -18,7 +18,7 @@ const ProductoForm = () => {
   useEffect(() => {
     if (id) {
       axios
-        .get(`http://localhost:8080/productos/${id}`, {
+        .get(`http://localhost:8080/productos/${id}/editar`, {
           headers: { Authorization: `Bearer ${token}` },
         })
         .then((res) => {
@@ -28,7 +28,17 @@ const ProductoForm = () => {
             numeroHoras: res.data.numeroHoras || "",
           });
         })
-        .catch((err) => console.error("❌ Error al cargar producto:", err));
+        .catch((err) => {
+          if (err.response?.status === 403) {
+            alert("🚫 No puedes editar este producto");
+            navigate("/");
+          } else if (err.response?.status === 404) {
+            alert("❌ El producto no existe o fue eliminado");
+            navigate("/");
+          } else {
+            console.error("❌ Error al cargar producto:", err);
+          }
+        });
     }
   }, [id, token]);
 

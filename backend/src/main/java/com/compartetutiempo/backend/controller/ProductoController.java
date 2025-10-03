@@ -1,13 +1,18 @@
 package com.compartetutiempo.backend.controller;
 
+import com.compartetutiempo.backend.dto.ProductoDTO;
 import com.compartetutiempo.backend.model.Producto;
 import com.compartetutiempo.backend.model.Usuario;
 import com.compartetutiempo.backend.model.enums.EstadoProducto;
 import com.compartetutiempo.backend.model.enums.Role;
 import com.compartetutiempo.backend.service.ProductoService;
+
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
+
 import com.compartetutiempo.backend.service.UsuarioService;
 import org.springframework.security.oauth2.jwt.Jwt;
 
@@ -33,7 +38,7 @@ public class ProductoController {
         String email = jwt.getSubject(); // aquí está el correo/username del token
         Usuario user = usuarioService.obtenerPorCorreo(email);
 
-        producto.setUser(user);
+        producto.setPropietario(user);
         producto.setFechaPublicacion(new Date());
         producto.setEstado(EstadoProducto.DISPONIBLE);
 
@@ -46,20 +51,20 @@ public class ProductoController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Producto> obtenerPorId(@PathVariable Long id) {
+    public ResponseEntity<ProductoDTO> obtenerPorId(@PathVariable Long id) {
         return ResponseEntity.ok(productoService.obtenerPorId(id));
     }
 
     @GetMapping("/usuario")
     public ResponseEntity<List<Producto>> obtenerPorUsuario(@AuthenticationPrincipal Jwt jwt) {
-        String correo = jwt.getSubject(); // sacamos el correo del token
+        String correo = jwt.getSubject();
         Usuario user = usuarioService.obtenerPorCorreo(correo);
         List<Producto> productos = productoService.obtenerPorUsuario(user);
         return ResponseEntity.ok(productos);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Producto> actualizarProducto(
+    public ResponseEntity<ProductoDTO> actualizarProducto(
             @PathVariable Long id,
             @RequestBody Producto productoModificado,
             @AuthenticationPrincipal Jwt jwt) {
@@ -67,7 +72,7 @@ public class ProductoController {
         String correo = jwt.getSubject();
         Usuario user = usuarioService.obtenerPorCorreo(correo);
 
-        Producto actualizado = productoService.actualizarProducto(id, productoModificado, user);
+        ProductoDTO actualizado = productoService.actualizarProducto(id, productoModificado, user);
         return ResponseEntity.ok(actualizado);
     }
 
@@ -94,5 +99,27 @@ public class ProductoController {
         String correo = jwt.getSubject();
         Usuario user = usuarioService.obtenerPorCorreo(correo);
         return ResponseEntity.ok(productoService.obtenerHistorial(user));
+    }
+
+    @GetMapping("/{id}/editar")
+    public ResponseEntity<ProductoDTO> obtenerProductoParaEditar(
+            @PathVariable Long id,
+            @AuthenticationPrincipal Jwt jwt) {
+
+        ProductoDTO producto = productoService.obtenerPorId(id);
+        if (producto == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Producto no encontrado");
+        }
+
+        String correo = jwt.getSubject();
+        Usuario user = usuarioService.obtenerPorCorreo(correo);
+        boolean esAdmin = user.getRoles().contains(Role.ADMIN);
+
+        if (!producto.getUsuarioCorreo().equals(correo) && !esAdmin) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN,
+                    "No tienes permiso para editar este producto");
+        }
+
+        return ResponseEntity.ok(producto);
     }
 }

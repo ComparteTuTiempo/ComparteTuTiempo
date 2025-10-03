@@ -1,30 +1,34 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { useAuth } from "../utils/AuthContext";
+import Sidebar from "../components/Sidebar";
 
 const UserProfile = () => {
-  const navigate = useNavigate();
   const { correo } = useParams();
-  const { user, token } = useAuth();
+  const { user, token } = useAuth(); // 👈 obtenemos user y token del contexto
+  const navigate = useNavigate();
 
   const [usuario, setUsuario] = useState(null);
-  const [ofertas, setOfertas] = useState([]);
-  const [editing, setEditing] = useState(false);
-  const [formData, setFormData] = useState({
-    biografia: "",
-    fechaNacimiento: "",
-    ubicacion: "",
-  });
-
-  // 📌 Reportes
-  const [showReportForm, setShowReportForm] = useState(false);
-  const [reportData, setReportData] = useState({ titulo: "", descripcion: "" });
-
-  // 📌 Reseñas
   const [resenas, setResenas] = useState([]);
   const [promedio, setPromedio] = useState(0);
+  const [ofertas, setOfertas] = useState([]);
+  const [tab, setTab] = useState("reviews");
+
+  const [showReportForm, setShowReportForm] = useState(false);
+  const [reportReason, setReportReason] = useState("");
+
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [formData, setFormData] = useState({
+    biografia: "",
+    ubicacion: "",
+    fechaNacimiento: "",
+  });
+
   const [nuevaResena, setNuevaResena] = useState({ puntuacion: 5, comentario: "" });
+
+  // 👇 comprobamos si el logueado es admin desde AuthContext
+  const isAdmin = user?.roles?.includes("ADMIN");
 
   useEffect(() => {
     const fetchUsuario = async () => {
@@ -39,19 +43,11 @@ const UserProfile = () => {
           setUsuario(res.data);
           setFormData({
             biografia: res.data.biografia || "",
-            fechaNacimiento: res.data.fechaNacimiento || "",
             ubicacion: res.data.ubicacion || "",
+            fechaNacimiento: res.data.fechaNacimiento || "",
+            fotoPerfil: res.data.fotoPerfil || "",
           });
 
-          if (!correo && user?.correo) {
-            const resOfertas = await axios.get(
-              `http://localhost:8080/intercambios/usuario/${user.correo}`,
-              { headers: { Authorization: `Bearer ${token}` } }
-            );
-            setOfertas(resOfertas.data);
-          }
-
-          // 👇 cargar reseñas y promedio
           const resResenas = await axios.get(
             `http://localhost:8080/api/resenas/${targetCorreo}`,
             { headers: { Authorization: `Bearer ${token}` } }
@@ -63,49 +59,59 @@ const UserProfile = () => {
             { headers: { Authorization: `Bearer ${token}` } }
           );
           setPromedio(resProm.data);
+
+          const resOfertas = await axios.get(
+            `http://localhost:8080/intercambios/usuario/${targetCorreo}`,
+            { headers: { Authorization: `Bearer ${token}` } }
+          );
+          setOfertas(resOfertas.data);
         } catch (err) {
-          console.error("❌ Error al cargar el usuario:", err);
+          console.error("❌ Error al cargar datos de usuario:", err);
         }
       }
     };
     fetchUsuario();
   }, [correo, token, user]);
 
-  const handleChange = (e) =>
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+  if (!usuario) {
+    navigate("/login");
+    return null;
+  }
 
-  const handleSave = async () => {
+  if (!usuario.activo) {
+    return (
+      <div style={{ textAlign: "center", marginTop: "40px", fontSize: "20px", fontWeight: "bold", color: "#dc3545" }}>
+        🚫 Usuario baneado
+      </div>
+    );
+  }
+
+  const isOwnProfile = !correo || correo === user?.correo;
+
+  const handleSaveProfile = async () => {
     try {
-      const res = await axios.put(
+      const payload = {
+        biografia: formData.biografia,
+        ubicacion: formData.ubicacion,
+        fechaNacimiento: formData.fechaNacimiento,
+        fotoPerfil: formData.fotoPerfil,
+      };
+
+      await axios.put(
         `http://localhost:8080/api/usuarios/${user.correo}`,
-        { ...usuario, ...formData },
+        payload,
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      setUsuario(res.data);
-      setEditing(false);
+
+      setUsuario((prev) => ({ ...prev, ...payload }));
+      setShowEditModal(false);
+      alert("✅ Perfil actualizado con éxito");
     } catch (err) {
       console.error("❌ Error al actualizar usuario:", err);
+      alert("Hubo un error al actualizar tu perfil");
     }
   };
 
-  // 📌 enviar reporte
-  const handleReportSubmit = async () => {
-    try {
-      await axios.post(
-        `http://localhost:8080/api/reportes/${usuario.correo}`,
-        reportData,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      alert("✅ Reporte enviado con éxito");
-      setShowReportForm(false);
-      setReportData({ titulo: "", descripcion: "" });
-    } catch (err) {
-      console.error("❌ Error al enviar reporte:", err);
-      alert("Hubo un error al enviar el reporte");
-    }
-  };
-
-  // 📌 enviar reseña
   const handleResenaSubmit = async () => {
     try {
       await axios.post(
@@ -122,7 +128,6 @@ const UserProfile = () => {
       alert("✅ Reseña enviada");
       setNuevaResena({ puntuacion: 5, comentario: "" });
 
-      // recargar reseñas
       const resResenas = await axios.get(
         `http://localhost:8080/api/resenas/${usuario.correo}`,
         { headers: { Authorization: `Bearer ${token}` } }
@@ -136,180 +141,244 @@ const UserProfile = () => {
       setPromedio(resProm.data);
     } catch (err) {
       console.error("❌ Error al enviar reseña:", err);
-      alert("Ya ha enviado una reseña para este usuario");
+      alert("Ya has enviado una reseña para este usuario");
     }
   };
 
-  if (!usuario) {
-    return <p style={{ textAlign: "center", marginTop: "40px" }}>Cargando perfil...</p>;
-  }
+  const handleStartConversation = async () => {
+    try {
+      const res = await axios.post(
+        `http://localhost:8080/conversaciones?correos=${user.correo}&correos=${usuario.correo}`,
+        {},
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      navigate(`/conversaciones/${res.data.id}`);
+    } catch (err) {
+      console.error("❌ Error al iniciar conversación:", err);
+      alert("No se pudo iniciar la conversación");
+    }
+  };
 
-  const isOwnProfile = !correo || correo === user?.correo;
+  const handleReport = async () => {
+    if (!reportReason.trim()) {
+      alert("Escribe un motivo antes de enviar el reporte");
+      return;
+    }
+    try {
+      await axios.post(
+        `http://localhost:8080/api/reportes/${usuario.correo}`,
+        { titulo: "Reporte de usuario", descripcion: reportReason },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      alert("✅ Reporte enviado, un administrador lo revisará.");
+      setReportReason("");
+      setShowReportForm(false);
+    } catch (err) {
+      console.error("❌ Error al enviar reporte:", err);
+      alert("Hubo un error al enviar el reporte");
+    }
+  };
 
   return (
     <div style={styles.container}>
-      <aside style={styles.sidebar}>
-        <ul style={styles.menu}>
-          <li style={styles.menuItem}>Inicio</li>
-          <li style={styles.menuItem}>Mensajes</li>
-          <li style={styles.menuItem}>Configuración</li>
-        </ul>
-      </aside>
+      <Sidebar />
 
       <main style={styles.main}>
+        {/* Tarjeta de perfil */}
         <div style={styles.profileCard}>
           <img
             src={usuario.fotoPerfil || "https://via.placeholder.com/80"}
             alt="Foto de perfil"
             style={styles.avatar}
           />
-          <div style={styles.profileInfo}>
-            <h2>{usuario.nombre}</h2>
-            {usuario.verificado && <p style={styles.verificado}>✔ Usuario verificado</p>}
-            {!usuario.activo && <p style={styles.baneado}>🚫 Usuario baneado</p>}
-            <p style={styles.email}>{usuario.correo}</p>
-
-            {editing ? (
-              <>
-                <textarea
-                  name="biografia"
-                  value={formData.biografia}
-                  onChange={handleChange}
-                  style={styles.textarea}
-                  placeholder="Escribe tu biografía..."
-                />
-                <input
-                  type="date"
-                  name="fechaNacimiento"
-                  value={formData.fechaNacimiento}
-                  onChange={handleChange}
-                  style={styles.input}
-                />
-                <input
-                  type="text"
-                  name="ubicacion"
-                  value={formData.ubicacion}
-                  onChange={handleChange}
-                  style={styles.input}
-                  placeholder="Ubicación"
-                />
-                <button style={styles.saveBtn} onClick={handleSave}>Guardar</button>
-              </>
-            ) : (
-              <>
-                <p style={styles.bio}>{usuario.biografia || "Sin biografía aún."}</p>
-                <p style={styles.detail}>
-                  <strong>Fecha de nacimiento:</strong>{" "}
-                  {usuario.fechaNacimiento || "No especificada"}
-                </p>
-                <p style={styles.detail}>
-                  <strong>Ubicación:</strong>{" "}
-                  {usuario.ubicacion || "No especificada"}
-                </p>
-
-                {isOwnProfile ? (
-                  <button style={styles.editBtn} onClick={() => setEditing(true)}>
-                    Editar perfil
-                  </button>
-                ) : (
-                  <button style={styles.reportBtn} onClick={() => setShowReportForm(true)}>
-                    Reportar usuario
-                  </button>
-                )}
-              </>
-            )}
+          <div>
+            <h2 style={styles.name}>{usuario.nombre}</h2>
+            {usuario.verificado && <p style={styles.verifiedText}>✅ Cuenta verificada</p>}
+            <p style={styles.bio}>{usuario.biografia || "Sin biografía aún. Agrega algo sobre ti."}</p>
+            <p style={styles.location}>📍 {usuario.ubicacion || "Ubicación no especificada"}</p>
           </div>
         </div>
 
-        {/* Ofertas */}
+        {/* Stats */}
+        <div style={styles.stats}>
+          <div style={styles.statBox}>
+            <h3>Reputation Score</h3>
+            <p>{promedio.toFixed(1)} ⭐</p>
+          </div>
+        </div>
+
+        {/* Botones extra */}
+        {!isOwnProfile && (
+          <div style={{ marginBottom: "20px", display: "flex", gap: "10px" }}>
+            <button style={styles.chatBtn} onClick={handleStartConversation}>
+              Iniciar conversación
+            </button>
+            <button style={styles.reportBtn} onClick={() => setShowReportForm(!showReportForm)}>
+              Reportar usuario
+            </button>
+          </div>
+        )}
+
+        {showReportForm && (
+          <div style={styles.card}>
+            <h4>Reportar usuario</h4>
+            <textarea
+              placeholder="Describe el motivo del reporte..."
+              value={reportReason}
+              onChange={(e) => setReportReason(e.target.value)}
+              style={styles.textarea}
+            />
+            <div style={{ display: "flex", gap: "10px" }}>
+              <button style={styles.saveBtn} onClick={handleReport}>
+                Enviar reporte
+              </button>
+              <button
+                style={styles.closeBtn}
+                onClick={() => {
+                  setShowReportForm(false);
+                  setReportReason("");
+                }}
+              >
+                Cancelar
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Botones de perfil propio */}
         {isOwnProfile && (
-          <section style={styles.section}>
-            <h3 style={styles.sectionTitle}>Mis Ofertas</h3>
-            <div style={styles.cards}>
-              {ofertas.length > 0 ? (
-                ofertas.map((oferta) => (
-                  <div key={oferta.id} style={styles.card}>
-                    <h4>{oferta.nombre}</h4>
-                    <p>{oferta.descripcion}</p>
-                    <p>{oferta.tipo} - {oferta.numeroHoras}h</p>
+          <div style={{ marginBottom: "20px", display: "flex", gap: "10px" }}>
+            <button style={styles.editBtn} onClick={() => setShowEditModal(true)}>
+              Edit Profile
+            </button>
+            {!usuario.verificado && !isAdmin && (
+              <button style={styles.verifyBtn} onClick={() => navigate("/verificacion")}>
+                🔒 Verificar identidad
+              </button>
+            )}
+          </div>
+        )}
+
+        {/* Tabs */}
+        <div style={styles.tabs}>
+          <button style={tab === "reviews" ? styles.activeTab : styles.tab} onClick={() => setTab("reviews")}>
+            Reviews
+          </button>
+          <button style={tab === "offers" ? styles.activeTab : styles.tab} onClick={() => setTab("offers")}>
+            Mis Ofertas
+          </button>
+        </div>
+
+        {/* Contenido de pestañas */}
+        <div style={styles.tabContent}>
+          {tab === "reviews" && (
+            <div>
+              <h3>Reseñas recibidas ({promedio.toFixed(1)} ⭐)</h3>
+              {resenas.length > 0 ? (
+                resenas.map((r) => (
+                  <div key={r.id} style={styles.card}>
+                    <strong>{r.autor?.nombre || "Anónimo"}</strong>
+                    <p>{"⭐".repeat(r.puntuacion)}</p>
+                    <p>{r.comentario}</p>
+                    <small>{new Date(r.fecha).toLocaleDateString()}</small>
                   </div>
                 ))
               ) : (
-                <p>No hay ofertas aún</p>
+                <p>No hay reseñas aún</p>
+              )}
+              {!isOwnProfile && usuario.activo && (
+                <div style={styles.card}>
+                  <h4>Deja una reseña</h4>
+                  <select
+                    value={nuevaResena.puntuacion}
+                    onChange={(e) => setNuevaResena({ ...nuevaResena, puntuacion: Number(e.target.value) })}
+                    style={styles.input}
+                  >
+                    {[1, 2, 3, 4, 5].map((n) => (
+                      <option key={n} value={n}>
+                        {n} ⭐
+                      </option>
+                    ))}
+                  </select>
+                  <textarea
+                    placeholder="Escribe un comentario..."
+                    value={nuevaResena.comentario}
+                    onChange={(e) => setNuevaResena({ ...nuevaResena, comentario: e.target.value })}
+                    style={styles.textarea}
+                  />
+                  <button style={styles.saveBtn} onClick={handleResenaSubmit}>
+                    Enviar reseña
+                  </button>
+                </div>
               )}
             </div>
-          </section>
-        )}
+          )}
 
-        {/* Reseñas */}
-        <section style={styles.section}>
-          <h3 style={styles.sectionTitle}>
-            Reseñas recibidas ({promedio.toFixed(1)} ⭐)
-          </h3>
-          <div style={styles.cards}>
-            {resenas.length > 0 ? (
-              resenas.map((r) => (
-                <div key={r.id} style={styles.card}>
-                  <strong>{r.autor?.nombre || "Anónimo"}</strong>
-                  <p>{"⭐".repeat(r.puntuacion)}</p>
-                  <p>{r.comentario}</p>
-                  <small>{new Date(r.fecha).toLocaleDateString()}</small>
-                </div>
-              ))
-            ) : (
-              <p>Aún no hay reseñas</p>
-            )}
-          </div>
-
-          {!isOwnProfile && usuario.activo && (
-            <div style={styles.card}>
-              <h4>Deja una reseña</h4>
-              <select
-                value={nuevaResena.puntuacion}
-                onChange={(e) =>
-                  setNuevaResena({ ...nuevaResena, puntuacion: Number(e.target.value) })
-                }
-                style={styles.input}
-              >
-                {[1, 2, 3, 4, 5].map((n) => (
-                  <option key={n} value={n}>{n} ⭐</option>
-                ))}
-              </select>
-              <textarea
-                placeholder="Escribe un comentario..."
-                value={nuevaResena.comentario}
-                onChange={(e) => setNuevaResena({ ...nuevaResena, comentario: e.target.value })}
-                style={styles.textarea}
-              />
-              <button style={styles.saveBtn} onClick={handleResenaSubmit}>
-                Enviar reseña
-              </button>
+          {tab === "offers" && (
+            <div>
+              <h3>Resumen de mis ofertas</h3>
+              {ofertas.length > 0 ? (
+                ofertas.map((o) => (
+                  <div key={o.id} style={styles.card}>
+                    <h4>{o.nombre}</h4>
+                    <p>{o.descripcion}</p>
+                    <p>
+                      {o.tipo} – {o.numeroHoras}h
+                    </p>
+                    <small>
+                      Reseñas: {o.promedioResenas ? `${o.promedioResenas.toFixed(1)} ⭐` : "Sin reseñas"}
+                    </small>
+                  </div>
+                ))
+              ) : (
+                <p>No has publicado ofertas aún</p>
+              )}
             </div>
           )}
-        </section>
+        </div>
       </main>
 
-      {/* Modal Reporte */}
-      {showReportForm && (
+      {showEditModal && (
         <div style={styles.modal}>
           <div style={styles.modalContent}>
-            <h3>Reportar a {usuario.nombre}</h3>
-            <input
-              type="text"
-              placeholder="Título del reporte"
-              value={reportData.titulo}
-              onChange={(e) => setReportData({ ...reportData, titulo: e.target.value })}
-              style={styles.input}
-            />
+            <h3>Edit Profile</h3>
             <textarea
-              placeholder="Describe el problema..."
-              value={reportData.descripcion}
-              onChange={(e) => setReportData({ ...reportData, descripcion: e.target.value })}
+              name="biografia"
+              value={formData.biografia}
+              onChange={(e) => setFormData({ ...formData, biografia: e.target.value })}
+              placeholder="Escribe tu biografía..."
               style={styles.textarea}
             />
-            <div style={{ display: "flex", gap: "10px", marginTop: "10px" }}>
-              <button style={styles.saveBtn} onClick={handleReportSubmit}>Enviar</button>
-              <button style={styles.closeBtn} onClick={() => setShowReportForm(false)}>Cancelar</button>
+            <input
+              type="text"
+              name="ubicacion"
+              value={formData.ubicacion}
+              onChange={(e) => setFormData({ ...formData, ubicacion: e.target.value })}
+              placeholder="Ubicación"
+              style={styles.input}
+            />
+            <input
+              type="date"
+              name="fechaNacimiento"
+              value={formData.fechaNacimiento}
+              onChange={(e) => setFormData({ ...formData, fechaNacimiento: e.target.value })}
+              style={styles.input}
+            />
+            <input
+              type="text"
+              name="fotoPerfil"
+              value={formData.fotoPerfil}
+              onChange={(e) => setFormData({ ...formData, fotoPerfil: e.target.value })}
+              placeholder="URL de la foto de perfil"
+              style={styles.input}
+            />
+            <div style={{ display: "flex", gap: "10px", marginTop: "15px" }}>
+              <button style={styles.saveBtn} onClick={handleSaveProfile}>
+                Guardar
+              </button>
+              <button style={styles.closeBtn} onClick={() => setShowEditModal(false)}>
+                Cancelar
+              </button>
             </div>
           </div>
         </div>
@@ -319,22 +388,8 @@ const UserProfile = () => {
 };
 
 const styles = {
-  container: {
-    display: "flex",
-    minHeight: "100vh",
-    backgroundColor: "#f8f9fa",
-    fontFamily: "Arial, sans-serif",
-  },
-  sidebar: {
-    width: "220px",
-    backgroundColor: "#fff",
-    borderRight: "1px solid #ddd",
-    padding: "20px",
-  },
-  menu: { listStyle: "none", padding: 0, margin: 0 },
-  menuItem: { padding: "10px 0", cursor: "pointer", color: "#333" },
-  active: { fontWeight: "bold", color: "#007bff" },
-  main: { flex: 1, padding: "30px" },
+  container: { display: "flex", minHeight: "100vh", backgroundColor: "#f8f9fa" },
+  main: { flex: 1, padding: "30px", fontFamily: "Arial, sans-serif" },
   profileCard: {
     display: "flex",
     alignItems: "center",
@@ -343,91 +398,76 @@ const styles = {
     padding: "20px",
     marginBottom: "30px",
     boxShadow: "0 2px 6px rgba(0,0,0,0.1)",
-  },
-  avatar: {
-    width: "80px",
-    height: "80px",
-    borderRadius: "50%",
-    marginRight: "20px",
-    objectFit: "cover",
-  },
-  profileInfo: { flex: 1 },
-  email: { color: "#666", margin: "4px 0" },
-  bio: { color: "#444", fontSize: "14px", marginBottom: "8px" },
-  detail: { fontSize: "13px", color: "#555", marginBottom: "4px" },
-  textarea: {
-    width: "100%",
-    minHeight: "60px",
-    padding: "8px",
-    borderRadius: "6px",
-    border: "1px solid #ccc",
-    fontSize: "14px",
-    marginBottom: "10px",
-  },
-  input: {
-    width: "100%",
-    padding: "8px",
-    borderRadius: "6px",
-    border: "1px solid #ccc",
-    fontSize: "14px",
-    marginBottom: "10px",
-  },
-  editBtn: {
-    backgroundColor: "#007bff",
-    border: "none",
-    color: "#fff",
-    padding: "10px 16px",
-    borderRadius: "6px",
-    cursor: "pointer",
-  },
-  saveBtn: {
-    backgroundColor: "#28a745",
-    border: "none",
-    color: "#fff",
-    padding: "5px 16px",
-    borderRadius: "6px",
-    cursor: "pointer",
-  },
-  reportBtn: {
-    backgroundColor: "#dc3545",
-    border: "none",
-    color: "#fff",
-    padding: "8px 12px",
-    borderRadius: "6px",
-    cursor: "pointer",
-  },
-  section: { marginBottom: "30px" },
-  sectionTitle: { marginBottom: "15px" },
-  cards: {
-    display: "grid",
-    gridTemplateColumns: "repeat(auto-fill, minmax(250px, 1fr))",
     gap: "20px",
   },
+  avatar: { width: "80px", height: "80px", borderRadius: "50%", objectFit: "cover" },
+  name: { fontSize: "22px", fontWeight: "bold", marginBottom: "5px" },
+  bio: { fontSize: "14px", color: "#444", marginBottom: "5px" },
+  location: { fontSize: "13px", color: "#777" },
+  stats: {
+    display: "grid",
+    gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
+    gap: "20px",
+    marginBottom: "10px",
+  },
+  statBox: {
+    backgroundColor: "#fff",
+    padding: "20px",
+    borderRadius: "12px",
+    boxShadow: "0 2px 6px rgba(0,0,0,0.1)",
+    textAlign: "center",
+  },
+  editBtn: {
+    padding: "12px 20px",
+    backgroundColor: "#ff6f00",
+    color: "#fff",
+    border: "none",
+    borderRadius: "8px",
+    fontWeight: "bold",
+    cursor: "pointer",
+  },
+  verifyBtn: {
+    padding: "12px 20px",
+    backgroundColor: "#17a2b8", // celeste
+    color: "#fff",
+    border: "none",
+    borderRadius: "8px",
+    fontWeight: "bold",
+    cursor: "pointer",
+    boxShadow: "0 2px 4px rgba(0,0,0,0.2)",
+    transition: "background-color 0.2s ease",
+  },
+  tabs: { display: "flex", gap: "10px", borderBottom: "2px solid #ddd", marginBottom: "20px" },
+  tab: {
+    padding: "10px 15px",
+    border: "none",
+    background: "transparent",
+    cursor: "pointer",
+    fontWeight: "bold",
+    color: "#666",
+  },
+  activeTab: {
+    padding: "10px 15px",
+    border: "none",
+    background: "transparent",
+    cursor: "pointer",
+    fontWeight: "bold",
+    color: "#ff6f00",
+    borderBottom: "3px solid #ff6f00",
+  },
+  tabContent: { marginTop: "20px" },
   card: {
     backgroundColor: "#fff",
     padding: "15px",
     borderRadius: "8px",
     boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
-  },
-  detailsBtn: {
-    marginTop: "10px",
-    backgroundColor: "transparent",
-    border: "1px solid #007bff",
-    color: "#007bff",
-    padding: "6px 12px",
-    borderRadius: "6px",
-    cursor: "pointer",
+    marginBottom: "15px",
   },
   modal: {
     position: "fixed",
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
+    top: 0, left: 0, right: 0, bottom: 0,
     backgroundColor: "rgba(0,0,0,0.5)",
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
+    display: "flex", justifyContent: "center", alignItems: "center",
     zIndex: 1000,
   },
   modalContent: {
@@ -436,22 +476,65 @@ const styles = {
     borderRadius: "8px",
     width: "400px",
     maxWidth: "90%",
-    boxShadow: "0 4px 12px rgba(0,0,0,0.2)",
+    boxShadow: "0 2px 10px rgba(0,0,0,0.2)",
   },
-  closeBtn: {
-    backgroundColor: "#6c757d",
-    border: "none",
-    color: "#fff",
-    padding: "8px 12px",
+  textarea: {
+    width: "100%",
+    minHeight: "60px",
+    padding: "8px",
     borderRadius: "6px",
+    border: "1px solid #ccc",
+    marginBottom: "10px",
+  },
+  input: {
+    width: "100%",
+    padding: "8px",
+    borderRadius: "6px",
+    border: "1px solid #ccc",
+    marginBottom: "10px",
+  },
+  saveBtn: {
+    flex: 1,
+    backgroundColor: "#28a745",
+    color: "#fff",
+    border: "none",
+    borderRadius: "6px",
+    padding: "10px",
     cursor: "pointer",
   },
-  verificado: {
-    fontSize: "12px",
+  closeBtn: {
+    flex: 1,
+    backgroundColor: "#6c757d",
+    color: "#fff",
+    border: "none",
+    borderRadius: "6px",
+    padding: "10px",
+    cursor: "pointer",
+  },
+  chatBtn: {
+    padding: "10px 16px",
+    backgroundColor: "#007bff",
+    color: "#fff",
+    border: "none",
+    borderRadius: "8px",
+    cursor: "pointer",
+    fontWeight: "bold",
+  },
+  reportBtn: {
+    padding: "10px 16px",
+    backgroundColor: "#dc3545",
+    color: "#fff",
+    border: "none",
+    borderRadius: "8px",
+    cursor: "pointer",
+    fontWeight: "bold",
+  },
+  verifiedText: {
+    fontSize: "14px",
+    fontWeight: "bold",
     color: "#28a745",
-    margin: "4px 0",
+    marginTop: "4px",
   },
 };
-
 
 export default UserProfile;

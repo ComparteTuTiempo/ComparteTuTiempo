@@ -54,7 +54,9 @@ public class EventoResponse {
                     null,
                     evento.getOrganizador().getFotoPerfil(),
                     evento.getOrganizador().isVerificado(),
-                    evento.getOrganizador().isActivo()
+                    evento.getOrganizador().isActivo(),
+                    evento.getOrganizador().getBiografia(),
+                    evento.getOrganizador().getFechaNacimiento()
             )
     );
 }

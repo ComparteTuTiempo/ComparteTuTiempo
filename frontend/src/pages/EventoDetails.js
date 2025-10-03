@@ -7,14 +7,17 @@ import {
 } from "../services/eventoService";
 import { useAuth } from "../utils/AuthContext";
 
-const EventoDetalle = () => {
-  const { id } = useParams();
+const EventoDetalle = ({ id: propId }) => {
+  const { id: routeId } = useParams();
+  const id = propId || routeId; 
+
   const navigate = useNavigate();
   const [evento, setEvento] = useState(null);
   const [participaciones, setParticipaciones] = useState([]);
   const { user, token } = useAuth();
 
   useEffect(() => {
+    if (!id) return;
     const fetchData = async () => {
       try {
         const eventoData = await getEventoById(id);

@@ -2,8 +2,10 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useAuth } from "../utils/AuthContext";
 import { crearEvento } from "../services/eventoService";
+import { useNavigate } from "react-router-dom";
 
 const CrearEventoForm = () => {
+  const navigate = useNavigate();
   const { user,token} = useAuth();
   const [fechaError, setFechaError] = useState("");
 
@@ -49,7 +51,9 @@ const CrearEventoForm = () => {
         duracion: 1,
         ubicacion: "",
         correoOrganizador: user?.correo,
-      });
+      }
+      );
+      navigate("/eventos");
     } catch (error) {
       console.error("Error creando el evento:", error);
       alert("Error al crear el evento");

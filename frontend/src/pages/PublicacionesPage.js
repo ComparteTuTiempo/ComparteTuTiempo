@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { useAuth } from "../utils/AuthContext";
+import Sidebar from "../components/Sidebar";
 
 const PublicacionesPage = () => {
   const { token } = useAuth();
@@ -10,10 +11,9 @@ const PublicacionesPage = () => {
   const [ofertas, setOfertas] = useState([]);
   const [peticiones, setPeticiones] = useState([]);
   const [productos, setProductos] = useState([]);
-  const [selected, setSelected] = useState(null);
 
   useEffect(() => {
-    // Obtener intercambios del usuario
+    // intercambios del usuario
     axios
       .get("http://localhost:8080/intercambios/usuario", {
         headers: { Authorization: `Bearer ${token}` },
@@ -22,243 +22,258 @@ const PublicacionesPage = () => {
         setOfertas(res.data.filter((i) => i.tipo === "OFERTA"));
         setPeticiones(res.data.filter((i) => i.tipo === "PETICION"));
       })
-      .catch((err) => console.error("❌ Error al cargar intercambios:", err));
+      .catch((err) => console.error("❌ Error intercambios:", err));
 
-    // Obtener productos del usuario
+    // productos del usuario
     axios
       .get("http://localhost:8080/productos/usuario", {
         headers: { Authorization: `Bearer ${token}` },
       })
       .then((res) => setProductos(res.data))
-      .catch((err) => console.error("❌ Error al cargar productos:", err));
+      .catch((err) => console.error("❌ Error productos:", err));
   }, [token]);
 
-  const renderGrid = (items) => (
-    <div style={styles.grid}>
-      {items.map((p) => (
-        <div key={p.id} style={styles.card} onClick={() => setSelected(p)}>
-          <h3>{p.nombre}</h3>
-          {"numeroHoras" in p && <p><strong>Horas:</strong> {p.numeroHoras}</p>}
-          {"tipo" in p && <p><strong>Tipo:</strong> {p.tipo}</p>}
-        </div>
-      ))}
+  const renderCards = (items, type) => (
+    <div style={styles.cardsContainer}>
+      {items.length > 0 ? (
+        items.map((p) => (
+          <div key={p.id} style={styles.card}>
+            {/* Header: título + etiqueta */}
+            <div style={styles.cardHeader}>
+              <h3 style={styles.cardTitle}>{p.nombre}</h3>
+              <span style={styles.badge}>
+                {type === "oferta"
+                  ? "Service Offer"
+                  : type === "peticion"
+                    ? "Service Request"
+                    : "Product"}
+              </span>
+            </div>
+
+            {/* Descripción */}
+            <p style={styles.cardText}>{p.descripcion || "Sin descripción"}</p>
+            <p style={styles.cardText}>{p.numeroHoras || 0} Horas</p>
+
+            {/* Footer con avatar + botones */}
+            <div style={styles.cardFooter}>
+              <img
+                src={p.user?.fotoPerfil || "https://via.placeholder.com/30"}
+                alt="user"
+                style={styles.avatar}
+              />
+              <div style={styles.actions}>
+                <button
+                  style={styles.editBtn}
+                  onClick={() =>
+                    type === "producto"
+                      ? navigate(`/productos/editar/${p.id}`)
+                      : navigate(`/intercambios/${p.id}/editar`)
+                  }
+                >
+                  Edit
+                </button>
+                <button
+                  style={styles.deleteBtn}
+                  onClick={async () => {
+                    if (window.confirm("¿Seguro que quieres eliminarlo?")) {
+                      try {
+                        if (type === "producto") {
+                          await axios.delete(`http://localhost:8080/productos/${p.id}`, {
+                            headers: { Authorization: `Bearer ${token}` },
+                          });
+                          setProductos(productos.filter((x) => x.id !== p.id));
+                        } else {
+                          await axios.delete(`http://localhost:8080/intercambios/${p.id}`, {
+                            headers: { Authorization: `Bearer ${token}` },
+                          });
+                          if (type === "oferta") {
+                            setOfertas(ofertas.filter((x) => x.id !== p.id));
+                          } else {
+                            setPeticiones(peticiones.filter((x) => x.id !== p.id));
+                          }
+                        }
+                        alert("✅ Eliminado con éxito");
+                      } catch (err) {
+                        console.error("❌ Error al eliminar:", err);
+                        alert("Hubo un error al eliminar");
+                      }
+                    }
+                  }}
+                >
+                  Delete
+                </button>
+              </div>
+            </div>
+          </div>
+        ))
+      ) : (
+        <p>No hay publicaciones</p>
+      )}
     </div>
   );
 
-  const renderModalContent = () => {
-    if (!selected) return null;
-
-    const isProducto = selected.tipo === undefined; // productos no tienen tipo
-    const isIntercambio = !isProducto; // intercambios sí lo tienen
-
-    return (
-      <div style={styles.modalContent}>
-        <h3>{selected.nombre}</h3>
-        {selected.descripcion && <p><strong>Descripción:</strong> {selected.descripcion}</p>}
-        {selected.numeroHoras && <p><strong>Horas:</strong> {selected.numeroHoras}</p>}
-        {selected.tipo && <p><strong>Tipo:</strong> {selected.tipo}</p>}
-        {selected.estado && <p><strong>Estado:</strong> {selected.estado}</p>}
-        {selected.fechaPublicacion && (
-          <p><strong>Publicado:</strong> {new Date(selected.fechaPublicacion).toLocaleDateString()}</p>
-        )}
-
-        {/* Botones para PRODUCTOS */}
-        {isProducto && (
-          <div style={{ marginTop: "15px", display: "flex", gap: "10px" }}>
-            <button
-              style={styles.editBtn}
-              onClick={() => navigate(`/productos/editar/${selected.id}`)}
-            >
-              Editar
-            </button>
-            <button
-              style={styles.deleteBtn}
-              onClick={async () => {
-                if (window.confirm("¿Seguro que quieres eliminar este producto?")) {
-                  try {
-                    await axios.delete(`http://localhost:8080/productos/${selected.id}`, {
-                      headers: { Authorization: `Bearer ${token}` },
-                    });
-                    alert("Producto eliminado ✅");
-                    setSelected(null);
-                    setProductos(productos.filter(p => p.id !== selected.id));
-                  } catch (err) {
-                    console.error("❌ Error al eliminar producto:", err);
-                    alert("Hubo un error al eliminar el producto");
-                  }
-                }
-              }}
-            >
-              Eliminar
-            </button>
-          </div>
-        )}
-
-        {/* Botones para INTERCAMBIOS */}
-        {isIntercambio && (
-          <div style={{ marginTop: "15px", display: "flex", gap: "10px" }}>
-            <button
-              style={styles.editBtn}
-              onClick={() => navigate(`/intercambios/${selected.id}/editar`)}
-            >
-              Editar
-            </button>
-            <button
-              style={styles.deleteBtn}
-              onClick={async () => {
-                if (window.confirm("¿Seguro que quieres eliminar este intercambio?")) {
-                  try {
-                    await axios.delete(`http://localhost:8080/intercambios/${selected.id}`, {
-                      headers: { Authorization: `Bearer ${token}` },
-                    });
-                    alert("Intercambio eliminado ✅");
-                    setSelected(null);
-                    if (selected.tipo === "OFERTA") {
-                      setOfertas(ofertas.filter(i => i.id !== selected.id));
-                    } else {
-                      setPeticiones(peticiones.filter(i => i.id !== selected.id));
-                    }
-                  } catch (err) {
-                    console.error("❌ Error al eliminar intercambio:", err);
-                    alert("Hubo un error al eliminar el intercambio");
-                  }
-                }
-              }}
-            >
-              Eliminar
-            </button>
-          </div>
-        )}
-
-        <button onClick={() => setSelected(null)} style={styles.closeBtn}>
-          Cerrar
-        </button>
-      </div>
-    );
-  };
-
   return (
-    <div style={styles.container}>
-      <h2>Mis Publicaciones</h2>
+    <div style={styles.layout}>
+      <Sidebar />
 
-      {/* Pestañas */}
-      <div style={styles.tabs}>
-        <button
-          style={tab === "ofertas" ? styles.activeTab : styles.tab}
-          onClick={() => setTab("ofertas")}
-        >
-          Ofertas
-        </button>
-        <button
-          style={tab === "peticiones" ? styles.activeTab : styles.tab}
-          onClick={() => setTab("peticiones")}
-        >
-          Peticiones
-        </button>
-        <button
-          style={tab === "productos" ? styles.activeTab : styles.tab}
-          onClick={() => setTab("productos")}
-        >
-          Productos
-        </button>
-      </div>
-
-      {/* Contenido */}
-      <div style={styles.content}>
-        {tab === "ofertas" && renderGrid(ofertas)}
-        {tab === "peticiones" && renderGrid(peticiones)}
-        {tab === "productos" && renderGrid(productos)}
-      </div>
-
-      {/* Modal */}
-      {selected && (
-        <div style={styles.modal}>
-          {renderModalContent()}
+      <main style={styles.main}>
+        <div style={styles.headerRow}>
+          <h2 style={styles.pageTitle}>Mis Publicaciones
+          </h2>
+          <div style={styles.createButtons}>
+            <button
+              style={styles.createBtn}
+              onClick={() => navigate("/crear-oferta")}
+            >
+              Publicar Servicio
+            </button>
+            <button
+              style={styles.createBtn}
+              onClick={() => navigate("/producto/nuevo")}
+            >
+              Publicar Producto
+            </button>
+            <button
+              style={styles.IntercambiosPendientesBtn}
+              onClick={() => navigate("/intercambios/usuario")}
+            >
+              Ver Intercambios Pendientes
+            </button>
+          </div>
         </div>
-      )}
+        {/* Tabs */}
+        <div style={styles.tabs}>
+          <button
+            style={tab === "ofertas" ? styles.activeTab : styles.tab}
+            onClick={() => setTab("ofertas")}
+          >
+            Ofertas
+          </button>
+          <button
+            style={tab === "peticiones" ? styles.activeTab : styles.tab}
+            onClick={() => setTab("peticiones")}
+          >
+            Peticiones
+          </button>
+          <button
+            style={tab === "productos" ? styles.activeTab : styles.tab}
+            onClick={() => setTab("productos")}
+          >
+            Productos
+          </button>
+        </div>
+
+        {/* Contenido */}
+        {tab === "ofertas" && renderCards(ofertas, "oferta")}
+        {tab === "peticiones" && renderCards(peticiones, "peticion")}
+        {tab === "productos" && renderCards(productos, "producto")}
+      </main>
     </div>
   );
 };
 
 const styles = {
-  container: { padding: "20px", fontFamily: "Arial, sans-serif" },
-  tabs: { display: "flex", gap: "10px", marginBottom: "20px" },
+  layout: { display: "flex", minHeight: "100vh", backgroundColor: "#f9f9f9" },
+  main: { flex: 1, padding: "30px", fontFamily: "Arial, sans-serif" },
+  pageTitle: { fontSize: "22px", fontWeight: "bold", marginBottom: "20px" },
+  tabs: { display: "flex", gap: "20px", marginBottom: "20px" },
   tab: {
-    padding: "10px 15px",
-    backgroundColor: "#f0f0f0",
+    background: "transparent",
     border: "none",
-    borderRadius: "6px",
+    fontSize: "16px",
     cursor: "pointer",
+    color: "#666",
+    paddingBottom: "6px",
   },
   activeTab: {
-    padding: "10px 15px",
-    backgroundColor: "#007bff",
-    color: "#fff",
+    background: "transparent",
     border: "none",
-    borderRadius: "6px",
+    fontSize: "16px",
     cursor: "pointer",
+    color: "#ff6f00",
+    paddingBottom: "6px",
+    borderBottom: "2px solid #ff6f00",
+    fontWeight: "bold",
   },
-  content: {},
-  grid: {
-    display: "grid",
-    gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))",
-    gap: "20px",
-    justifyContent: "start",
-  },
+  cardsContainer: { display: "flex", flexDirection: "column", gap: "16px" },
   card: {
-    backgroundColor: "#fdfdfd",
-    padding: "12px",
-    borderRadius: "8px",
-    border: "1px solid #ddd",
-    fontSize: "14px",
-    textAlign: "center",
-    cursor: "pointer",
-    transition: "transform 0.2s, box-shadow 0.2s",
-  },
-  modal: {
-    position: "fixed",
-    top: 0, left: 0, right: 0, bottom: 0,
-    backgroundColor: "rgba(0,0,0,0.5)",
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
-    padding: "10px",
-  },
-  modalContent: {
-    backgroundColor: "#fff",
+    background: "#fff",
     padding: "20px",
-    borderRadius: "8px",
-    maxWidth: "400px",
-    width: "100%",
-    textAlign: "left",
-    fontSize: "14px",
+    borderRadius: "12px",
+    boxShadow: "0 2px 6px rgba(0,0,0,0.08)",
   },
-  closeBtn: {
-    marginTop: "10px",
-    padding: "8px 12px",
-    border: "none",
+  cardHeader: {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: "8px",
+  },
+  cardTitle: { fontSize: "18px", fontWeight: "bold", margin: 0 },
+  badge: {
+    fontSize: "12px",
+    padding: "4px 8px",
     borderRadius: "6px",
-    backgroundColor: "#6c757d",
-    color: "#fff",
-    fontSize: "13px",
-    cursor: "pointer",
+    backgroundColor: "#f5f5f5",
+    color: "#555",
+    fontWeight: "500",
   },
+  cardText: { fontSize: "14px", color: "#555", marginBottom: "12px" },
+  cardFooter: {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+  avatar: {
+    width: "28px",
+    height: "28px",
+    borderRadius: "50%",
+    objectFit: "cover",
+  },
+  actions: { display: "flex", gap: "10px" },
   editBtn: {
-    padding: "8px 12px",
+    background: "#fff",
+    border: "1px solid #ddd",
+    padding: "6px 14px",
     borderRadius: "6px",
-    backgroundColor: "#28a745",
-    color: "#fff",
-    border: "none",
     cursor: "pointer",
+    fontSize: "14px",
   },
   deleteBtn: {
-    padding: "8px 12px",
-    borderRadius: "6px",
-    backgroundColor: "#dc3545",
-    color: "#fff",
+    background: "#ff6f00",
     border: "none",
+    color: "#fff",
+    padding: "6px 14px",
+    borderRadius: "6px",
     cursor: "pointer",
+    fontSize: "14px",
+    fontWeight: "bold",
   },
+  headerRow: {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: "30px",
+  },
+  createButtons: { display: "flex", gap: "10px" },
+  createBtn: {
+    backgroundColor: "#28a745",
+    border: "none",
+    color: "#fff",
+    padding: "8px 14px",
+    borderRadius: "6px",
+    cursor: "pointer",
+    fontWeight: "bold",
+  },
+  IntercambiosPendientesBtn: {
+    backgroundColor: "#0866e9ff",
+    border: "none",
+    color: "#fff",
+    padding: "8px 14px",
+    borderRadius: "6px",
+    cursor: "pointer",
+    fontWeight: "bold",
+  }
+
 };
 
 export default PublicacionesPage;

@@ -1,8 +1,9 @@
 package com.compartetutiempo.backend.controller;
 
-import java.security.Principal;
+
 import java.time.Instant;
-import java.time.LocalDateTime;
+
+import java.util.List;
 
 import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
@@ -10,7 +11,6 @@ import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.RequestMapping;
 
 import com.compartetutiempo.backend.config.JwtService;
 import com.compartetutiempo.backend.dto.MensajeDTO;
@@ -18,8 +18,10 @@ import com.compartetutiempo.backend.dto.UsuarioDTO;
 import com.compartetutiempo.backend.model.Conversacion;
 import com.compartetutiempo.backend.model.Mensaje;
 import com.compartetutiempo.backend.model.Usuario;
+import com.compartetutiempo.backend.model.enums.TipoNotificacion;
 import com.compartetutiempo.backend.service.ConversacionService;
 import com.compartetutiempo.backend.service.MensajeService;
+import com.compartetutiempo.backend.service.NotificacionService;
 import com.compartetutiempo.backend.service.UsuarioService;
 
 @Controller
@@ -30,17 +32,20 @@ public class WebSocketController {
     private final ConversacionService conversacionService;
     private final UsuarioService usuarioService;
     private final JwtService jwtService;
+    private final NotificacionService notificacionService;
 
     public WebSocketController(SimpMessagingTemplate messagingTemplate,
     MensajeService mensajeService,
     ConversacionService conversacionService,
     UsuarioService usuarioService,
-    JwtService jwtService) {
+    JwtService jwtService,
+    NotificacionService notificacionService) {
         this.messagingTemplate = messagingTemplate;
         this.mensajeService = mensajeService;
         this.conversacionService = conversacionService;
         this.usuarioService = usuarioService;
         this.jwtService = jwtService;
+        this.notificacionService = notificacionService;
     }
 
      @MessageMapping("/chat/{conversacionId}")
@@ -61,6 +66,7 @@ public class WebSocketController {
 
         // Obtener conversación
         Conversacion conversacion = conversacionService.getById(conversacionId);
+        List<Usuario> participantes = conversacion.getParticipantes();
 
         // Crear y guardar mensaje
         Mensaje mensaje = new Mensaje();
@@ -77,7 +83,9 @@ public class WebSocketController {
             remitente.getFotoPerfil(),
             null,
             remitente.isVerificado(),
-            remitente.isActivo()
+            remitente.isActivo(),
+            remitente.getBiografia(),
+            remitente.getFechaNacimiento()
         );
 
         MensajeDTO response = new MensajeDTO(
@@ -86,6 +94,14 @@ public class WebSocketController {
             mensaje.getTimestamp(),
             remitenteDTO
         );
+
+        String mensajeNotificacion = "El usuario " + remitente.getNombre() + " ha enviado un mensaje a la conversación " + conversacion.getTitulo();
+        for(Usuario participante : participantes){
+            if(!participante.equals(remitente)){
+                notificacionService.crearYEnviar(participante, TipoNotificacion.MENSAJE, mensajeNotificacion , null);
+            }
+        }
+            
 
         // Enviar mensaje a todos los suscriptores del topic
         messagingTemplate.convertAndSend("/topic/messages", response);

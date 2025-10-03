@@ -1,16 +1,25 @@
 package com.compartetutiempo.backend.controller;
 
+import com.compartetutiempo.backend.config.JwtService;
 import com.compartetutiempo.backend.dto.LoginRequest;
 import com.compartetutiempo.backend.dto.UsuarioDTO;
+import com.compartetutiempo.backend.dto.UsuarioDetalleDTO;
 import com.compartetutiempo.backend.model.Usuario;
+import com.compartetutiempo.backend.model.enums.Role;
 import com.compartetutiempo.backend.repository.UsuarioRepository;
 import com.compartetutiempo.backend.service.UsuarioService;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 @RestController
 @RequestMapping("/api/usuarios")
@@ -19,8 +28,11 @@ public class UsuarioController {
 
     private final UsuarioService service;
 
-    public UsuarioController(UsuarioService service) {
+    private final JwtService jwtService;
+
+    public UsuarioController(UsuarioService service, JwtService jwtService) {
         this.service = service;
+        this.jwtService = jwtService;
     }
 
     @GetMapping
@@ -30,6 +42,8 @@ public class UsuarioController {
 
     @PostMapping
     public Usuario crearUsuario(@RequestBody Usuario usuario) {
+        usuario.setMetodoAutenticacion("CORREO");
+        ;
         return service.guardarUsuario(usuario);
     }
 
@@ -43,6 +57,8 @@ public class UsuarioController {
         usuarioDTO.setUbicacion(usuario.getUbicacion());
         usuarioDTO.setVerificado(usuario.isVerificado());
         usuarioDTO.setActivo(usuario.isActivo());
+        usuarioDTO.setBiografia(usuario.getBiografia());
+        usuarioDTO.setFechaNacimiento(usuario.getFechaNacimiento());
         return usuarioDTO;
 
     }
@@ -90,4 +106,108 @@ public class UsuarioController {
             return dto;
         }).toList();
     }
+
+    @PostMapping("/login/google")
+    public ResponseEntity<?> loginGoogle(@RequestBody Map<String, String> request) {
+        String correo = request.get("correo");
+        String nombre = request.get("nombre");
+
+        Usuario usuario = service.obtenerPorCorreo(correo);
+        System.err.println("USUARIOS" + usuario);
+        if (usuario == null) {
+            usuario = new Usuario();
+            usuario.setCorreo(correo);
+            usuario.setNombre(nombre);
+            usuario.setMetodoAutenticacion("GOOGLE");
+            usuario.setActivo(true);
+            usuario.setVerificado(true);
+            usuario.setContrasena("GOOGLE_PASSWORD");
+            usuario.setRoles(Set.of(Role.USER));
+            usuario = service.guardarUsuario(usuario);
+        }
+
+        if (!usuario.isActivo()) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Usuario baneado");
+        }
+
+        // 👇 Generar token JWT igual que en el login normal
+        String token = jwtService.generateToken(usuario);
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("token", token);
+        response.put("roles", usuario.getRoles());
+        response.put("correo", usuario.getCorreo());
+        response.put("nombre", usuario.getNombre());
+
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/login/facebook")
+    public ResponseEntity<?> loginFacebook(@RequestBody Map<String, String> request) {
+        String correo = request.get("correo");
+        String nombre = request.get("nombre");
+
+        Usuario usuario = service.obtenerPorCorreo(correo);
+        System.out.println("📩 Datos recibidos de Facebook: " + request);
+        if (usuario == null) {
+            usuario = new Usuario();
+            usuario.setCorreo(correo);
+            usuario.setNombre(nombre);
+            usuario.setMetodoAutenticacion("FACEBOOK");
+            usuario.setActivo(true);
+            usuario.setVerificado(true);
+            usuario.setContrasena("FACEBOOK_PASSWORD");
+            usuario.setRoles(Set.of(Role.USER));
+            usuario = service.guardar(usuario);
+        }
+
+        if (!usuario.isActivo()) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Usuario baneado");
+        }
+
+        // 👇 Generar token JWT igual que en el login normal
+        String token = jwtService.generateToken(usuario);
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("token", token);
+        response.put("roles", usuario.getRoles());
+        response.put("correo", usuario.getCorreo());
+        response.put("nombre", usuario.getNombre());
+
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/me")
+public ResponseEntity<UsuarioDetalleDTO> getCurrentUser(@AuthenticationPrincipal Jwt jwt) {
+    String correo = jwt.getSubject();
+    Usuario usuario = service.obtenerPorCorreo(correo);
+
+    if (usuario == null) {
+        return ResponseEntity.notFound().build();
+    }
+
+    UsuarioDetalleDTO dto = new UsuarioDetalleDTO();
+    dto.setId(usuario.getId());
+    dto.setCorreo(usuario.getCorreo());
+    dto.setNombre(usuario.getNombre());
+    dto.setFotoPerfil(usuario.getFotoPerfil());
+    dto.setUbicacion(usuario.getUbicacion());
+    dto.setVerificado(usuario.isVerificado());
+    dto.setActivo(usuario.isActivo());
+    dto.setBiografia(usuario.getBiografia());
+    dto.setFechaNacimiento(usuario.getFechaNacimiento());
+
+    // 👇 Aquí se setean las horas disponibles (asegúrate que el campo exista en Usuario)
+    dto.setNumeroHoras(usuario.getNumeroHoras());  
+
+    // 👇 Roles como lista de strings
+    dto.setRoles(usuario.getRoles()
+        .stream()
+        .map(Enum::name)
+        .toList()
+    );
+    System.out.println("Horas usuario: " + usuario.getNumeroHoras());
+
+    return ResponseEntity.ok(dto);
+}
 }

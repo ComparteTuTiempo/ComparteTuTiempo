@@ -1,7 +1,6 @@
 package com.compartetutiempo.backend.service;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
@@ -51,6 +50,13 @@ public class EventoService {
             .orElseThrow(() -> new RuntimeException("Evento no encontrado con id: " + id));
         return EventoResponse.mapToDTO(evento);
     }
+
+    public List<EventoResponse> listarEventosDondeParticipo(String correo) {
+        return participacionRepository.findByUsuarioCorreo(correo).stream()
+            .map(p -> EventoResponse.mapToDTO(p.getEvento()))
+            .toList();
+    }
+
 
     @Transactional
     public Participacion participarEnEvento(Integer eventoId, String correo) {

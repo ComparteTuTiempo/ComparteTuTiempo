@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.compartetutiempo.backend.dto.ConversacionDTO;
 import com.compartetutiempo.backend.model.Conversacion;
 import com.compartetutiempo.backend.service.ConversacionService;
 
@@ -20,7 +21,7 @@ import lombok.RequiredArgsConstructor;
 @RequestMapping("/conversaciones")
 @RequiredArgsConstructor
 public class ConversacionController {
-    
+
     private final ConversacionService conversationService;
 
     @PostMapping
@@ -31,20 +32,36 @@ public class ConversacionController {
     }
 
     @GetMapping("/user/{correo}")
-    public ResponseEntity<List<Conversacion>> getUserConversations(@PathVariable String correo) {
-        List<Conversacion> conversaciones = conversationService.getUserConversations(correo);
-        return ResponseEntity.ok(conversaciones);
+    public ResponseEntity<List<ConversacionDTO>> getUserConversations(@PathVariable String correo) {
+        return ResponseEntity.ok(
+                conversationService.getUserConversations(correo)
+                        .stream()
+                        .map(ConversacionDTO::fromEntity)
+                        .toList());
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Conversacion> getConversation(@PathVariable Long id) {
+    public ResponseEntity<ConversacionDTO> getConversation(@PathVariable Long id) {
         Conversacion conversacion = conversationService.getById(id);
-        if(conversacion != null){
-            return new ResponseEntity<>(conversacion,HttpStatus.OK);
-        }else{
-            return new ResponseEntity<>(conversacion,HttpStatus.NOT_FOUND);
+        if (conversacion != null) {
+            return ResponseEntity.ok(ConversacionDTO.fromEntity(conversacion));
+        } else {
+            return ResponseEntity.notFound().build();
         }
-        
-    }
-}
 
+    }
+
+    @PostMapping("/intercambio-usuario/{intercambioUsuarioId}")
+    public ResponseEntity<Conversacion> getOrCreateConversationForIntercambioUsuario(
+            @PathVariable Integer intercambioUsuarioId,
+            @RequestParam List<String> correos) {
+        return ResponseEntity.ok(conversationService.getOrCreateForIntercambioUsuario(intercambioUsuarioId, correos));
+    }
+
+    @GetMapping("/intercambio-usuario/{intercambioUsuarioId}")
+    public ResponseEntity<ConversacionDTO> getConversationForIntercambioUsuario(
+            @PathVariable Integer intercambioUsuarioId) {
+        return ResponseEntity.ok(conversationService.findByIntercambioUsuarioId(intercambioUsuarioId));
+    }
+
+}

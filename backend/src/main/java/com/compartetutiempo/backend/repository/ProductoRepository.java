@@ -8,7 +8,7 @@ import com.compartetutiempo.backend.model.Usuario;
 import com.compartetutiempo.backend.model.enums.EstadoProducto;
 
 public interface ProductoRepository extends JpaRepository<Producto, Long> {
-        List<Producto> findByUser(Usuario user);
+        List<Producto> findByPropietario(Usuario user);
 
-        List<Producto> findByUserAndEstado(Usuario user, EstadoProducto estado); 
+        List<Producto> findByPropietarioAndEstado(Usuario propietario, EstadoProducto estado); 
 }

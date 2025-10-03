@@ -44,7 +44,9 @@ public class UsuarioService implements UserDetailsService{
         usuario.setUbicacion(
             nuevosDatos.getUbicacion() != null ? nuevosDatos.getUbicacion() : usuario.getUbicacion()
         );
-
+        usuario.setFotoPerfil(
+            nuevosDatos.getFotoPerfil() != null ? nuevosDatos.getFotoPerfil() : usuario.getFotoPerfil()
+        );
         return repository.save(usuario);
 }
 

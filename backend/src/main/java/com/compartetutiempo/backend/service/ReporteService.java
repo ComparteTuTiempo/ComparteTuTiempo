@@ -1,11 +1,13 @@
 package com.compartetutiempo.backend.service;
 
+import com.compartetutiempo.backend.model.Intercambio;
 import com.compartetutiempo.backend.model.Reporte;
 import com.compartetutiempo.backend.model.Usuario;
 import com.compartetutiempo.backend.model.enums.EstadoReporte;
 import com.compartetutiempo.backend.repository.IntercambioRepository;
 import com.compartetutiempo.backend.repository.ProductoRepository;
 import com.compartetutiempo.backend.repository.ReporteRepository;
+import com.compartetutiempo.backend.repository.ReseñaIntercambioRepository;
 import com.compartetutiempo.backend.repository.UsuarioRepository;
 
 import org.springframework.stereotype.Service;
@@ -19,12 +21,16 @@ public class ReporteService {
     private final UsuarioRepository usuarioRepository;
     private final ProductoRepository productoRepository;
     private final IntercambioRepository intercambioRepository;
+    private final ReseñaIntercambioRepository resenaRepository;
 
-    public ReporteService(ReporteRepository reporteRepository, UsuarioRepository usuarioRepository, ProductoRepository productoRepository, IntercambioRepository intercambioRepository) {
+    public ReporteService(ReporteRepository reporteRepository, UsuarioRepository usuarioRepository,
+            ProductoRepository productoRepository, IntercambioRepository intercambioRepository,
+            ReseñaIntercambioRepository resenaRepository) {
         this.reporteRepository = reporteRepository;
         this.usuarioRepository = usuarioRepository;
         this.productoRepository = productoRepository;
         this.intercambioRepository = intercambioRepository;
+        this.resenaRepository = resenaRepository;
     }
 
     public Reporte crearReporte(String correoReportador, String correoReportado, Reporte reporte) {
@@ -60,10 +66,16 @@ public class ReporteService {
         Usuario reportado = reporte.getUsuarioReportado();
 
         // eliminar productos
-        productoRepository.deleteAll(productoRepository.findByUser(reportado));
+        productoRepository.deleteAll(productoRepository.findByPropietario(reportado));
+
+        // eliminar reseñas de cada intercambio antes de borrar los intercambios
+        List<Intercambio> intercambios = intercambioRepository.findByUser(reportado);
+        for (Intercambio intercambio : intercambios) {
+            resenaRepository.deleteAll(resenaRepository.findByIntercambio(intercambio));
+        }
 
         // eliminar intercambios
-        intercambioRepository.deleteAll(intercambioRepository.findByUser(reportado));
+        intercambioRepository.deleteAll(intercambios);
 
         // deshabilitar usuario
         reportado.setActivo(false);

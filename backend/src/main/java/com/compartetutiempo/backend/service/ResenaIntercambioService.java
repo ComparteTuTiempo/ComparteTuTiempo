@@ -23,7 +23,7 @@ public class ResenaIntercambioService {
         this.usuarioRepo = usuarioRepo;
     }
 
-    public ResenaIntercambio crear(Long intercambioId, String correoAutor, ResenaIntercambio reseña) {
+    public ResenaIntercambio crear(Integer intercambioId, String correoAutor, ResenaIntercambio reseña) {
         Intercambio intercambio = intercambioRepo.findById(intercambioId)
                 .orElseThrow(() -> new RuntimeException("Intercambio no encontrado"));
         Usuario autor = usuarioRepo.findByCorreo(correoAutor)
@@ -35,13 +35,13 @@ public class ResenaIntercambioService {
         return reseñaRepo.save(reseña);
     }
 
-    public List<ResenaIntercambio> obtenerPorIntercambio(Long intercambioId) {
+    public List<ResenaIntercambio> obtenerPorIntercambio(Integer intercambioId) {
         Intercambio intercambio = intercambioRepo.findById(intercambioId)
                 .orElseThrow(() -> new RuntimeException("Intercambio no encontrado"));
         return reseñaRepo.findByIntercambio(intercambio);
     }
 
-    public double calcularPromedio(Long intercambioId) {
+    public double calcularPromedio(Integer intercambioId) {
         List<ResenaIntercambio> reseñas = obtenerPorIntercambio(intercambioId);
         if (reseñas.isEmpty()) return 0.0;
         return reseñas.stream().mapToInt(ResenaIntercambio::getPuntuacion).average().orElse(0.0);

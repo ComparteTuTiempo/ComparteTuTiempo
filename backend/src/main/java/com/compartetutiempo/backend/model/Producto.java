@@ -37,6 +37,6 @@ public class Producto extends BaseEntity {
 
     @JoinColumn(name = "usuario_id", referencedColumnName = "id", nullable = false)
     @ManyToOne(optional = false)
-    private Usuario user;
+    private Usuario propietario;
 
 }

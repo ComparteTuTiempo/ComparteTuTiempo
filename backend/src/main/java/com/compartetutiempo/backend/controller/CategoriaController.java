@@ -29,7 +29,12 @@ public class CategoriaController {
 
     @PutMapping("/{id}")
     public ResponseEntity<Categoria> actualizar(@PathVariable Long id, @RequestBody Categoria categoria) {
-        return ResponseEntity.ok(categoriaService.actualizarCategoria(id, categoria));
+        try{
+            return ResponseEntity.ok(categoriaService.actualizarCategoria(id, categoria));
+        }catch(Exception e){
+            return ResponseEntity.status(400).build();
+        }
+        
     }
 
     @DeleteMapping("/{id}")

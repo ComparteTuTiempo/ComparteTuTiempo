@@ -34,7 +34,7 @@ const IntercambioForm = () => {
     const fetchIntercambio = async () => {
       if (id) {
         try {
-          const res = await axios.get(`http://localhost:8080/intercambios/${id}`, {
+          const res = await axios.get(`http://localhost:8080/intercambios/${id}/editar`, {
             headers: { Authorization: `Bearer ${token}` },
           });
 
@@ -46,7 +46,15 @@ const IntercambioForm = () => {
           };
           setFormData(data);
         } catch (err) {
-          console.error("❌ Error al cargar intercambio:", err);
+          if (err.response?.status === 403) {
+            alert("🚫 No puedes editar este intercambio");
+            navigate("/");
+          } else if (err.response?.status === 404) {
+            alert("❌ El intercambio no existe o fue eliminado");
+            navigate("/");
+          } else {
+            console.error("❌ Error al cargar intercambio:", err);
+          }
         }
       }
     };
@@ -88,9 +96,14 @@ const IntercambioForm = () => {
           }
         );
       }
-      navigate("/profile");
+      navigate("/mispublicaciones");
     } catch (err) {
-      console.error("❌ Error al guardar intercambio:", err);
+      if (err.response?.status === 403) {
+        console.error("🚫 No puedes editar este intercambio");
+        navigate("/", { replace: true });
+      } else {
+        console.error("❌ Error al guardar intercambio:", err);
+      }
     }
   };
 
@@ -115,17 +128,14 @@ const IntercambioForm = () => {
           style={styles.textarea}
           required
         />
-        {formData.tipo === "PETICION" ? (
-          <input
-            type="number"
-            name="numeroHoras"
-            placeholder="Número de horas"
-            value={formData.numeroHoras}
-            onChange={handleChange}
-            style={styles.input}
-          />
-        ) : null}
-
+        <input
+          type="number"
+          name="numeroHoras"
+          placeholder="Número de horas"
+          value={formData.numeroHoras}
+          onChange={handleChange}
+          style={styles.input}
+        />
         <select
           name="tipo"
           value={formData.tipo}
