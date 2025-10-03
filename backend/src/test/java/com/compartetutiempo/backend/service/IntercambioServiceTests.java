@@ -190,10 +190,8 @@ class IntercambioServiceTest {
 
     @Test
     void eliminarIntercambio_ConIdNoExistente_DeberiaLanzarExcepcion() {
-        // Arrange
-        when(intercambioRepository.existsById(999)).thenReturn(false);
 
-        // Act & Assert
+        
         assertThrows(RuntimeException.class, () -> 
             intercambioService.eliminarIntercambio(999));
     }
