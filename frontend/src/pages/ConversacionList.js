@@ -10,7 +10,7 @@ export default function ConversationList() {
   useEffect(() => {
     if (!user?.correo) return;
     axios
-      .get(`http://localhost:8080/conversaciones/user/${user.correo}`, {
+      .get(`${process.env.REACT_APP_API_URL}/conversaciones/user/${user.correo}`, {
         headers: { Authorization: `Bearer ${token}` }
       })
       .then(res => setConvs(res.data))

@@ -24,7 +24,7 @@ const VerificacionForm = () => {
       formData.append("documentoURL", file); // el nombre debe coincidir con @RequestParam("documentoURL")
 
       await axios.post(
-        `http://localhost:8080/api/verificaciones/${user.correo}`, // correo en la URL
+        `${process.env.REACT_APP_API_URL}/api/verificaciones/${user.correo}`, // correo en la URL
         formData,
         {
           headers: {
