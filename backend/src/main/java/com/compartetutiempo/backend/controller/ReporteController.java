@@ -49,7 +49,12 @@ public class ReporteController {
     // Obtener detalle de un reporte
     @GetMapping("/{id}")
     public ResponseEntity<Reporte> obtenerReporte(@PathVariable Long id) {
-        return ResponseEntity.ok(reporteService.obtenerPorId(id));
+        try{
+            return ResponseEntity.ok(reporteService.obtenerPorId(id));
+        }catch(Exception e){
+            return ResponseEntity.status(400).build();
+        }
+        
     }
 
     // Confirmar reporte -> se banea usuario reportado
