@@ -25,7 +25,7 @@ public class ProductoUsuario extends BaseEntity{
     @Enumerated(EnumType.STRING)
     private EstadoProductoUsuario estado;
 
-    @OneToOne(cascade = CascadeType.ALL)
+    @OneToOne(cascade = CascadeType.REMOVE)
     @JoinColumn(name = "conversacion_id")
     private Conversacion conversacion;
 }
