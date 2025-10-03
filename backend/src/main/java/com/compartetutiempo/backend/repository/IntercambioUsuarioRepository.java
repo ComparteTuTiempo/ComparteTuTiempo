@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import com.compartetutiempo.backend.model.Intercambio;
 import com.compartetutiempo.backend.model.IntercambioUsuario;
 import com.compartetutiempo.backend.model.Usuario;
 import com.compartetutiempo.backend.model.enums.EstadoIntercambio;
@@ -33,5 +34,9 @@ public interface IntercambioUsuarioRepository extends JpaRepository<IntercambioU
 
     Optional<IntercambioUsuario> findByIntercambioIdAndUsuarioCorreoAndEstado(Integer intercambioId,String correo,
         EstadoIntercambio estado);
+
+    void deleteByIntercambio(Intercambio intercambio);
+    
+    void deleteByUsuario(Usuario usuario);
 
 }

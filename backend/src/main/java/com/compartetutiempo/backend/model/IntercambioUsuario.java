@@ -2,6 +2,7 @@ package com.compartetutiempo.backend.model;
 
 import com.compartetutiempo.backend.model.enums.EstadoIntercambio;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -38,7 +39,7 @@ public class IntercambioUsuario extends BaseEntity {
     @Column(length = 512)
     private String terminos;
 
-    @OneToOne
+    @OneToOne(cascade = CascadeType.REMOVE)
     @JoinColumn(name = "conversacion_id",referencedColumnName = "id",unique=true)
     private Conversacion conversacion;
 

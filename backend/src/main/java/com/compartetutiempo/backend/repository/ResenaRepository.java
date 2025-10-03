@@ -7,5 +7,10 @@ import java.util.List;
 
 public interface ResenaRepository extends JpaRepository<Resena, Long> {
     List<Resena> findByDestinatario(Usuario destinatario);
+
     boolean existsByAutorAndDestinatario(Usuario autor, Usuario destinatario);
+
+    void deleteByAutor(Usuario autor);
+
+    void deleteByDestinatario(Usuario destinatario);
 }

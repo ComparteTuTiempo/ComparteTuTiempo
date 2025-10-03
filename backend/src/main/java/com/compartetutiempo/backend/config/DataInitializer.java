@@ -11,6 +11,7 @@ import java.util.Random;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import com.compartetutiempo.backend.model.Categoria;
 import com.compartetutiempo.backend.model.Evento;
@@ -32,8 +33,13 @@ import com.compartetutiempo.backend.repository.ResenaRepository;
 import com.compartetutiempo.backend.repository.ReseñaIntercambioRepository;
 import com.compartetutiempo.backend.repository.UsuarioRepository;
 
+import lombok.RequiredArgsConstructor;
+
 @Configuration
+@RequiredArgsConstructor
 public class DataInitializer {
+
+    private final PasswordEncoder passwordEncoder;
 
     @Bean
     CommandLineRunner initData(
@@ -66,7 +72,7 @@ public class DataInitializer {
                     Usuario u = new Usuario();
                     u.setNombre(nombres[i]);
                     u.setCorreo("user" + (i+1) + "@tiempocompartido.com");
-                    u.setContrasena("1234abcd");
+                    u.setContrasena(passwordEncoder.encode("1234abcd"));
                     u.setFechaNacimiento(LocalDate.of(1985 + i, (i % 12) + 1, (i % 28) + 1));
                     u.setBiografia(bios[i]);
                     u.setFotoPerfil("perfil" + (i+1) + ".jpg");
