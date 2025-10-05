@@ -46,12 +46,12 @@ class IntercambioUsuarioServiceTest {
         ofertante = new Usuario();
         ofertante.setId(1l);
         ofertante.setCorreo("ofertante@mail.com");
-        ofertante.setNumeroHoras(10.0);
+        ofertante.setNumeroHoras(10);
 
         solicitante = new Usuario();
         solicitante.setId(2L);
         solicitante.setCorreo("solicitante@mail.com");
-        solicitante.setNumeroHoras(5.0);
+        solicitante.setNumeroHoras(5);
 
         intercambio = new Intercambio();
         intercambio.setId(100);

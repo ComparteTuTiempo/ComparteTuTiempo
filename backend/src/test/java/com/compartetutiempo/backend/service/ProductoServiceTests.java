@@ -34,12 +34,12 @@ class ProductoServiceTest {
         comprador = new Usuario();
         comprador.setId(1L);
         comprador.setCorreo("comprador@mail.com");
-        comprador.setNumeroHoras(10.0);
+        comprador.setNumeroHoras(10);
 
         propietario = new Usuario();
         propietario.setId(2L);
         propietario.setCorreo("propietario@mail.com");
-        propietario.setNumeroHoras(5.0);
+        propietario.setNumeroHoras(5);
 
         producto = new Producto();
         producto.setId(100);

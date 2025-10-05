@@ -22,6 +22,7 @@ public class IntercambioDTO {
     private Integer numeroHoras;
     private String nombreOfertante;
     private EstadoIntercambio estado;
+    private String fotoPerfil;
     private TipoIntercambio tipo;
     private ModalidadServicio modalidad;
     private List<IntercambioUsuarioDTO> participantes; 
@@ -39,6 +40,7 @@ public class IntercambioDTO {
         dto.setModalidad(intercambio.getModalidad());
         dto.setCorreoOfertante(intercambio.getUser().getCorreo());
         dto.setNombreOfertante(intercambio.getUser().getNombre());
+        dto.setFotoPerfil(intercambio.getUser().getFotoPerfil());
 
         dto.setParticipantes(
             participantes.stream()

@@ -48,11 +48,11 @@ public class Usuario implements UserDetails {
     private String biografia;
 
     @Column
-    private String fotoPerfil;
+    private String fotoPerfil = "https://cdn-icons-png.flaticon.com/512/847/847969.png";
 
     @Column(name = "numero_horas", precision = 2)
     @PositiveOrZero
-    private Double numeroHoras = 0.0;
+    private Integer numeroHoras = 10;
 
     @Column
     private String ubicacion;

@@ -130,7 +130,7 @@ export default function IntercambioDetalle() {
 
       <div style={styles.owner}>
         <img
-          src={intercambio.usuarioFoto || "/default-avatar.png"}
+          src={intercambio.fotoPerfil || "/default-avatar.png"}
           alt="Foto de perfil"
           style={styles.avatar}
         />

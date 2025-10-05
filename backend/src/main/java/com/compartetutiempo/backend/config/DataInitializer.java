@@ -75,8 +75,8 @@ public class DataInitializer {
                     u.setContrasena(passwordEncoder.encode("1234abcd"));
                     u.setFechaNacimiento(LocalDate.of(1985 + i, (i % 12) + 1, (i % 28) + 1));
                     u.setBiografia(bios[i]);
-                    u.setFotoPerfil("perfil" + (i+1) + ".jpg");
-                    u.setNumeroHoras(1.0 + random.nextDouble() * 50);
+                    u.setFotoPerfil("https://cdn-icons-png.flaticon.com/512/847/847969.png");
+                    u.setNumeroHoras(1 + random.nextInt(50));
                     u.setUbicacion(ubicaciones[i]);
                     u.setActivo(true);
                     u.setMetodoAutenticacion("LOCAL");
@@ -151,7 +151,7 @@ public class DataInitializer {
                     in.setNombre(titulos[i]);
                     in.setDescripcion("Servicio de " + titulos[i].toLowerCase() + " ofrecido con experiencia.");
                     in.setFechaPublicacion(new Date(System.currentTimeMillis() - random.nextInt(1000000000)));
-                    in.setNumeroHoras(2 + random.nextInt() * 5);
+                    in.setNumeroHoras(2 + random.nextInt(5));
                     in.setEstado(i % 2 == 0 ? EstadoIntercambio.EMPAREJAMIENTO : EstadoIntercambio.FINALIZADO);
                     in.setTipo(i % 2 == 0 ? TipoIntercambio.OFERTA : TipoIntercambio.PETICION);
                     in.setModalidad(i % 2 == 0 ? ModalidadServicio.PRESENCIAL : ModalidadServicio.VIRTUAL);
@@ -178,7 +178,7 @@ public class DataInitializer {
                     p.setNombre(nombres.get(i));
                     p.setDescripcion("Producto en buen estado: " + nombres.get(i).toLowerCase());
                     p.setFechaPublicacion(new Date(System.currentTimeMillis() - random.nextInt(500000000)));
-                    p.setNumeroHoras(5 + random.nextInt() * 15);
+                    p.setNumeroHoras(5 + random.nextInt(15));
                     p.setEstado(i % 2 == 0 ? EstadoProducto.DISPONIBLE : EstadoProducto.RESERVADO);
                     p.setPropietario(usuarios.get(i % usuarios.size()));
                     productos.add(p);

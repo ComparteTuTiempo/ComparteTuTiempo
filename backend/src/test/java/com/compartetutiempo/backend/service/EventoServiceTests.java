@@ -48,7 +48,7 @@ class EventoServiceTest {
         usuario = new Usuario();
         usuario.setCorreo("user@test.com");
         usuario.setNombre("Usuario Test");
-        usuario.setNumeroHoras(10.0);
+        usuario.setNumeroHoras(10);
 
         evento = new Evento();
         evento.setId(1);
@@ -145,7 +145,7 @@ class EventoServiceTest {
         Participacion p = new Participacion();
         Usuario participante = new Usuario();
         participante.setCorreo("participante@test.com");
-        participante.setNumeroHoras(5.0);
+        participante.setNumeroHoras(5);
         p.setUsuario(participante);
         p.setAsistio(true);
 
@@ -157,7 +157,7 @@ class EventoServiceTest {
         EventoResponse resultado = eventoService.finalizarEvento(1, "user@test.com");
 
         assertEquals(EstadoEvento.FINALIZADO, evento.getEstadoEvento());
-        assertEquals(7.0, participante.getNumeroHoras());
+        assertEquals(7, participante.getNumeroHoras());
         assertNotNull(resultado);
     }
 
