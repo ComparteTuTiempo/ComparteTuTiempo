@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const API_URL = "/conversaciones";
+const API_URL = `${process.env.REACT_APP_API_URL}/conversaciones`;
 
 const getAuthHeader = (token) => {
   return token ? { Authorization: `Bearer ${token}` } : {};
