@@ -106,13 +106,11 @@ public class IntercambioController {
             @RequestBody IntercambioDTO dto,
             @AuthenticationPrincipal Jwt jwt) {
 
-        String correo = jwt.getSubject(); // el correo del usuario logueado
+        String correo = jwt.getSubject();
         Usuario user = usuarioService.obtenerPorCorreo(correo);
 
-        // Cargamos el intercambio
         IntercambioDTO intercambio = intercambioService.obtenerPorId(id);
 
-        // 🚫 Validamos que el usuario logueado sea el dueño o admin
         boolean esAdmin = user.getRoles().contains(Role.ADMIN);
         if (!intercambio.getCorreoOfertante().equals(correo) && !esAdmin) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN,

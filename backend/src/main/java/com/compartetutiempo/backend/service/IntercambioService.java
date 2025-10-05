@@ -61,7 +61,6 @@ public class IntercambioService {
         intercambio.setFechaPublicacion(new Date());
         intercambio.setEstado(EstadoIntercambio.EMPAREJAMIENTO);
 
-        // 🔹 Buscar categorías por id
         List<Categoria> categorias = categoriaRepository.findAllById(dto.getCategorias());
         intercambio.setCategorias(new HashSet<>(categorias));
 
