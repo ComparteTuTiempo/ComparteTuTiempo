@@ -10,12 +10,13 @@ import org.springframework.web.server.ResponseStatusException;
 import com.compartetutiempo.backend.dto.AcuerdoRequest;
 import com.compartetutiempo.backend.dto.IntercambioDTO;
 import com.compartetutiempo.backend.dto.IntercambioUsuarioDTO;
-
+import com.compartetutiempo.backend.model.Intercambio;
 import com.compartetutiempo.backend.model.IntercambioUsuario;
 import com.compartetutiempo.backend.model.Usuario;
 import com.compartetutiempo.backend.model.enums.EstadoIntercambio;
 import com.compartetutiempo.backend.model.enums.TipoIntercambio;
 import com.compartetutiempo.backend.model.enums.TipoNotificacion;
+import com.compartetutiempo.backend.repository.IntercambioRepository;
 import com.compartetutiempo.backend.repository.IntercambioUsuarioRepository;
 import com.compartetutiempo.backend.repository.UsuarioRepository;
 
@@ -26,14 +27,17 @@ public class IntercambioUsuarioService {
     private final UsuarioRepository usuarioRepository;
     private final ConversacionService conversacionService;
     private final NotificacionService notificacionService;
+    private final IntercambioRepository intercambioRepository;
 
     public IntercambioUsuarioService(IntercambioUsuarioRepository intercambioUsuarioRepository,
     UsuarioRepository usuarioRepository,ConversacionService conversacionService
-    ,NotificacionService notificacionService){
+    ,NotificacionService notificacionService,
+    IntercambioRepository intercambioRepository){
         this.intercambioUsuarioRepository = intercambioUsuarioRepository;
         this.usuarioRepository = usuarioRepository;
         this.conversacionService = conversacionService;
         this.notificacionService = notificacionService;
+        this.intercambioRepository = intercambioRepository;
     }
 
     @Transactional
@@ -161,6 +165,9 @@ public class IntercambioUsuarioService {
             //Si es peticion, el solicitante gana horas y el ofertante pierde
                 usuarioSolicitante.setNumeroHoras(usuarioSolicitante.getNumeroHoras() + iu.getHorasAsignadas());
                 usuarioOfertante.setNumeroHoras(usuarioOfertante.getNumeroHoras() - iu.getHorasAsignadas());
+                Intercambio intercambio = iu.getIntercambio();
+                intercambio.setEstado(EstadoIntercambio.FINALIZADO);
+                intercambioRepository.save(intercambio);
                 break;
         }
 
