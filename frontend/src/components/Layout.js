@@ -24,14 +24,14 @@ const Layout = () => {
       <header style={styles.header}>
         <h1 style={styles.logo}>ComparteTuTiempo</h1>
         <nav style={styles.nav}>
-          <Link to="/" style={styles.navLink}>Inicio</Link>
+          <Link to="/inicio" style={styles.navLink}>Inicio</Link>
 
           {user ? (
             <>
               <Link to="/mispublicaciones" style={styles.navLink}>
                 Mis Publicaciones
               </Link>
-              <Link to="/eventos/crear" style={styles.navLink}>
+              <Link to="/eventos" style={styles.navLink}>
                 Eventos
               </Link>
               <Link to="/mercado" style={styles.navLink}>

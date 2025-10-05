@@ -13,6 +13,7 @@ import com.compartetutiempo.backend.model.enums.Role;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.PositiveOrZero;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
@@ -47,10 +48,11 @@ public class Usuario implements UserDetails {
     private String biografia;
 
     @Column
-    private String fotoPerfil;
+    private String fotoPerfil = "https://cdn-icons-png.flaticon.com/512/847/847969.png";
 
     @Column(name = "numero_horas", precision = 2)
-    private Double numeroHoras = 0.0;
+    @PositiveOrZero
+    private Integer numeroHoras = 10;
 
     @Column
     private String ubicacion;

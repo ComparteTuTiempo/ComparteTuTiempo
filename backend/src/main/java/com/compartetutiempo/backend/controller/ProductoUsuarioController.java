@@ -1,6 +1,8 @@
 package com.compartetutiempo.backend.controller;
 
+import com.compartetutiempo.backend.dto.ProductoDTO;
 import com.compartetutiempo.backend.dto.ProductoUsuarioDTO;
+import com.compartetutiempo.backend.model.Producto;
 import com.compartetutiempo.backend.model.ProductoUsuario;
 import com.compartetutiempo.backend.model.Usuario;
 import com.compartetutiempo.backend.model.enums.TipoNotificacion;
@@ -32,18 +34,28 @@ public class ProductoUsuarioController {
     }
 
     @PostMapping("/adquirir/{productoId}")
-    public ResponseEntity<ProductoUsuarioDTO> adquirirProducto(
+    public ResponseEntity<ProductoDTO> adquirirProducto(
             @PathVariable Long productoId,
             @AuthenticationPrincipal Jwt jwt) {
 
         Usuario comprador = usuarioService.obtenerPorCorreo(jwt.getSubject());
         ProductoUsuario transaccion = productoUsuarioService.adquirirProducto(productoId, comprador);
-        String mensaje = "Has recibido una solicitud del usuario: " + comprador.getNombre() + "para adquirir el producto: "
-        + transaccion.getProducto().getNombre();
 
-        notificacionService.crearYEnviar(transaccion.getProducto().getPropietario(), TipoNotificacion.INTERCAMBIO, mensaje, null);
-        return ResponseEntity.ok(ProductoUsuarioDTO.fromEntity(transaccion));
+        String mensaje = "Has recibido una solicitud del usuario: " + comprador.getNombre() +
+                " para adquirir el producto: " + transaccion.getProducto().getNombre();
+        notificacionService.crearYEnviar(
+                transaccion.getProducto().getPropietario(),
+                TipoNotificacion.INTERCAMBIO,
+                mensaje,
+                null
+        );
+
+        Producto productoActualizado = transaccion.getProducto();
+        ProductoDTO dto = ProductoDTO.fromEntity(productoActualizado, transaccion);
+
+        return ResponseEntity.ok(dto);
     }
+
 
     @PutMapping("/finalizar/{transaccionId}")
     public ResponseEntity<ProductoUsuarioDTO> finalizarTransaccion(
@@ -53,7 +65,7 @@ public class ProductoUsuarioController {
         Usuario propietario = usuarioService.obtenerPorCorreo(jwt.getSubject());
         ProductoUsuario transaccionProducto = productoUsuarioService.finalizarTransaccion(transaccionId, propietario);
 
-        Double horasProducto = transaccionProducto.getProducto().getNumeroHoras();
+        Integer horasProducto = transaccionProducto.getProducto().getNumeroHoras();
 
         String mensajePropietario = "Has finalizado el intercambio:" + transaccionProducto.getProducto().getNombre() + 
             " Has ganado " + horasProducto + " horas con esta transacción";

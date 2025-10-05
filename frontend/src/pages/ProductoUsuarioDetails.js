@@ -1,13 +1,21 @@
 import React, { useEffect, useState } from "react";
 import { useAuth } from "../utils/AuthContext";
-import { obtenerMisTransacciones, finalizarTransaccion, cancelarSolicitud } from "../services/productoUsuarioService";
 import { useNavigate } from "react-router-dom";
 import Sidebar from "../components/Sidebar";
+import {
+  obtenerMisTransacciones,
+  finalizarTransaccion,
+  cancelarSolicitud,
+} from "../services/productoUsuarioService";
 
-export default function MisTransaccionesProducto() {
+const estados = ["PENDIENTE", "FINALIZADA"];
+
+const TransaccionesPage = () => {
   const { token, user } = useAuth();
-  const [transacciones, setTransacciones] = useState([]);
   const navigate = useNavigate();
+  const [tab, setTab] = useState("PENDIENTE");
+  const [transacciones, setTransacciones] = useState([]);
+  const [busqueda, setBusqueda] = useState(""); // <-- estado del buscador
 
   useEffect(() => {
     if (!token) return;
@@ -25,10 +33,8 @@ export default function MisTransaccionesProducto() {
   const handleFinalizar = async (id) => {
     try {
       await finalizarTransaccion(id, token);
-      setTransacciones((prev) =>
-        prev.map((t) =>
-          t.id === id ? { ...t, estado: "FINALIZADA" } : t
-        )
+      setTransacciones(prev =>
+        prev.map(t => t.id === id ? { ...t, estado: "FINALIZADA" } : t)
       );
       alert("✅ Transacción finalizada");
     } catch (err) {
@@ -36,31 +42,69 @@ export default function MisTransaccionesProducto() {
     }
   };
 
-  const getBadgeStyle = (estado) => {
-    switch (estado) {
-      case "EN_PROCESO":
-        return { backgroundColor: "#ffc107", color: "black" };
-      case "FINALIZADA":
-        return { backgroundColor: "#28a745", color: "white" };
-      case "PENDIENTE":
-        return { backgroundColor: "#007bff", color: "white" };
-      default:
-        return { backgroundColor: "#6c757d", color: "white" };
+  const handleCancelar = async (id) => {
+    try {
+      if (window.confirm("¿Seguro que quieres cancelar la solicitud?")) {
+        await cancelarSolicitud(id, token);
+        alert("✅ Solicitud cancelada");
+        const data = await obtenerMisTransacciones(token);
+        setTransacciones(data);
+      }
+    } catch (err) {
+      alert("Error al cancelar: " + err.response?.data?.message);
     }
   };
+
+  const getBadgeStyle = (estado) => {
+    switch (estado) {
+      case "PENDIENTE":
+        return { backgroundColor: "#007bff", color: "#fff" };
+      case "FINALIZADA":
+        return { backgroundColor: "#28a745", color: "#fff" };
+      default:
+        return { backgroundColor: "#6c757d", color: "#fff" };
+    }
+  };
+
+  // Filtrar según tab y búsqueda
+  const transaccionesFiltradas = transacciones
+    .filter(t => t.estado === tab)
+    .filter(t => t.productoNombre.toLowerCase().includes(busqueda.toLowerCase()));
 
   return (
     <div style={styles.layout}>
       <Sidebar />
-
       <main style={styles.main}>
         <h2 style={styles.title}>📦 Mis Transacciones de Productos</h2>
 
-        {transacciones.length === 0 ? (
-          <p style={styles.empty}>No tienes transacciones todavía.</p>
-        ) : (
-          <div style={styles.grid}>
-            {transacciones.map((t) => (
+        {/* Buscador */}
+        <input
+          type="text"
+          placeholder="Buscar por nombre de intercambio..."
+          value={busqueda}
+          onChange={(e) => setBusqueda(e.target.value)}
+          style={styles.searchInput}
+        />
+
+        {/* Tabs de estados */}
+        <div style={styles.tabs}>
+          {estados.map(e => (
+            <button
+              key={e}
+              style={tab === e ? styles.activeTab : styles.tab}
+              onClick={() => setTab(e)}
+            >
+              {e}
+            </button>
+          ))}
+        </div>
+
+        {/* Lista de transacciones */}
+        <div style={styles.list}>
+          {transaccionesFiltradas.length === 0 ? (
+            <p style={styles.empty}>No hay transacciones en este estado.</p>
+          ) : (
+            transaccionesFiltradas.map(t => (
               <div key={t.id} style={styles.card}>
                 <div style={styles.cardHeader}>
                   <h3 style={styles.cardTitle}>{t.productoNombre}</h3>
@@ -69,18 +113,11 @@ export default function MisTransaccionesProducto() {
                   </span>
                 </div>
 
-                <p style={styles.text}>
-                  <strong>Propietario:</strong> {t.propietarioNombre}
-                </p>
-                <p style={styles.text}>
-                  <strong>Comprador:</strong> {t.compradorNombre}
-                </p>
-                <p style={styles.text}>
-                  <strong>Horas:</strong> {t.productoHoras}
-                </p>
+                <p style={styles.text}><strong>Propietario:</strong> {t.propietarioNombre}</p>
+                <p style={styles.text}><strong>Comprador:</strong> {t.compradorNombre}</p>
+                <p style={styles.text}><strong>Horas:</strong> {t.productoHoras}</p>
 
                 <div style={styles.actions}>
-                  {/* Botón de chat */}
                   <button
                     onClick={() => navigate(`/conversaciones/${t.id}`)}
                     style={styles.chatBtn}
@@ -88,136 +125,81 @@ export default function MisTransaccionesProducto() {
                     💬 Ir al chat
                   </button>
 
-                  {/* Finalizar (solo propietario en pendiente) */}
-                  {t.estado === "PENDIENTE" &&
-                    t.propietarioCorreo === user.correo && (
-                      <button
-                        onClick={() => handleFinalizar(t.id)}
-                        style={styles.finalizarBtn}
-                      >
-                        ✅ Finalizar
-                      </button>
-                    )}
+                  {t.estado === "PENDIENTE" && t.propietarioCorreo === user.correo && (
+                    <button
+                      onClick={() => handleFinalizar(t.id)}
+                      style={styles.finalizarBtn}
+                    >
+                      ✅ Finalizar
+                    </button>
+                  )}
 
-                  {/* Cancelar solicitud */}
-                  {user.correo === t.propietarioCorreo &&
-                    t.estado !== "FINALIZADA" && (
-                      <button
-                        onClick={async () => {
-                          if (window.confirm("¿Seguro que quieres cancelar la solicitud?")) {
-                            await cancelarSolicitud(t.id, token);
-                            alert("✅ Solicitud cancelada");
-                            const data = await obtenerMisTransacciones(token);
-                            setTransacciones(data);
-                          }
-                        }}
-                        style={styles.cancelBtn}
-                      >
-                        ❌ Cancelar
-                      </button>
-                    )}
+                  {t.estado !== "FINALIZADA" && t.propietarioCorreo === user.correo && (
+                    <button
+                      onClick={() => handleCancelar(t.id)}
+                      style={styles.cancelBtn}
+                    >
+                      ❌ Cancelar
+                    </button>
+                  )}
                 </div>
               </div>
-            ))}
-          </div>
-        )}
+            ))
+          )}
+        </div>
       </main>
     </div>
   );
-}
+};
 
 const styles = {
-  layout: {
-    display: "flex",
-    minHeight: "100vh",
-    backgroundColor: "#f9f9f9",
+  layout: { display: "flex", minHeight: "100vh", backgroundColor: "#f9f9f9" },
+  main: { flex: 1, padding: "30px", fontFamily: "Arial, sans-serif" },
+  title: { fontSize: "24px", fontWeight: "bold", marginBottom: "20px", color: "#333" },
+  searchInput: {
+    padding: "8px 12px",
+    width: "100%",
+    maxWidth: "400px",
+    marginBottom: "15px",
+    borderRadius: "6px",
+    border: "1px solid #ccc",
+    fontSize: "14px",
   },
-  main: {
-    flex: 1,
-    padding: "30px",
-    fontFamily: "Arial, sans-serif",
+  tabs: { display: "flex", gap: "10px", marginBottom: "20px", flexWrap: "wrap" },
+  tab: {
+    padding: "8px 16px",
+    borderRadius: "6px",
+    border: "1px solid #ddd",
+    background: "#fff",
+    cursor: "pointer",
   },
-  title: {
-    fontSize: "24px",
+  activeTab: {
+    padding: "8px 16px",
+    borderRadius: "6px",
+    border: "none",
+    background: "#ff6f00",
+    color: "#fff",
     fontWeight: "bold",
-    marginBottom: "20px",
-    color: "#333",
+    cursor: "pointer",
   },
-  empty: {
-    textAlign: "center",
-    fontSize: "16px",
-    color: "#777",
-    marginTop: "30px",
-  },
-  grid: {
-    display: "grid",
-    gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))",
-    gap: "20px",
-  },
+  list: { display: "grid", gap: "15px" },
   card: {
     background: "#fff",
+    padding: "20px",
     borderRadius: "12px",
     boxShadow: "0 4px 8px rgba(0,0,0,0.08)",
-    padding: "20px",
-    transition: "transform 0.2s, box-shadow 0.2s",
   },
-  cardHeader: {
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: "10px",
-  },
-  cardTitle: {
-    margin: 0,
-    fontSize: "18px",
-    fontWeight: "600",
-    color: "#222",
-  },
-  badge: {
-    padding: "5px 12px",
-    borderRadius: "20px",
-    fontSize: "13px",
-    fontWeight: "bold",
-  },
-  text: {
-    fontSize: "14px",
-    color: "#444",
-    margin: "6px 0",
-  },
-  actions: {
-    marginTop: "15px",
-    display: "flex",
-    flexWrap: "wrap",
-    gap: "10px",
-  },
-  chatBtn: {
-    flex: 1,
-    padding: "8px 12px",
-    backgroundColor: "#007bff",
-    color: "#fff",
-    border: "none",
-    borderRadius: "6px",
-    cursor: "pointer",
-    fontWeight: "500",
-  },
-  finalizarBtn: {
-    flex: 1,
-    padding: "8px 12px",
-    backgroundColor: "#28a745",
-    color: "#fff",
-    border: "none",
-    borderRadius: "6px",
-    cursor: "pointer",
-    fontWeight: "500",
-  },
-  cancelBtn: {
-    flex: 1,
-    padding: "8px 12px",
-    backgroundColor: "#dc3545",
-    color: "#fff",
-    border: "none",
-    borderRadius: "6px",
-    cursor: "pointer",
-    fontWeight: "500",
-  },
+  cardHeader: { display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "10px" },
+  cardTitle: { fontSize: "18px", fontWeight: "600", margin: 0 },
+  badge: { padding: "5px 12px", borderRadius: "20px", fontSize: "13px", fontWeight: "bold" },
+  text: { fontSize: "14px", color: "#444", margin: "6px 0" },
+  actions: { marginTop: "15px", display: "flex", flexWrap: "wrap", gap: "10px" },
+  chatBtn: { flex: 1, padding: "8px 12px", backgroundColor: "#007bff", color: "#fff", border: "none", borderRadius: "6px", cursor: "pointer" },
+  finalizarBtn: { flex: 1, padding: "8px 12px", backgroundColor: "#28a745", color: "#fff", border: "none", borderRadius: "6px", cursor: "pointer" },
+  cancelBtn: { flex: 1, padding: "8px 12px", backgroundColor: "#dc3545", color: "#fff", border: "none", borderRadius: "6px", cursor: "pointer" },
+  empty: { textAlign: "center", fontSize: "16px", color: "#777", marginTop: "30px" },
 };
+
+export default TransaccionesPage;
+
+

@@ -38,17 +38,17 @@ class ProductoUsuarioServiceTest {
         propietario = new Usuario();
         propietario.setId(1L);
         propietario.setCorreo("propietario@test.com");
-        propietario.setNumeroHoras(10.0);
+        propietario.setNumeroHoras(10);
 
         comprador = new Usuario();
         comprador.setId(2L);
         comprador.setCorreo("comprador@test.com");
-        comprador.setNumeroHoras(20.0);
+        comprador.setNumeroHoras(20);
 
         producto = new Producto();
         producto.setId(100);
         producto.setNombre("Curso Java");
-        producto.setNumeroHoras(5.0);
+        producto.setNumeroHoras(5);
         producto.setEstado(EstadoProducto.DISPONIBLE);
         producto.setPropietario(propietario);
     }
@@ -95,8 +95,8 @@ class ProductoUsuarioServiceTest {
 
         assertEquals(EstadoProductoUsuario.FINALIZADA, result.getEstado());
         assertEquals(EstadoProducto.ENTREGADO, producto.getEstado());
-        assertEquals(15.0, propietario.getNumeroHoras());
-        assertEquals(15.0, comprador.getNumeroHoras());
+        assertEquals(15, propietario.getNumeroHoras());
+        assertEquals(15, comprador.getNumeroHoras());
         verify(usuarioRepository).saveAll(List.of(comprador, propietario));
         verify(productoRepository).save(producto);
     }

@@ -32,7 +32,7 @@ const MarketPage = () => {
       try {
         if (tab === "products") {
           const res = await axios.get(`${process.env.REACT_APP_API_URL}/productos`);
-          setItems(res.data);
+          setItems(res.data.filter(i => i.estado !== "ENTREGADO"));
         } else {
           const params = {
             tipo: tab === "offers" ? "OFERTA" : "PETICION",
@@ -47,7 +47,7 @@ const MarketPage = () => {
             `${process.env.REACT_APP_API_URL}/intercambios/filtrar`,
             { params }
           );
-          setItems(res.data);
+          setItems(res.data.filter(i => i.estado !== "FINALIZADO"));
         }
       } catch (err) {
         console.error("❌ Error cargando items:", err);

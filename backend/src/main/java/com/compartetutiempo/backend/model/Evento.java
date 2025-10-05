@@ -15,6 +15,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.FutureOrPresent;
+import jakarta.validation.constraints.Positive;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -30,8 +31,9 @@ public class Evento extends BaseEntity {
     @Column(nullable = false, length = 512)
     private String descripcion;
 
-    @Column(name = "duracion", nullable = false, scale = 2)
-    private Double duracion;
+    @Column(name = "duracion", nullable = false)
+    @Positive
+    private Integer duracion;
 
     @Column(nullable = false, length = 255)
     private String ubicacion;

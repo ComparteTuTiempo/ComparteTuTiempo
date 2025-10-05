@@ -64,7 +64,7 @@ class EventoControllerTest {
             null, "User", "user@test.com", null, null, false, true, null, null
         );
         eventoResponse = new EventoResponse(
-            1, "Evento Test", "Descripción", "Madrid", 2.0,
+            1, "Evento Test", "Descripción", "Madrid", 2,
             LocalDateTime.now().plusDays(1), EstadoEvento.DISPONIBLE,
             organizadorDTO
         );
@@ -90,7 +90,7 @@ class EventoControllerTest {
         request.setNombre("Evento Test");
         request.setDescripcion("Descripción");
         request.setUbicacion("Madrid");
-        request.setDuracion(2.0);
+        request.setDuracion(2);
         request.setFechaEvento(LocalDateTime.now().plusDays(1));
         request.setCorreoOrganizador("org@test.com");
 
@@ -111,7 +111,7 @@ class EventoControllerTest {
         request.setNombre("Evento Test");
         request.setDescripcion("Descripción");
         request.setUbicacion("Madrid");
-        request.setDuracion(2.0);
+        request.setDuracion(2);
         request.setFechaEvento(LocalDateTime.now().plusDays(1));
         request.setCorreoOrganizador("org@test.com");
 
@@ -267,7 +267,7 @@ class EventoControllerTest {
     @DisplayName("GET /eventos/{id}/participantes/lista - sin permisos")
     void listaParticipantes_SinPermiso() throws Exception {
         EventoResponse otro = new EventoResponse(
-                1, "Evento Test", "Desc", "Madrid", 2.0,
+                1, "Evento Test", "Desc", "Madrid", 2,
                 LocalDateTime.now().plusDays(1), EstadoEvento.DISPONIBLE,
                 new UsuarioDTO(null, "Otro", "otro@test.com", null, null, false, true, null, null)
         );

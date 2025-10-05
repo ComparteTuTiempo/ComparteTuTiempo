@@ -71,7 +71,9 @@ public class ProductoUsuarioService {
         transaccion.setConversacion(conversacion);
         transaccion.setComprador(comprador);
         transaccion.setEstado(EstadoProductoUsuario.PENDIENTE);
+        producto.setEstado(EstadoProducto.RESERVADO);
 
+        productoRepository.save(producto);
         return productoUsuarioRepository.save(transaccion);
     }
 
@@ -81,7 +83,7 @@ public class ProductoUsuarioService {
 
         Usuario comprador = transaccion.getComprador();
 
-        Double precioHoras = transaccion.getProducto().getNumeroHoras();
+        Integer precioHoras = transaccion.getProducto().getNumeroHoras();
 
         // Validar que el propietario sea el dueño del producto
         if (!transaccion.getProducto().getPropietario().getId().equals(propietario.getId())) {

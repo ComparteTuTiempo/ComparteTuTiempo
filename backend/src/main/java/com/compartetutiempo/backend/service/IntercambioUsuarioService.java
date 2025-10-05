@@ -10,12 +10,13 @@ import org.springframework.web.server.ResponseStatusException;
 import com.compartetutiempo.backend.dto.AcuerdoRequest;
 import com.compartetutiempo.backend.dto.IntercambioDTO;
 import com.compartetutiempo.backend.dto.IntercambioUsuarioDTO;
-
+import com.compartetutiempo.backend.model.Intercambio;
 import com.compartetutiempo.backend.model.IntercambioUsuario;
 import com.compartetutiempo.backend.model.Usuario;
 import com.compartetutiempo.backend.model.enums.EstadoIntercambio;
 import com.compartetutiempo.backend.model.enums.TipoIntercambio;
 import com.compartetutiempo.backend.model.enums.TipoNotificacion;
+import com.compartetutiempo.backend.repository.IntercambioRepository;
 import com.compartetutiempo.backend.repository.IntercambioUsuarioRepository;
 import com.compartetutiempo.backend.repository.UsuarioRepository;
 
@@ -26,14 +27,17 @@ public class IntercambioUsuarioService {
     private final UsuarioRepository usuarioRepository;
     private final ConversacionService conversacionService;
     private final NotificacionService notificacionService;
+    private final IntercambioRepository intercambioRepository;
 
     public IntercambioUsuarioService(IntercambioUsuarioRepository intercambioUsuarioRepository,
     UsuarioRepository usuarioRepository,ConversacionService conversacionService
-    ,NotificacionService notificacionService){
+    ,NotificacionService notificacionService,
+    IntercambioRepository intercambioRepository){
         this.intercambioUsuarioRepository = intercambioUsuarioRepository;
         this.usuarioRepository = usuarioRepository;
         this.conversacionService = conversacionService;
         this.notificacionService = notificacionService;
+        this.intercambioRepository = intercambioRepository;
     }
 
     @Transactional
@@ -101,12 +105,25 @@ public class IntercambioUsuarioService {
                 .orElseThrow(() -> new RuntimeException("IntercambioUsuario no encontrado"));
         Usuario solicitante = iu.getUsuario();
         Usuario ofertante = iu.getIntercambio().getUser();
+        TipoIntercambio tipoIntercambio = iu.getIntercambio().getTipo();
 
         if (!solicitante.getCorreo().equals(correoUsuario) &&
             !ofertante.getCorreo().equals(correoUsuario)) {
             throw new IllegalAccessError("No tienes permiso para establecer este acuerdo");
-        }else if(solicitante.getNumeroHoras() < request.getHorasAsignadas()){
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "El solicitante no dispone de suficientes horas para hacer este intercambio");
+        }
+        switch(tipoIntercambio){
+            case OFERTA:
+                if(solicitante.getNumeroHoras() < request.getHorasAsignadas()){
+                    throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "El solicitante de la oferta no dispone de suficientes horas para hacer este intercambio");
+                }
+                break;
+            case PETICION:
+                if(ofertante.getNumeroHoras() < request.getHorasAsignadas()){
+                     throw new ResponseStatusException(HttpStatus.BAD_REQUEST
+                     , "El ofertante de la petición no dispone de suficientes horas para hacer este intercambio");
+                }
+                break;
         }
 
         iu.setHorasAsignadas(request.getHorasAsignadas());
@@ -148,6 +165,9 @@ public class IntercambioUsuarioService {
             //Si es peticion, el solicitante gana horas y el ofertante pierde
                 usuarioSolicitante.setNumeroHoras(usuarioSolicitante.getNumeroHoras() + iu.getHorasAsignadas());
                 usuarioOfertante.setNumeroHoras(usuarioOfertante.getNumeroHoras() - iu.getHorasAsignadas());
+                Intercambio intercambio = iu.getIntercambio();
+                intercambio.setEstado(EstadoIntercambio.FINALIZADO);
+                intercambioRepository.save(intercambio);
                 break;
         }
 

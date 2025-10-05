@@ -71,7 +71,7 @@ class UsuarioControllerTest {
         usuario.setVerificado(true);
         usuario.setContrasena("password");
         usuario.setRoles(Set.of(Role.USER));
-        usuario.setNumeroHoras(5.0);
+        usuario.setNumeroHoras(5);
     }
 
     @Test

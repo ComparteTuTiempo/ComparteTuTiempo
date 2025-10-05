@@ -37,7 +37,7 @@ class UsuarioServiceTest {
         usuario.setContrasena("1234");
         usuario.setNombre("Test User");
         usuario.setActivo(true);
-        usuario.setNumeroHoras(5.0);
+        usuario.setNumeroHoras(5);
     }
 
     @Test

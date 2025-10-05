@@ -18,6 +18,7 @@ import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.Positive;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -37,7 +38,8 @@ public class Intercambio extends BaseEntity{
     private Date fechaPublicacion;
 
     @Column(name = "numero_horas",precision = 2)
-    private Double numeroHoras = 0.0;
+    @Positive
+    private Integer numeroHoras = 0;
 
     @Enumerated(value= EnumType.STRING)
     private EstadoIntercambio estado;

@@ -11,6 +11,7 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.Positive;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -30,10 +31,11 @@ public class Producto extends BaseEntity {
     private Date fechaPublicacion;
 
     @Column(name = "numero_horas", precision = 2)
-    private Double numeroHoras; // "precio" en horas del banco de tiempo
+    @Positive
+    private Integer numeroHoras;
 
     @Enumerated(value = EnumType.STRING)
-    private EstadoProducto estado; // Disponible, Reservado, Entregado
+    private EstadoProducto estado;
 
     @JoinColumn(name = "usuario_id", referencedColumnName = "id", nullable = false)
     @ManyToOne(optional = false)

@@ -3,6 +3,7 @@ package com.compartetutiempo.backend.dto;
 import com.compartetutiempo.backend.model.IntercambioUsuario;
 import com.compartetutiempo.backend.model.enums.EstadoIntercambio;
 import com.compartetutiempo.backend.model.enums.ModalidadServicio;
+import com.compartetutiempo.backend.model.enums.TipoIntercambio;
 
 import lombok.Data;
 
@@ -12,9 +13,10 @@ public class IntercambioUsuarioDTO {
     private Integer intercambioId;
     private String intercambioNombre;
     private String intercambioDescripcion;
-    private Double intercambioHoras;
+    private Integer intercambioHoras;
     private String solicitanteNombre;
     private Integer conversacionId;
+    private TipoIntercambio tipo;
     private EstadoIntercambio intercambioEstado;
     private ModalidadServicio intercambioModalidad;
     private String terminos;
@@ -23,7 +25,7 @@ public class IntercambioUsuarioDTO {
     private String creadorCorreo;
     private String solicitanteCorreo;
     private EstadoIntercambio estado;
-    private Double horasAsignadas;
+    private Integer horasAsignadas;
 
     public static IntercambioUsuarioDTO fromEntity(IntercambioUsuario iu) {
         IntercambioUsuarioDTO dto = new IntercambioUsuarioDTO();
@@ -43,6 +45,7 @@ public class IntercambioUsuarioDTO {
         dto.setConversacionId(iu.getConversacion() ==null? null:iu.getConversacion().getId());
         dto.setTerminos(iu.getTerminos());
         dto.setSolicitanteCorreo(iu.getUsuario().getCorreo());
+        dto.setTipo(iu.getIntercambio().getTipo());
         
         
         return dto;
