@@ -29,7 +29,7 @@ const LoginPage = () => {
         roles: response.data.roles || ["USER"],
       }));
       window.dispatchEvent(new Event("usuario-actualizado"));
-      navigate("/");
+      navigate("/inicio");
     } catch (err) {
       setError("Correo o contraseña incorrectos");
     }
@@ -50,7 +50,7 @@ const LoginPage = () => {
         roles: response.data.roles || ["USER"],
       }));
       window.dispatchEvent(new Event("usuario-actualizado"));
-      navigate("/");
+      navigate("/inicio");
     } catch (err) {
       console.error("❌ Google login error:", err);
       setError("Error al iniciar sesión con Google");
@@ -75,7 +75,7 @@ const LoginPage = () => {
         roles: response.data.roles || ["USER"],
       }));
       window.dispatchEvent(new Event("usuario-actualizado"));
-      navigate("/");
+      navigate("/inicio");
     } catch (err) {
       console.error("❌ Facebook login error:", err);
       setError("Error al iniciar sesión con Facebook");

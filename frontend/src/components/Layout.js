@@ -24,7 +24,7 @@ const Layout = () => {
       <header style={styles.header}>
         <h1 style={styles.logo}>ComparteTuTiempo</h1>
         <nav style={styles.nav}>
-          <Link to="/" style={styles.navLink}>Inicio</Link>
+          <Link to="/inicio" style={styles.navLink}>Inicio</Link>
 
           {user ? (
             <>

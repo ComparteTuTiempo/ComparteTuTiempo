@@ -8,7 +8,7 @@ const PublicRoute = ({ children }) => {
   // 👤 Si el usuario ya está logueado, no tiene sentido que vea login o registro
   if (user) {
     // Redirige al home o perfil (puedes cambiar la ruta destino)
-    return <Navigate to="/perfil" replace />;
+    return <Navigate to="/inicio" replace />;
   }
 
   // 🚪 Si no está logueado, puede acceder normalmente

@@ -38,6 +38,7 @@ import ProductoUsuarioDetails from "./pages/ProductoUsuarioDetails";
 import NotificacionesPage from "./pages/NotificacionesPage";
 
 import EventosPage from "./pages/EventosPage";
+import InicioPage from "./pages/InicioPage";
 
 
 function App() {
@@ -72,6 +73,7 @@ function App() {
                 <Route path="/productousuario/transacciones" element={<ProtectedRoute><ProductoUsuarioDetails /></ProtectedRoute>} />
                 <Route path="/notificaciones" element={<ProtectedRoute><NotificacionesPage /></ProtectedRoute>} />
                 <Route path="/eventos" element={<ProtectedRoute><EventosPage /></ProtectedRoute>} />
+                <Route path="/inicio" element={<ProtectedRoute><InicioPage/></ProtectedRoute>} />
 
                 {/* Ruta protegida: usuario normal */}
                 <Route
