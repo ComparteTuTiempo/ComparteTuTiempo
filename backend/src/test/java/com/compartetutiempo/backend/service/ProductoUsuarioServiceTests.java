@@ -48,7 +48,7 @@ class ProductoUsuarioServiceTest {
         producto = new Producto();
         producto.setId(100);
         producto.setNombre("Curso Java");
-        producto.setNumeroHoras(5.0);
+        producto.setNumeroHoras(5);
         producto.setEstado(EstadoProducto.DISPONIBLE);
         producto.setPropietario(propietario);
     }

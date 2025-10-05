@@ -32,7 +32,7 @@ public class Producto extends BaseEntity {
 
     @Column(name = "numero_horas", precision = 2)
     @Positive
-    private Double numeroHoras;
+    private Integer numeroHoras;
 
     @Enumerated(value = EnumType.STRING)
     private EstadoProducto estado;

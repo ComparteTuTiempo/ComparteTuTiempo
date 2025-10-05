@@ -178,7 +178,7 @@ public class DataInitializer {
                     p.setNombre(nombres.get(i));
                     p.setDescripcion("Producto en buen estado: " + nombres.get(i).toLowerCase());
                     p.setFechaPublicacion(new Date(System.currentTimeMillis() - random.nextInt(500000000)));
-                    p.setNumeroHoras(5.0 + random.nextDouble() * 15);
+                    p.setNumeroHoras(5 + random.nextInt() * 15);
                     p.setEstado(i % 2 == 0 ? EstadoProducto.DISPONIBLE : EstadoProducto.RESERVADO);
                     p.setPropietario(usuarios.get(i % usuarios.size()));
                     productos.add(p);

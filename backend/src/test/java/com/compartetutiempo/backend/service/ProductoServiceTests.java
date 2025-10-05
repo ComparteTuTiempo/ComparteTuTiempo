@@ -44,7 +44,7 @@ class ProductoServiceTest {
         producto = new Producto();
         producto.setId(100);
         producto.setNombre("Libro de Java");
-        producto.setNumeroHoras(3.0);
+        producto.setNumeroHoras(3);
         producto.setEstado(EstadoProducto.DISPONIBLE);
         producto.setPropietario(propietario);
     }
@@ -94,7 +94,7 @@ class ProductoServiceTest {
         Producto modificado = new Producto();
         modificado.setNombre("Nuevo nombre");
         modificado.setDescripcion("Desc");
-        modificado.setNumeroHoras(5.0);
+        modificado.setNumeroHoras(5);
         modificado.setEstado(EstadoProducto.DISPONIBLE);
 
         when(productoRepository.findById(100L)).thenReturn(Optional.of(producto));

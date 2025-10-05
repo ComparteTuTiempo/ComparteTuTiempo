@@ -13,7 +13,7 @@ public class ProductoDTO {
     private Integer id;
     private String nombre;
     private String descripcion;
-    private Double numeroHoras;
+    private Integer numeroHoras;
     private EstadoProducto estado;
     private Date fechaPublicacion;
     private Integer conversacionId;

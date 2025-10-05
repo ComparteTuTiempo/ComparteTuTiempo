@@ -53,7 +53,7 @@ public class ProductoUsuarioController {
         Usuario propietario = usuarioService.obtenerPorCorreo(jwt.getSubject());
         ProductoUsuario transaccionProducto = productoUsuarioService.finalizarTransaccion(transaccionId, propietario);
 
-        Double horasProducto = transaccionProducto.getProducto().getNumeroHoras();
+        Integer horasProducto = transaccionProducto.getProducto().getNumeroHoras();
 
         String mensajePropietario = "Has finalizado el intercambio:" + transaccionProducto.getProducto().getNombre() + 
             " Has ganado " + horasProducto + " horas con esta transacción";

@@ -75,7 +75,7 @@ class ProductoUsuarioControllerTests {
         producto = new Producto();
         producto.setId(1);
         producto.setNombre("Producto Test");
-        producto.setNumeroHoras(5.0);
+        producto.setNumeroHoras(5);
         producto.setPropietario(usuario);
 
         transaccion = new ProductoUsuario();
