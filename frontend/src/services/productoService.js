@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const API_URL = "/productos";
+const API_URL = `${process.env.REACT_APP_API_URL}/productos`;
 
 
 export const obtenerProductos = async () => {

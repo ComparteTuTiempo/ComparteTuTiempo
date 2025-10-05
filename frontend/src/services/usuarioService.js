@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_URL = "/api/usuarios"; // proxy configurado en package.json
+const API_URL = `${process.env.REACT_APP_API_URL}/api/usuarios`;
 
 export const crearUsuario = async (usuario) => {
   try {
