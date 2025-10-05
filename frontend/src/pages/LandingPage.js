@@ -13,9 +13,12 @@ const LandingPage = () => {
           Intercambia habilidades, productos y participa en eventos usando las
           horas como moneda.
         </p>
-        <p>
+        <p style = {{ display: "flex", gap: "30px", justifyContent: "center" }}>
           <Link to="/registro" style={styles.heroButton}>
             Empieza ahora
+          </Link>
+          <Link to="mercado" style={styles.heroButton}>
+            Explorar el mercado
           </Link>
         </p>
       </section>
