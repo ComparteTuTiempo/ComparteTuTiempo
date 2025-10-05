@@ -12,6 +12,7 @@ import lombok.Data;
 @AllArgsConstructor
 public class ConversacionDTO {
     private Integer id;
+    private String titulo;
 
     private List<UsuarioDTO> participantes;
 
@@ -29,7 +30,7 @@ public class ConversacionDTO {
             .map(u -> new UsuarioDTO(u.getCorreo(), u.getNombre(), u.getFotoPerfil()))
 //            .collect(Collectors.toList());
         .toList();
-        return new ConversacionDTO(c.getId(), participantesDTO);
+        return new ConversacionDTO(c.getId(),c.getTitulo() ,participantesDTO);
     }
 }
 
