@@ -32,7 +32,7 @@ const MarketPage = () => {
       try {
         if (tab === "products") {
           const res = await axios.get("http://localhost:8080/productos");
-          setItems(res.data);
+          setItems(res.data.filter(i => i.estado !== "ENTREGADO"));
         } else {
           const params = {
             tipo: tab === "offers" ? "OFERTA" : "PETICION",
@@ -47,7 +47,7 @@ const MarketPage = () => {
             "http://localhost:8080/intercambios/filtrar",
             { params }
           );
-          setItems(res.data);
+          setItems(res.data.filter(i => i.estado !== "FINALIZADO"));
         }
       } catch (err) {
         console.error("❌ Error cargando items:", err);
