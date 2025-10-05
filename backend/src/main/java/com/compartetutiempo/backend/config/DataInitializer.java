@@ -151,7 +151,7 @@ public class DataInitializer {
                     in.setNombre(titulos[i]);
                     in.setDescripcion("Servicio de " + titulos[i].toLowerCase() + " ofrecido con experiencia.");
                     in.setFechaPublicacion(new Date(System.currentTimeMillis() - random.nextInt(1000000000)));
-                    in.setNumeroHoras(2.0 + random.nextDouble() * 5);
+                    in.setNumeroHoras(2 + random.nextInt() * 5);
                     in.setEstado(i % 2 == 0 ? EstadoIntercambio.EMPAREJAMIENTO : EstadoIntercambio.FINALIZADO);
                     in.setTipo(i % 2 == 0 ? TipoIntercambio.OFERTA : TipoIntercambio.PETICION);
                     in.setModalidad(i % 2 == 0 ? ModalidadServicio.PRESENCIAL : ModalidadServicio.VIRTUAL);

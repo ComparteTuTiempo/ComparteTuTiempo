@@ -14,7 +14,7 @@ public class AcuerdoRequest {
     
     @NotNull
     @Positive
-    private Double horasAsignadas;
+    private Integer horasAsignadas;
     @NotNull
     @NotBlank
     private String terminos;

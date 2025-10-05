@@ -242,7 +242,7 @@ class IntercambioControllerTest {
     @DisplayName("PUT /intercambios/{id}/acuerdo - OK")
     void establecerAcuerdo_OK() throws Exception {
         AcuerdoRequest request = new AcuerdoRequest();
-        request.setHorasAsignadas(5.0);
+        request.setHorasAsignadas(5);
         request.setTerminos("Condiciones");
 
         when(intercambioUsuarioService.establecerAcuerdo(eq(1), any(AcuerdoRequest.class), eq("user@mail.com")))
@@ -260,7 +260,7 @@ class IntercambioControllerTest {
     @Test
     void establecerAcuerdo_Forbidden() throws Exception {
         AcuerdoRequest req = new AcuerdoRequest();
-        req.setHorasAsignadas(5.0);
+        req.setHorasAsignadas(5);
         req.setTerminos("Condiciones");
 
         when(intercambioUsuarioService.establecerAcuerdo(eq(1), any(AcuerdoRequest.class), eq("otro@mail.com")))

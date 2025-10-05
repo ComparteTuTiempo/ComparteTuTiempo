@@ -39,7 +39,7 @@ public class Intercambio extends BaseEntity{
 
     @Column(name = "numero_horas",precision = 2)
     @Positive
-    private Double numeroHoras = 0.0;
+    private Integer numeroHoras = 0;
 
     @Enumerated(value= EnumType.STRING)
     private EstadoIntercambio estado;

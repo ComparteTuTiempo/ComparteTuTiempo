@@ -134,7 +134,7 @@ export default function IntercambioDetalle() {
           alt="Foto de perfil"
           style={styles.avatar}
         />
-        <span>{intercambio.usuarioNombre || intercambio.usuarioCorreo}</span>
+        <span>{intercambio.nombreOfertante} ({intercambio.correoOfertante})</span>
       </div>
 
       {/* Botón de solicitud */}

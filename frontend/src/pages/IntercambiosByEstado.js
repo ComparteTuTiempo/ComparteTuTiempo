@@ -43,7 +43,7 @@ const IntercambiosByEstado = () => {
   };
 
   const handleEstablecerConsenso = (id) => {
-    navigate(`/intercambios/${id}/consenso`);
+    navigate(`/acuerdos/${id}`);
   };
 
   const getEstadoStyle = (estado) => {
@@ -94,6 +94,8 @@ const IntercambiosByEstado = () => {
                     <strong>Solicitante:</strong> {i.solicitanteNombre || i.solicitanteCorreo}
                   </p>
                   <p><strong>Horas asignadas:</strong> {i.horasAsignadas}</p>
+
+                  <p><strong>Tipo:</strong> {i.tipo}</p>
 
                   <div style={styles.actions}>
                     <button style={styles.viewBtn} onClick={() => setSelected(i)}>

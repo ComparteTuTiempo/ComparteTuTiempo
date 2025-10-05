@@ -44,5 +44,5 @@ public class IntercambioUsuario extends BaseEntity {
     private Conversacion conversacion;
 
     @Column(name = "horas_asignadas")
-    private Double horasAsignadas = 0.0;
+    private Integer horasAsignadas = 0;
 }

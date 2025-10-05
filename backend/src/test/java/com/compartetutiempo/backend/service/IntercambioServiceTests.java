@@ -62,7 +62,7 @@ class IntercambioServiceTest {
         intercambio.setId(1);
         intercambio.setNombre("Test Intercambio");
         intercambio.setDescripcion("Descripción test");
-        intercambio.setNumeroHoras(5.0);
+        intercambio.setNumeroHoras(5);
         intercambio.setTipo(TipoIntercambio.OFERTA);
         intercambio.setModalidad(ModalidadServicio.PRESENCIAL);
         intercambio.setUser(usuario);
@@ -73,7 +73,7 @@ class IntercambioServiceTest {
         intercambioDTO = new IntercambioDTO();
         intercambioDTO.setNombre("Test Intercambio");
         intercambioDTO.setDescripcion("Descripción test");
-        intercambioDTO.setNumeroHoras(5.0);
+        intercambioDTO.setNumeroHoras(5);
         intercambioDTO.setTipo(TipoIntercambio.OFERTA);
         intercambioDTO.setModalidad(ModalidadServicio.PRESENCIAL);
         intercambioDTO.setCategorias(categoriasIds);

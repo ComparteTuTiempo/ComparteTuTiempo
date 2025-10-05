@@ -96,7 +96,7 @@ class IntercambioUsuarioServiceTest {
     @Test
     void establecerAcuerdo_OK() {
         AcuerdoRequest request = new AcuerdoRequest();
-        request.setHorasAsignadas(3.0);
+        request.setHorasAsignadas(3);
         request.setTerminos("Condiciones del intercambio");
 
         when(intercambioUsuarioRepository.findById(200)).thenReturn(Optional.of(intercambioUsuario));
@@ -112,7 +112,7 @@ class IntercambioUsuarioServiceTest {
     @Test
     void establecerAcuerdo_NoHoras_Throws() {
         AcuerdoRequest request = new AcuerdoRequest();
-        request.setHorasAsignadas(10.0);
+        request.setHorasAsignadas(10);
 
         when(intercambioUsuarioRepository.findById(200)).thenReturn(Optional.of(intercambioUsuario));
 
@@ -124,7 +124,7 @@ class IntercambioUsuarioServiceTest {
     @Test
     void finalizarAcuerdo_OK() {
         intercambioUsuario.setEstado(EstadoIntercambio.EJECUCION);
-        intercambioUsuario.setHorasAsignadas(2.0);
+        intercambioUsuario.setHorasAsignadas(2);
 
         when(intercambioUsuarioRepository.findById(200)).thenReturn(Optional.of(intercambioUsuario));
 
@@ -159,7 +159,7 @@ class IntercambioUsuarioServiceTest {
     @Test
     void establecerAcuerdo_NoPermiso_Throws() {
         AcuerdoRequest request = new AcuerdoRequest();
-        request.setHorasAsignadas(2.0);
+        request.setHorasAsignadas(2);
 
         when(intercambioUsuarioRepository.findById(200)).thenReturn(Optional.of(intercambioUsuario));
 
