@@ -53,7 +53,7 @@ class EventoServiceTest {
         evento = new Evento();
         evento.setId(1);
         evento.setNombre("Evento Test");
-        evento.setDuracion(2.0);
+        evento.setDuracion(2);
         evento.setFechaEvento(LocalDateTime.now().minusDays(1)); // pasado para finalizar
         evento.setOrganizador(usuario);
         evento.setEstadoEvento(EstadoEvento.DISPONIBLE);

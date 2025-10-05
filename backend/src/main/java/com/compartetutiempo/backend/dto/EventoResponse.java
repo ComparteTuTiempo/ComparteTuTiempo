@@ -24,7 +24,7 @@ public class EventoResponse {
     @Length(max = 512)
     private String descripcion;
     @NotNull
-    private Double duracion;
+    private Integer duracion;
 
     @FutureOrPresent
     private LocalDateTime fechaEvento;
@@ -61,7 +61,7 @@ public class EventoResponse {
     );
 }
 
-    public EventoResponse(Integer id, String nombre, String descripcion, String ubicacion, Double duracion,
+    public EventoResponse(Integer id, String nombre, String descripcion, String ubicacion, Integer duracion,
             LocalDateTime fechaEvento,
             EstadoEvento estadoEvento, UsuarioDTO usuarioDTO) {
         this.id = id;

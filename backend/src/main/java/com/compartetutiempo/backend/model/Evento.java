@@ -31,9 +31,9 @@ public class Evento extends BaseEntity {
     @Column(nullable = false, length = 512)
     private String descripcion;
 
-    @Column(name = "duracion", nullable = false, scale = 2)
+    @Column(name = "duracion", nullable = false)
     @Positive
-    private Double duracion;
+    private Integer duracion;
 
     @Column(nullable = false, length = 255)
     private String ubicacion;
