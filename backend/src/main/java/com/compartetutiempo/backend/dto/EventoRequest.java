@@ -29,7 +29,7 @@ public class EventoRequest{
     private String ubicacion;
 
     @NotNull
-    private Double duracion;
+    private Integer duracion;
 
     @DateTimeFormat
     @FutureOrPresent

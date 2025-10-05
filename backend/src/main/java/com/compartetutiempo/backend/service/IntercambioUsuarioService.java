@@ -101,12 +101,25 @@ public class IntercambioUsuarioService {
                 .orElseThrow(() -> new RuntimeException("IntercambioUsuario no encontrado"));
         Usuario solicitante = iu.getUsuario();
         Usuario ofertante = iu.getIntercambio().getUser();
+        TipoIntercambio tipoIntercambio = iu.getIntercambio().getTipo();
 
         if (!solicitante.getCorreo().equals(correoUsuario) &&
             !ofertante.getCorreo().equals(correoUsuario)) {
             throw new IllegalAccessError("No tienes permiso para establecer este acuerdo");
-        }else if(solicitante.getNumeroHoras() < request.getHorasAsignadas()){
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "El solicitante no dispone de suficientes horas para hacer este intercambio");
+        }
+        switch(tipoIntercambio){
+            case OFERTA:
+                if(solicitante.getNumeroHoras() < request.getHorasAsignadas()){
+                    throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "El solicitante de la oferta no dispone de suficientes horas para hacer este intercambio");
+                }
+                break;
+            case PETICION:
+                if(ofertante.getNumeroHoras() < request.getHorasAsignadas()){
+                     throw new ResponseStatusException(HttpStatus.BAD_REQUEST
+                     , "El ofertante de la petición no dispone de suficientes horas para hacer este intercambio");
+                }
+                break;
         }
 
         iu.setHorasAsignadas(request.getHorasAsignadas());

@@ -68,7 +68,7 @@ class ProductoControllerTest {
 
         Producto producto = new Producto();
         producto.setNombre("Producto Test");
-        producto.setNumeroHoras(5.0);
+        producto.setNumeroHoras(5);
 
         when(usuarioService.obtenerPorCorreo(correoUsuario)).thenReturn(usuario);
         when(productoService.crear(any(Producto.class))).thenAnswer(invocation -> invocation.getArgument(0));

@@ -72,6 +72,8 @@ class IntercambioControllerTest {
         intercambioDTO = new IntercambioDTO();
         intercambioDTO.setId(1);
         intercambioDTO.setNombre("Test Intercambio");
+        intercambioDTO.setNombre("Test Intercambio");
+        intercambioDTO.setCorreoOfertante("user@mail.com");
         
         intercambioUsuarioDTO = new IntercambioUsuarioDTO();
         intercambioUsuarioDTO.setId(1);
@@ -162,17 +164,35 @@ class IntercambioControllerTest {
     }
 
     @Test
-    @DisplayName("PUT /intercambios/{id} - actualiza intercambio")
+    @DisplayName("PUT /intercambios/{id} - actualiza intercambio OK")
     void actualizar_OK() throws Exception {
-        Intercambio mock = new Intercambio();
+        
+        when(usuarioService.obtenerPorCorreo("user@mail.com")).thenReturn(usuario);
+        intercambioDTO.setCorreoOfertante("user@mail.com"); 
+        when(intercambioService.obtenerPorId(1)).thenReturn(intercambioDTO);
+
+        Intercambio intercambioActualizado = new Intercambio();
+        intercambioActualizado.setId(1);
+        intercambioActualizado.setNombre("Nuevo Nombre");
+        Usuario ofertante = new Usuario();
+        ofertante.setCorreo("user@mail.com");
+        intercambioActualizado.setUser(ofertante);
+
         when(intercambioService.actualizarIntercambio(eq(1), any(IntercambioDTO.class)))
-            .thenReturn(mock);
+            .thenReturn(intercambioActualizado);
 
         mockMvc.perform(put("/intercambios/1")
-               .contentType(MediaType.APPLICATION_JSON)
-               .content("{\"nombre\":\"Nuevo\"}"))
-               .andExpect(status().isOk());
+                .with(jwt().jwt(jwt -> jwt.subject("user@mail.com")))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"nombre\":\"Nuevo Nombre\"}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(1))
+                .andExpect(jsonPath("$.nombre").value("Nuevo Nombre"))
+                .andExpect(jsonPath("$.user.correo").value("user@mail.com"));
     }
+
+
+
 
     @Test
     @DisplayName("DELETE /intercambios/{id} - usuario dueño puede eliminar")
@@ -242,7 +262,7 @@ class IntercambioControllerTest {
     @DisplayName("PUT /intercambios/{id}/acuerdo - OK")
     void establecerAcuerdo_OK() throws Exception {
         AcuerdoRequest request = new AcuerdoRequest();
-        request.setHorasAsignadas(5.0);
+        request.setHorasAsignadas(5);
         request.setTerminos("Condiciones");
 
         when(intercambioUsuarioService.establecerAcuerdo(eq(1), any(AcuerdoRequest.class), eq("user@mail.com")))
@@ -260,7 +280,7 @@ class IntercambioControllerTest {
     @Test
     void establecerAcuerdo_Forbidden() throws Exception {
         AcuerdoRequest req = new AcuerdoRequest();
-        req.setHorasAsignadas(5.0);
+        req.setHorasAsignadas(5);
         req.setTerminos("Condiciones");
 
         when(intercambioUsuarioService.establecerAcuerdo(eq(1), any(AcuerdoRequest.class), eq("otro@mail.com")))

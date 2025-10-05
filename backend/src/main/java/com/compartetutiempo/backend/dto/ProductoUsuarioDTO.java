@@ -10,7 +10,7 @@ public class ProductoUsuarioDTO {
     private Integer productoId;
     private String productoNombre;
     private String productoDescripcion;
-    private Double productoHoras;
+    private Integer productoHoras;
     private String propietarioNombre;
     private String propietarioCorreo;
     private String compradorNombre;

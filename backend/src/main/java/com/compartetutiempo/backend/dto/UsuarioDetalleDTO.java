@@ -20,6 +20,6 @@ public class UsuarioDetalleDTO {
     private boolean activo;
     private String biografia;
     private LocalDate fechaNacimiento;
-    private Double numeroHoras;
+    private Integer numeroHoras;
     private List<String> roles;
 }

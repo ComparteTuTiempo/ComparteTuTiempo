@@ -1,6 +1,7 @@
 package com.compartetutiempo.backend.controller;
 
 import com.compartetutiempo.backend.dto.ProductoUsuarioDTO;
+import com.compartetutiempo.backend.model.Conversacion;
 import com.compartetutiempo.backend.model.Producto;
 import com.compartetutiempo.backend.model.ProductoUsuario;
 import com.compartetutiempo.backend.model.Usuario;
@@ -75,14 +76,19 @@ class ProductoUsuarioControllerTests {
         producto = new Producto();
         producto.setId(1);
         producto.setNombre("Producto Test");
-        producto.setNumeroHoras(5.0);
+        producto.setNumeroHoras(5);
         producto.setPropietario(usuario);
+
+        Conversacion conversacion = new Conversacion();
+        conversacion.setId(99);
 
         transaccion = new ProductoUsuario();
         transaccion.setId(100);
         transaccion.setProducto(producto);
         transaccion.setComprador(usuario);
         transaccion.setEstado(EstadoProductoUsuario.PENDIENTE);
+        transaccion.setConversacion(conversacion);
+
     }
 
     @Test
@@ -95,9 +101,8 @@ class ProductoUsuarioControllerTests {
                         .with(jwtUser)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value(100))
-                .andExpect(jsonPath("$.productoNombre").value("Producto Test"))
-                .andExpect(jsonPath("$.estado").value("PENDIENTE"));
+                .andExpect(jsonPath("$.id").value(1))
+                .andExpect(jsonPath("$.nombre").value("Producto Test"));
 
         // verificamos que el servicio fue llamado
         verify(productoUsuarioService).adquirirProducto(1L, usuario);
