@@ -15,6 +15,7 @@ const IntercambiosByEstado = () => {
   const [tab, setTab] = useState("CONSENSO"); 
   const [intercambios, setIntercambios] = useState([]);
   const [selected, setSelected] = useState(null);
+  const [busqueda, setBusqueda] = useState(""); // <-- nuevo estado para el buscador
 
   useEffect(() => {
     if (!token) return;
@@ -56,11 +57,25 @@ const IntercambiosByEstado = () => {
     }
   };
 
+  // Filtrar por búsqueda
+  const intercambiosFiltrados = intercambios.filter(i =>
+    i.intercambioNombre.toLowerCase().includes(busqueda.toLowerCase())
+  );
+
   return (
     <div style={styles.layout}>
       <Sidebar />
       <main style={styles.main}>
         <h2 style={{ marginBottom: "20px" }}>Mis Intercambios</h2>
+
+        {/* Buscador */}
+        <input
+          type="text"
+          placeholder="Buscar por nombre de intercambio..."
+          value={busqueda}
+          onChange={(e) => setBusqueda(e.target.value)}
+          style={styles.searchInput}
+        />
 
         {/* Tabs */}
         <div style={styles.tabs}>
@@ -81,8 +96,8 @@ const IntercambiosByEstado = () => {
         {/* Grid de intercambios */}
         {tab !== "EMPAREJAMIENTO" && (
           <div style={{ ...styles.list, gridTemplateColumns: "repeat(auto-fill, minmax(250px, 1fr))" }}>
-            {intercambios.length > 0 ? (
-              intercambios.map((i) => (
+            {intercambiosFiltrados.length > 0 ? (
+              intercambiosFiltrados.map((i) => (
                 <div key={i.id} style={styles.card}>
                   <div style={styles.cardHeader}>
                     <h3 style={{ margin: 0 }}>{i.intercambioNombre}</h3>
@@ -94,7 +109,6 @@ const IntercambiosByEstado = () => {
                     <strong>Solicitante:</strong> {i.solicitanteNombre || i.solicitanteCorreo}
                   </p>
                   <p><strong>Horas asignadas:</strong> {i.horasAsignadas}</p>
-
                   <p><strong>Tipo:</strong> {i.tipo}</p>
 
                   <div style={styles.actions}>
@@ -152,6 +166,15 @@ const IntercambiosByEstado = () => {
 const styles = {
   layout: { display: "flex", minHeight: "100vh", backgroundColor: "#f9f9f9" },
   main: { flex: 1, padding: "30px", fontFamily: "Arial, sans-serif" },
+  searchInput: {
+    padding: "8px 12px",
+    width: "100%",
+    maxWidth: "400px",
+    marginBottom: "15px",
+    borderRadius: "6px",
+    border: "1px solid #ccc",
+    fontSize: "14px",
+  },
   tabs: { display: "flex", gap: "10px", marginBottom: "20px" },
   tab: {
     padding: "10px 15px",
