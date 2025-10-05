@@ -13,6 +13,7 @@ import com.compartetutiempo.backend.model.enums.Role;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.PositiveOrZero;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
@@ -50,6 +51,7 @@ public class Usuario implements UserDetails {
     private String fotoPerfil;
 
     @Column(name = "numero_horas", precision = 2)
+    @PositiveOrZero
     private Double numeroHoras = 0.0;
 
     @Column

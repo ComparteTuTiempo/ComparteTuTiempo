@@ -76,7 +76,7 @@ public class DataInitializer {
                     u.setFechaNacimiento(LocalDate.of(1985 + i, (i % 12) + 1, (i % 28) + 1));
                     u.setBiografia(bios[i]);
                     u.setFotoPerfil("perfil" + (i+1) + ".jpg");
-                    u.setNumeroHoras(random.nextDouble() * 50);
+                    u.setNumeroHoras(1.0 + random.nextDouble() * 50);
                     u.setUbicacion(ubicaciones[i]);
                     u.setActivo(true);
                     u.setMetodoAutenticacion("LOCAL");
