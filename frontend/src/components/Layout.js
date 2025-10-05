@@ -31,7 +31,7 @@ const Layout = () => {
               <Link to="/mispublicaciones" style={styles.navLink}>
                 Mis Publicaciones
               </Link>
-              <Link to="/eventos/crear" style={styles.navLink}>
+              <Link to="/eventos" style={styles.navLink}>
                 Eventos
               </Link>
               <Link to="/mercado" style={styles.navLink}>
