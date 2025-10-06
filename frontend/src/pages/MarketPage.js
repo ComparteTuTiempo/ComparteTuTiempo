@@ -106,10 +106,10 @@ const MarketPage = () => {
               onClick={() => setTab(t)}
             >
               {t === "offers"
-                ? "Offers"
+                ? "Ofertas"
                 : t === "requests"
-                  ? "Requests"
-                  : "Products"}
+                  ? "Peticiones"
+                  : "Productos"}
             </button>
           ))}
         </div>
@@ -173,7 +173,7 @@ const MarketPage = () => {
                           : navigate(`/intercambio/${i.id}`)
                       }
                     >
-                      View
+                      Detalles
                     </button>
                   )}
 
@@ -203,7 +203,7 @@ const MarketPage = () => {
             <h3>Filtros</h3>
             <input
               type="text"
-              placeholder="Search the market..."
+              placeholder="Buscar..."
               value={q}
               onChange={(e) => setQ(e.target.value)}
               style={styles.input}
@@ -233,7 +233,7 @@ const MarketPage = () => {
             />
 
             <div style={{ marginTop: "15px" }}>
-              <strong>Categories:</strong>
+              <strong>Categorias:</strong>
               <div
                 style={{
                   display: "flex",

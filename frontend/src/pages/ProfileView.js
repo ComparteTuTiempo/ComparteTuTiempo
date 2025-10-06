@@ -202,7 +202,7 @@ const UserProfile = () => {
         {/* Stats */}
         <div style={styles.stats}>
           <div style={styles.statBox}>
-            <h3>Reputation Score</h3>
+            <h3>Reputation</h3>
             <p>{promedio.toFixed(1)} ⭐</p>
           </div>
         </div>
@@ -249,7 +249,7 @@ const UserProfile = () => {
         {isOwnProfile && (
           <div style={{ marginBottom: "20px", display: "flex", gap: "10px" }}>
             <button style={styles.editBtn} onClick={() => setShowEditModal(true)}>
-              Edit Profile
+              Editar perfil
             </button>
             {!usuario.verificado && !isAdmin && (
               <button style={styles.verifyBtn} onClick={() => navigate("/verificacion")}>
