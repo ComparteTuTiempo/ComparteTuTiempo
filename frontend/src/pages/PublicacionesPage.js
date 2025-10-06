@@ -43,10 +43,10 @@ const PublicacionesPage = () => {
               <h3 style={styles.cardTitle}>{p.nombre}</h3>
               <span style={styles.badge}>
                 {type === "oferta"
-                  ? "Service Offer"
+                  ? "Ofertas"
                   : type === "peticion"
-                    ? "Service Request"
-                    : "Product"}
+                    ? "Peticiones"
+                    : "Productos"}
               </span>
             </div>
 
@@ -70,7 +70,7 @@ const PublicacionesPage = () => {
                       : navigate(`/intercambios/${p.id}/editar`)
                   }
                 >
-                  Edit
+                  Editar
                 </button>
                 <button
                   style={styles.deleteBtn}
@@ -100,7 +100,7 @@ const PublicacionesPage = () => {
                     }
                   }}
                 >
-                  Delete
+                  Eliminar
                 </button>
               </div>
             </div>
