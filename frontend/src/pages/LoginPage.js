@@ -132,11 +132,6 @@ const LoginPage = () => {
             // Si quieres custom, tendrías que usar un wrapper propio.
           />
         </div>
-
-        {/* Facebook */}
-        <div style={{ marginTop: "10px" }}>
-          <FacebookLoginButton onSuccess={handleFacebookResponse} />
-        </div>
       </form>
     </div>
   );
