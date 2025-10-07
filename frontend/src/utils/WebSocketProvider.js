@@ -14,7 +14,7 @@ export const WebSocketProvider = ({ children }) => {
     if (!token) return;
 
     const client = new Client({
-      webSocketFactory: () => new SockJS("http://localhost:8080/ws"),
+      webSocketFactory: () => new SockJS(`${process.env.REACT_APP_API_URL}/ws`),
       connectHeaders: {
         Authorization: `Bearer ${token}`,
       },

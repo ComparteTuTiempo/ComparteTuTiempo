@@ -42,7 +42,7 @@ const RegistroUsuario = () => {
     if (!validar()) return;
 
     try {
-      await axios.post("http://localhost:8080/api/usuarios", {
+      await axios.post(`${process.env.REACT_APP_API_URL}/api/usuarios`, {
         nombre: usuario.nombre,
         correo: usuario.correo,
         contrasena: usuario.contrasena,
@@ -58,15 +58,15 @@ const RegistroUsuario = () => {
   return (
     <div style={styles.container}>
       <form onSubmit={handleSubmit} style={styles.form}>
-        <h2 style={styles.title}>Create Your Account</h2>
+        <h2 style={styles.title}>Registrarse</h2>
 
-        <label style={styles.label}>Name</label>
+        <label style={styles.label}>Nombre</label>
         <input
           type="text"
           name="nombre"
           value={usuario.nombre}
           onChange={handleChange}
-          placeholder="Enter your name"
+          placeholder="Introduce tu nombre"
           style={styles.input}
           required
         />
@@ -82,13 +82,13 @@ const RegistroUsuario = () => {
           required
         />
 
-        <label style={styles.label}>Password</label>
+        <label style={styles.label}>Contraseña</label>
         <input
           type="password"
           name="contrasena"
           value={usuario.contrasena}
           onChange={handleChange}
-          placeholder="Create a password"
+          placeholder="Contraseña"
           style={styles.input}
           required
         />
@@ -96,13 +96,13 @@ const RegistroUsuario = () => {
           <p style={styles.error}>{errores.contrasena}</p>
         )}
 
-        <label style={styles.label}>Confirm Password</label>
+        <label style={styles.label}>Confirmar Contraseña</label>
         <input
           type="password"
           name="confirmarContrasena"
           value={usuario.confirmarContrasena}
           onChange={handleChange}
-          placeholder="Confirm your password"
+          placeholder="Confirmar Contraseña"
           style={styles.input}
           required
         />
@@ -111,11 +111,11 @@ const RegistroUsuario = () => {
         )}
 
         <button type="submit" style={styles.button}>
-          Register
+          Registrarse
         </button>
 
         <p style={styles.footerText}>
-          Already have an account?{" "}
+          ¿Ya tienes una cuenta?{" "}
           <Link to="/login" style={styles.link}>
             Log In
           </Link>

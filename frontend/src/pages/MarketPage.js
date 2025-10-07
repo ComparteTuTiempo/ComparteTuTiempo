@@ -21,7 +21,7 @@ const MarketPage = () => {
   // cargar categorías
   useEffect(() => {
     axios
-      .get("http://localhost:8080/categorias")
+      .get(`${process.env.REACT_APP_API_URL}/categorias`)
       .then((res) => setCategoriasDisponibles(res.data))
       .catch((err) => console.error("❌ Error al cargar categorías:", err));
   }, []);
@@ -31,7 +31,7 @@ const MarketPage = () => {
     const fetchData = async () => {
       try {
         if (tab === "products") {
-          const res = await axios.get("http://localhost:8080/productos");
+          const res = await axios.get(`${process.env.REACT_APP_API_URL}/productos`);
           setItems(res.data.filter(i => i.estado !== "ENTREGADO"));
         } else {
           const params = {
@@ -44,7 +44,7 @@ const MarketPage = () => {
               categorias.length > 0 ? categorias.join(",") : undefined,
           };
           const res = await axios.get(
-            "http://localhost:8080/intercambios/filtrar",
+            `${process.env.REACT_APP_API_URL}/intercambios/filtrar`,
             { params }
           );
           setItems(res.data.filter(i => i.estado !== "FINALIZADO"));
@@ -69,11 +69,11 @@ const MarketPage = () => {
 
     try {
       if (tab === "products") {
-        await axios.delete(`http://localhost:8080/productos/${id}`, {
+        await axios.delete(`${process.env.REACT_APP_API_URL}/productos/${id}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
       } else {
-        await axios.delete(`http://localhost:8080/intercambios/${id}`, {
+        await axios.delete(`${process.env.REACT_APP_API_URL}/intercambios/${id}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
       }
@@ -106,10 +106,10 @@ const MarketPage = () => {
               onClick={() => setTab(t)}
             >
               {t === "offers"
-                ? "Offers"
+                ? "Ofertas"
                 : t === "requests"
-                  ? "Requests"
-                  : "Products"}
+                  ? "Peticiones"
+                  : "Productos"}
             </button>
           ))}
         </div>
@@ -173,7 +173,7 @@ const MarketPage = () => {
                           : navigate(`/intercambio/${i.id}`)
                       }
                     >
-                      View
+                      Detalles
                     </button>
                   )}
 
@@ -203,7 +203,7 @@ const MarketPage = () => {
             <h3>Filtros</h3>
             <input
               type="text"
-              placeholder="Search the market..."
+              placeholder="Buscar..."
               value={q}
               onChange={(e) => setQ(e.target.value)}
               style={styles.input}
@@ -233,7 +233,7 @@ const MarketPage = () => {
             />
 
             <div style={{ marginTop: "15px" }}>
-              <strong>Categories:</strong>
+              <strong>Categorias:</strong>
               <div
                 style={{
                   display: "flex",

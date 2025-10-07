@@ -20,7 +20,7 @@ const LoginPage = () => {
     e.preventDefault();
     setError("");
     try {
-      const response = await axios.post("http://localhost:8080/auth/login", {
+      const response = await axios.post(`${process.env.REACT_APP_API_URL}/auth/login`, {
         correo: credenciales.correo,
         contraseña: credenciales.contrasena,
       });
@@ -39,7 +39,7 @@ const LoginPage = () => {
   const handleGoogleSuccess = async (credentialResponse) => {
     try {
       const decoded = jwtDecode(credentialResponse.credential);
-      const response = await axios.post("http://localhost:8080/api/usuarios/login/google", {
+      const response = await axios.post(`${process.env.REACT_APP_API_URL}/api/usuarios/login/google`, {
         correo: decoded.email,
         nombre: decoded.name,
         fotoPerfil: decoded.picture,
@@ -64,7 +64,7 @@ const LoginPage = () => {
   // 🔹 Facebook login
   const handleFacebookResponse = async (facebookData) => {
     try {
-      const response = await axios.post("http://localhost:8080/api/usuarios/login/facebook", {
+      const response = await axios.post(`${process.env.REACT_APP_API_URL}/api/usuarios/login/facebook`, {
         correo: facebookData.email,
         nombre: facebookData.name,
         fotoPerfil: facebookData.picture?.data?.url,
@@ -98,13 +98,13 @@ const LoginPage = () => {
           required
         />
 
-        <label style={styles.label}>Password</label>
+        <label style={styles.label}>Contraseña</label>
         <input
           type="password"
           name="contrasena"
           value={credenciales.contrasena}
           onChange={handleChange}
-          placeholder="Enter your password"
+          placeholder="Contraseña"
           style={styles.input}
           required
         />
@@ -116,7 +116,7 @@ const LoginPage = () => {
         </button>
 
         <p style={styles.footerText}>
-          Don’t have an account?{" "}
+          ¿No tienes cuenta?{" "}
           <Link to="/registro" style={styles.link}>
             Register
           </Link>
@@ -131,11 +131,6 @@ const LoginPage = () => {
             // 🔹 Para mantener estilo de marca, Google ya ofrece su botón oficial.
             // Si quieres custom, tendrías que usar un wrapper propio.
           />
-        </div>
-
-        {/* Facebook */}
-        <div style={{ marginTop: "10px" }}>
-          <FacebookLoginButton onSuccess={handleFacebookResponse} />
         </div>
       </form>
     </div>
