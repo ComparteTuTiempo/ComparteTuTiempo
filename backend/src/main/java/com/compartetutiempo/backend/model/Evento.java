@@ -2,8 +2,6 @@ package com.compartetutiempo.backend.model;
 
 import java.time.LocalDateTime;
 
-import org.springframework.format.annotation.DateTimeFormat;
-
 import com.compartetutiempo.backend.model.enums.EstadoEvento;
 
 import jakarta.persistence.Column;
@@ -14,8 +12,8 @@ import jakarta.persistence.JoinColumn;
 
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
-import jakarta.validation.constraints.FutureOrPresent;
 import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.PositiveOrZero;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -37,6 +35,9 @@ public class Evento extends BaseEntity {
 
     @Column(nullable = false, length = 255)
     private String ubicacion;
+
+    @PositiveOrZero
+    private Integer capacidad;
 
     @Column(name = "fecha_evento", nullable = false)
     private LocalDateTime fechaEvento;

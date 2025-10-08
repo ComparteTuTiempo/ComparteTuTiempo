@@ -28,6 +28,8 @@ public class EventoRequest{
     @NotBlank
     private String ubicacion;
 
+    private Integer capacidad;
+
     @NotNull
     private Integer duracion;
 

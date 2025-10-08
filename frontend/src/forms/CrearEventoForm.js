@@ -15,6 +15,7 @@ const CrearEventoForm = () => {
     fechaEvento: "",
     duracion: 1,
     ubicacion: "",
+    capacidad: 0,
     correoOrganizador: user?.correo,
   });
 
@@ -121,6 +122,18 @@ const CrearEventoForm = () => {
           type="number"
           name="duracion"
           value={formData.duracion}
+          onChange={handleChange}
+          style={styles.input}
+          min="1"
+          step="0.5"
+          required
+        />
+
+        <label style={styles.label}>Capacidad</label>
+        <input
+          type="number"
+          name="capacidad"
+          value={formData.capacidad}
           onChange={handleChange}
           style={styles.input}
           min="1"
