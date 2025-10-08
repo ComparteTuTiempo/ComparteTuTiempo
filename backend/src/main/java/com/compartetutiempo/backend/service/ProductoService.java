@@ -8,6 +8,7 @@ import com.compartetutiempo.backend.model.Usuario;
 import com.compartetutiempo.backend.model.enums.EstadoProducto;
 import com.compartetutiempo.backend.model.enums.EstadoProductoUsuario;
 import com.compartetutiempo.backend.repository.ConversacionRepository;
+import com.compartetutiempo.backend.repository.MensajeRepository;
 import com.compartetutiempo.backend.repository.ProductoRepository;
 import com.compartetutiempo.backend.repository.ProductoUsuarioRepository;
 import com.compartetutiempo.backend.repository.UsuarioRepository;
@@ -26,15 +27,18 @@ public class ProductoService {
     private final UsuarioRepository usuarioRepository;
     private final ConversacionRepository conversacionRepository;
     private final ProductoUsuarioRepository productoUsuarioRepository;
+    private final MensajeRepository mensajeRepository;
 
     public ProductoService(ProductoRepository productoRepository
         ,UsuarioRepository usuarioRepository,
         ConversacionRepository conversacionRepository,
-        ProductoUsuarioRepository productoUsuarioRepository) {
+        ProductoUsuarioRepository productoUsuarioRepository
+        ,MensajeRepository mensajeRepository) {
         this.productoRepository = productoRepository;
         this.usuarioRepository = usuarioRepository;
         this.conversacionRepository = conversacionRepository;
         this.productoUsuarioRepository = productoUsuarioRepository;
+        this.mensajeRepository = mensajeRepository;
     }
 
     public Producto crear(Producto producto) {
@@ -109,11 +113,20 @@ public class ProductoService {
         return ProductoDTO.fromEntity(producto,null);
     }
 
+    @Transactional
     public void eliminarProducto(Long id, Usuario user) {
         Producto producto = productoRepository.findById(id).orElseThrow();
 
         if (!producto.getPropietario().getId().equals(user.getId())) {
             throw new RuntimeException("No tienes permisos para eliminar este producto");
+        }
+
+        List<ProductoUsuario> relaciones = productoUsuarioRepository.findByProducto(producto);
+        for (ProductoUsuario pu : relaciones) {
+            Conversacion conv = pu.getConversacion();
+            if (conv != null) {
+                mensajeRepository.deleteByConversacion(conv);
+            }
         }
 
         productoUsuarioRepository.deleteByProducto(producto);
@@ -124,9 +137,18 @@ public class ProductoService {
         return productoRepository.findByPropietarioAndEstado(user, EstadoProducto.ENTREGADO);
     }
 
+    @Transactional
     public void eliminarProductoComoAdmin(Long id) {
         Producto producto = productoRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Producto no encontrado"));
+
+        List<ProductoUsuario> relaciones = productoUsuarioRepository.findByProducto(producto);
+        for (ProductoUsuario pu : relaciones) {
+        Conversacion conv = pu.getConversacion();
+        if (conv != null) {
+            mensajeRepository.deleteByConversacion(conv); // borrar mensajes
+        }
+    }
         productoUsuarioRepository.deleteByProducto(producto);
         productoRepository.delete(producto);
     }

@@ -12,6 +12,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import com.compartetutiempo.backend.dto.IntercambioDTO;
 import com.compartetutiempo.backend.model.Categoria;
+import com.compartetutiempo.backend.model.Conversacion;
 import com.compartetutiempo.backend.model.Intercambio;
 import com.compartetutiempo.backend.model.IntercambioUsuario;
 import com.compartetutiempo.backend.model.Usuario;
@@ -22,6 +23,7 @@ import com.compartetutiempo.backend.repository.CategoriaRepository;
 import com.compartetutiempo.backend.repository.IntercambioRepository;
 import com.compartetutiempo.backend.repository.ReseñaIntercambioRepository;
 import com.compartetutiempo.backend.repository.IntercambioUsuarioRepository;
+import com.compartetutiempo.backend.repository.MensajeRepository;
 import com.compartetutiempo.backend.repository.UsuarioRepository;
 import com.compartetutiempo.backend.specifications.IntercambioSpecifications;
 
@@ -33,17 +35,20 @@ public class IntercambioService {
     private final CategoriaRepository categoriaRepository;
     private final ReseñaIntercambioRepository resenaIntercambioRepository;
     private final IntercambioUsuarioRepository intercambioUsuarioRepository;
+    private final MensajeRepository mensajeRepository;
 
     public IntercambioService(IntercambioRepository intercambioRepository,
         UsuarioRepository usuarioRepository,
         IntercambioUsuarioRepository intercambioUsuarioRepository,
         CategoriaRepository categoriaRepository ,
-        ReseñaIntercambioRepository resenaIntercambioRepository) {
+        ReseñaIntercambioRepository resenaIntercambioRepository
+        ,MensajeRepository mensajeRepository) {
             this.intercambioRepository = intercambioRepository;
             this.usuarioRepository = usuarioRepository;
             this.intercambioUsuarioRepository = intercambioUsuarioRepository;
             this.categoriaRepository = categoriaRepository;
             this.resenaIntercambioRepository = resenaIntercambioRepository;
+            this.mensajeRepository = mensajeRepository;
         }
 
 
@@ -173,6 +178,15 @@ public class IntercambioService {
         if (intercambio == null) {
             throw new RuntimeException("Intercambio no encontrado");
         }
+        List<IntercambioUsuario> participantes = intercambioUsuarioRepository.findByIntercambioId(intercambio.getId());
+        
+        for (IntercambioUsuario iu : participantes) {
+            Conversacion conv = iu.getConversacion();
+                if (conv != null) {
+                mensajeRepository.deleteByConversacion(conv);
+            }
+        }
+
         resenaIntercambioRepository.deleteByIntercambio(intercambio);
         intercambioUsuarioRepository.deleteByIntercambio(intercambio);
         intercambioRepository.delete(intercambio);
