@@ -98,13 +98,13 @@ const LoginPage = () => {
           required
         />
 
-        <label style={styles.label}>Password</label>
+        <label style={styles.label}>Contraseña</label>
         <input
           type="password"
           name="contrasena"
           value={credenciales.contrasena}
           onChange={handleChange}
-          placeholder="Enter your password"
+          placeholder="Contraseña"
           style={styles.input}
           required
         />
@@ -116,7 +116,7 @@ const LoginPage = () => {
         </button>
 
         <p style={styles.footerText}>
-          Don’t have an account?{" "}
+          ¿No tienes cuenta?{" "}
           <Link to="/registro" style={styles.link}>
             Register
           </Link>
@@ -131,11 +131,6 @@ const LoginPage = () => {
             // 🔹 Para mantener estilo de marca, Google ya ofrece su botón oficial.
             // Si quieres custom, tendrías que usar un wrapper propio.
           />
-        </div>
-
-        {/* Facebook */}
-        <div style={{ marginTop: "10px" }}>
-          <FacebookLoginButton onSuccess={handleFacebookResponse} />
         </div>
       </form>
     </div>

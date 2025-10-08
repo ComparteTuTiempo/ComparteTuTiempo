@@ -5,8 +5,10 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
+import java.util.Set;
 
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
@@ -24,6 +26,7 @@ import com.compartetutiempo.backend.model.enums.EstadoEvento;
 import com.compartetutiempo.backend.model.enums.EstadoIntercambio;
 import com.compartetutiempo.backend.model.enums.EstadoProducto;
 import com.compartetutiempo.backend.model.enums.ModalidadServicio;
+import com.compartetutiempo.backend.model.enums.Role;
 import com.compartetutiempo.backend.model.enums.TipoIntercambio;
 import com.compartetutiempo.backend.repository.CategoriaRepository;
 import com.compartetutiempo.backend.repository.EventoRepository;
@@ -82,6 +85,21 @@ public class DataInitializer {
                     u.setMetodoAutenticacion("LOCAL");
                     usuarios.add(u);
                 }
+
+                Usuario admin = new Usuario();
+                admin.setNombre("Administrador");
+                admin.setCorreo("admin@tiempocompartido.com");
+                admin.setContrasena(passwordEncoder.encode("admin1234"));
+                admin.setFechaNacimiento(LocalDate.of(1990, 1, 1));
+                admin.setBiografia("Administrador general del sistema.");
+                admin.setFotoPerfil("https://cdn-icons-png.flaticon.com/512/149/149071.png");
+                admin.setNumeroHoras(100);
+                admin.setUbicacion("Madrid, España");
+                admin.setActivo(true);
+                admin.setMetodoAutenticacion("LOCAL");
+                admin.setRoles(new HashSet<>(Set.of(Role.ADMIN, Role.USER)));
+
+                usuarios.add(admin);
                 usuarioRepository.saveAll(usuarios);
             }
 
