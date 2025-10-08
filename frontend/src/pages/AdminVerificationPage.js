@@ -10,7 +10,7 @@ const AdminVerificationPage = () => {
   useEffect(() => {
     const fetchPendientes = async () => {
       try {
-        const res = await axios.get(`${process.env.REACT_APP_API_URL}/api/verificaciones/pendientes`, {
+        const res = await axios.get(`http://localhost:8080/api/verificaciones/pendientes`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         setVerificaciones(res.data);
@@ -25,7 +25,7 @@ const AdminVerificationPage = () => {
   const handleAccion = async (id, accion) => {
     try {
       await axios.put(
-        `${process.env.REACT_APP_API_URL}/api/verificaciones/${id}/${accion}`,
+        `http://localhost:8080/api/verificaciones/${id}/${accion}`,
         {},
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -53,7 +53,7 @@ const AdminVerificationPage = () => {
                 <p><b>Documento:</b></p>
                 {v.documentoURL ? (
                   <img
-                    src={`${process.env.REACT_APP_API_URL}/uploads/${v.documentoURL}`}
+                    src={`http://localhost:8080/uploads/${v.documentoURL}`}
                     alt="Documento"
                     style={styles.image}
                   />

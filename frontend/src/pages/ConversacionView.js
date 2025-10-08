@@ -18,7 +18,7 @@ export default function ConversationView() {
     if (!id || !token || !user) return;
 
     // 🔹 Cargar info de la conversación (para saber el otro participante)
-    axios.get(`${process.env.REACT_APP_API_URL}/conversaciones/${id}`, {
+    axios.get(`http://localhost:8080/conversaciones/${id}`, {
       headers: { Authorization: `Bearer ${token}` }
     })
     .then(res => {
@@ -28,7 +28,7 @@ export default function ConversationView() {
     .catch(err => console.error("❌ Error cargando conversación:", err));
 
     // 🔹 Cargar mensajes
-    axios.get(`${process.env.REACT_APP_API_URL}/mensajes/${id}`, {
+    axios.get(`http://localhost:8080/mensajes/${id}`, {
       headers: { Authorization: `Bearer ${token}` }
     })
     .then(res => setMessages(res.data))

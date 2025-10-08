@@ -18,7 +18,7 @@ const ProductoForm = () => {
   useEffect(() => {
     if (id) {
       axios
-        .get(`${process.env.REACT_APP_API_URL}/productos/${id}/editar`, {
+        .get(`http://localhost:8080/productos/${id}/editar`, {
           headers: { Authorization: `Bearer ${token}` },
         })
         .then((res) => {
@@ -51,13 +51,13 @@ const ProductoForm = () => {
     try {
       if (id) {
         // Actualizar
-        await axios.put(`${process.env.REACT_APP_API_URL}/productos/${id}`, formData, {
+        await axios.put(`http://localhost:8080/productos/${id}`, formData, {
           headers: { Authorization: `Bearer ${token}` },
         });
         alert("Producto actualizado ✅");
       } else {
         // Crear nuevo
-        await axios.post(`${process.env.REACT_APP_API_URL}/productos`, formData, {
+        await axios.post(`http://localhost:8080/productos`, formData, {
           headers: { Authorization: `Bearer ${token}` },
         });
         alert("Producto publicado 🎉");
