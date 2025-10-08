@@ -42,7 +42,7 @@ const RegistroUsuario = () => {
     if (!validar()) return;
 
     try {
-      await axios.post(`${process.env.REACT_APP_API_URL}/api/usuarios`, {
+      await axios.post(`http://localhost:8080/api/usuarios`, {
         nombre: usuario.nombre,
         correo: usuario.correo,
         contrasena: usuario.contrasena,

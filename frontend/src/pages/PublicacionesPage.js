@@ -15,7 +15,7 @@ const PublicacionesPage = () => {
   useEffect(() => {
     // intercambios del usuario
     axios
-      .get(`${process.env.REACT_APP_API_URL}/intercambios/usuario`, {
+      .get(`http://localhost:8080/intercambios/usuario`, {
         headers: { Authorization: `Bearer ${token}` },
       })
       .then((res) => {
@@ -26,7 +26,7 @@ const PublicacionesPage = () => {
 
     // productos del usuario
     axios
-      .get(`${process.env.REACT_APP_API_URL}/productos/usuario`, {
+      .get(`http://localhost:8080/productos/usuario`, {
         headers: { Authorization: `Bearer ${token}` },
       })
       .then((res) => setProductos(res.data))
@@ -78,12 +78,12 @@ const PublicacionesPage = () => {
                     if (window.confirm("¿Seguro que quieres eliminarlo?")) {
                       try {
                         if (type === "producto") {
-                          await axios.delete(`${process.env.REACT_APP_API_URL}/productos/${p.id}`, {
+                          await axios.delete(`http://localhost:8080/productos/${p.id}`, {
                             headers: { Authorization: `Bearer ${token}` },
                           });
                           setProductos(productos.filter((x) => x.id !== p.id));
                         } else {
-                          await axios.delete(`${process.env.REACT_APP_API_URL}/intercambios/${p.id}`, {
+                          await axios.delete(`http://localhost:8080/intercambios/${p.id}`, {
                             headers: { Authorization: `Bearer ${token}` },
                           });
                           if (type === "oferta") {

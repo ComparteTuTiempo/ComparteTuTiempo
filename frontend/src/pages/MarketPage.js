@@ -21,7 +21,7 @@ const MarketPage = () => {
   // cargar categorías
   useEffect(() => {
     axios
-      .get(`${process.env.REACT_APP_API_URL}/categorias`)
+      .get(`http://localhost:8080/categorias`)
       .then((res) => setCategoriasDisponibles(res.data))
       .catch((err) => console.error("❌ Error al cargar categorías:", err));
   }, []);
@@ -31,8 +31,8 @@ const MarketPage = () => {
     const fetchData = async () => {
       try {
         if (tab === "products") {
-          const res = await axios.get(`${process.env.REACT_APP_API_URL}/productos`);
-          setItems(res.data.filter(i => i.estado !== "ENTREGADO"));
+          const res = await axios.get(`http://localhost:8080/productos`);
+          setItems(res.data.filter(i => i.estado !== "ENTREGADO") );
         } else {
           const params = {
             tipo: tab === "offers" ? "OFERTA" : "PETICION",
@@ -44,7 +44,7 @@ const MarketPage = () => {
               categorias.length > 0 ? categorias.join(",") : undefined,
           };
           const res = await axios.get(
-            `${process.env.REACT_APP_API_URL}/intercambios/filtrar`,
+            `http://localhost:8080/intercambios/filtrar`,
             { params }
           );
           setItems(res.data.filter(i => i.estado !== "FINALIZADO"));
@@ -69,11 +69,11 @@ const MarketPage = () => {
 
     try {
       if (tab === "products") {
-        await axios.delete(`${process.env.REACT_APP_API_URL}/productos/${id}`, {
+        await axios.delete(`http://localhost:8080/productos/${id}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
       } else {
-        await axios.delete(`${process.env.REACT_APP_API_URL}/intercambios/${id}`, {
+        await axios.delete(`http://localhost:8080/intercambios/${id}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
       }

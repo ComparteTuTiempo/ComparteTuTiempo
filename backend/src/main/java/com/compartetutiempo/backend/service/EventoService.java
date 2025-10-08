@@ -69,11 +69,15 @@ public class EventoService {
         boolean yaInscrito = participacionRepository.findByEventoId(eventoId).stream()
                 .anyMatch(p -> p.getUsuario().getCorreo().equals(usuario.getCorreo()));
 
+        Integer numeroParticipantes = participacionRepository.findByEventoId(eventoId).size();
+
         boolean esAnfitrion = evento.getOrganizador().getCorreo().equals(correo);
         if (yaInscrito) {
             throw new RuntimeException("El usuario ya está inscrito en este evento");
         }else if(esAnfitrion){
             throw new RuntimeException("El anfitrión no puede inscribirse en su propio evento");
+        }else if(numeroParticipantes >= evento.getCapacidad()){
+            throw new RuntimeException("Este evento ya ha superado su capacidad maxima de participantes");
         }
 
         Participacion participacion = new Participacion();

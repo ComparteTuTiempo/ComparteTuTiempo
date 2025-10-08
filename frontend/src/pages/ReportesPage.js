@@ -16,7 +16,7 @@ const ReportesPage = () => {
 
   const cargarReportes = async () => {
     try {
-      const res = await axios.get(`${process.env.REACT_APP_API_URL}/api/reportes/pendientes`, {
+      const res = await axios.get(`http://localhost:8080/api/reportes/pendientes`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       setReportes(res.data);
@@ -28,7 +28,7 @@ const ReportesPage = () => {
   const confirmarReporte = async (id) => {
     if (!window.confirm("¿Seguro que quieres confirmar este reporte? El usuario será baneado.")) return;
     try {
-      await axios.post(`${process.env.REACT_APP_API_URL}/api/reportes/${id}/confirmar`, {}, {
+      await axios.post(`http://localhost:8080/api/reportes/${id}/confirmar`, {}, {
         headers: { Authorization: `Bearer ${token}` },
       });
       alert("✅ Reporte confirmado, usuario baneado.");
@@ -43,7 +43,7 @@ const ReportesPage = () => {
   const rechazarReporte = async (id) => {
     if (!window.confirm("¿Seguro que quieres rechazar este reporte?")) return;
     try {
-      await axios.post(`${process.env.REACT_APP_API_URL}/api/reportes/${id}/rechazar`, {}, {
+      await axios.post(`http://localhost:8080/api/reportes/${id}/rechazar`, {}, {
         headers: { Authorization: `Bearer ${token}` },
       });
       alert("⚠️ Reporte rechazado.");

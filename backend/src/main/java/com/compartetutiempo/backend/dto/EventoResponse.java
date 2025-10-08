@@ -10,6 +10,7 @@ import com.compartetutiempo.backend.model.enums.EstadoEvento;
 import jakarta.validation.constraints.FutureOrPresent;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
 import lombok.Data;
 
 @Data
@@ -25,6 +26,9 @@ public class EventoResponse {
     private String descripcion;
     @NotNull
     private Integer duracion;
+
+    @Positive
+    private Integer capacidad;
 
     @FutureOrPresent
     private LocalDateTime fechaEvento;
@@ -57,13 +61,14 @@ public class EventoResponse {
                     evento.getOrganizador().isActivo(),
                     evento.getOrganizador().getBiografia(),
                     evento.getOrganizador().getFechaNacimiento()
-            )
+            ),
+            evento.getCapacidad()
     );
 }
 
     public EventoResponse(Integer id, String nombre, String descripcion, String ubicacion, Integer duracion,
             LocalDateTime fechaEvento,
-            EstadoEvento estadoEvento, UsuarioDTO usuarioDTO) {
+            EstadoEvento estadoEvento, UsuarioDTO usuarioDTO,Integer capacidad) {
         this.id = id;
         this.nombre = nombre;
         this.descripcion = descripcion;
@@ -72,5 +77,6 @@ public class EventoResponse {
         this.fechaEvento = fechaEvento;
         this.estadoEvento = estadoEvento;
         this.organizador = usuarioDTO;
+        this.capacidad=capacidad;
     }
 }

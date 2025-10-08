@@ -141,6 +141,7 @@ public class DataInitializer {
                     ev.setNombre(titulos.get(i));
                     ev.setDescripcion(descripciones.get(i));
                     ev.setDuracion(1 + random.nextInt(3));
+                    ev.setCapacidad(50);
                     ev.setUbicacion("Centro cultural " + (i+1));
                     ev.setFechaEvento(LocalDateTime.now().plusDays(3 * (i+1)));
                     ev.setOrganizador(usuarios.get(i % usuarios.size()));

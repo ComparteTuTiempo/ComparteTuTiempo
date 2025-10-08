@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const API_URL = `${process.env.REACT_APP_API_URL}/intercambios`;
+const API_URL = `http://localhost:8080/intercambios`;
 
 export const obtenerTodosLosIntercambios = async () => {
   const response = await axios.get(API_URL);

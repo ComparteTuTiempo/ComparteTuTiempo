@@ -10,7 +10,7 @@ const CategoriasAdminPage = () => {
 
   const fetchCategorias = async () => {
     try {
-      const res = await axios.get(`${process.env.REACT_APP_API_URL}/categorias`, {
+      const res = await axios.get(`http://localhost:8080/categorias`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setCategorias(res.data);
@@ -25,7 +25,7 @@ const CategoriasAdminPage = () => {
 
   const handleCrear = async () => {
     try {
-      await axios.post(`${process.env.REACT_APP_API_URL}/categorias`, nueva, {
+      await axios.post(`http://localhost:8080/categorias`, nueva, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setNueva({ nombre: "" });
@@ -37,7 +37,7 @@ const CategoriasAdminPage = () => {
 
   const handleActualizar = async (id) => {
     try {
-      await axios.put(`${process.env.REACT_APP_API_URL}/categorias/${id}`, editando, {
+      await axios.put(`http://localhost:8080/categorias/${id}`, editando, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setEditando(null);
@@ -50,7 +50,7 @@ const CategoriasAdminPage = () => {
   const handleEliminar = async (id) => {
     if (!window.confirm("¿Seguro que quieres eliminar esta categoría?")) return;
     try {
-      await axios.delete(`${process.env.REACT_APP_API_URL}/categorias/${id}`, {
+      await axios.delete(`http://localhost:8080/categorias/${id}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       fetchCategorias();

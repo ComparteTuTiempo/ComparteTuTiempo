@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const API_URL = `${process.env.REACT_APP_API_URL}/productousuario`;
+const API_URL = `http://localhost:8080/productousuario`;
 
 export const obtenerMisTransacciones = async (token) => {
   const res = await axios.get(`${API_URL}/transacciones`, {

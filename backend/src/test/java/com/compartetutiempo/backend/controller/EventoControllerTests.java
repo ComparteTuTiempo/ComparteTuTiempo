@@ -67,6 +67,7 @@ class EventoControllerTest {
             1, "Evento Test", "Descripción", "Madrid", 2,
             LocalDateTime.now().plusDays(1), EstadoEvento.DISPONIBLE,
             organizadorDTO
+            ,50
         );
 
         Evento evento = new Evento();
@@ -74,6 +75,7 @@ class EventoControllerTest {
         Usuario organizador = new Usuario();
         organizador.setCorreo("user@test.com");
         evento.setOrganizador(organizador);
+        evento.setCapacidad(50);
 
         participacion = new Participacion();
         participacion.setEvento(evento);
@@ -270,7 +272,7 @@ class EventoControllerTest {
                 1, "Evento Test", "Desc", "Madrid", 2,
                 LocalDateTime.now().plusDays(1), EstadoEvento.DISPONIBLE,
                 new UsuarioDTO(null, "Otro", "otro@test.com", null, null, false, true, null, null)
-        );
+                ,50);
 
         when(eventoService.obtenerEventoPorId(1)).thenReturn(otro);
 
