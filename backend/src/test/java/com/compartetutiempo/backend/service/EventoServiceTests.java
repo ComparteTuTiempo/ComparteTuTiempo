@@ -56,6 +56,7 @@ class EventoServiceTest {
         evento.setDuracion(2);
         evento.setFechaEvento(LocalDateTime.now().minusDays(1)); // pasado para finalizar
         evento.setOrganizador(usuario);
+        evento.setCapacidad(50);
         evento.setEstadoEvento(EstadoEvento.DISPONIBLE);
 
         participacion = new Participacion();

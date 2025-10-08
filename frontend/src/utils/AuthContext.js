@@ -35,7 +35,7 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     if (token) {
       axios
-        .get(`${process.env.REACT_APP_API_URL}/api/usuarios/me`, {
+        .get(`http://localhost:8080/api/usuarios/me`, {
           headers: { Authorization: `Bearer ${token}` },
         })
         .then((res) => {

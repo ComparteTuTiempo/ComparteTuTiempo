@@ -22,7 +22,7 @@ const IntercambioForm = () => {
   useEffect(() => {
     const fetchCategorias = async () => {
       try {
-        const res = await axios.get(`${process.env.REACT_APP_API_URL}/categorias`, {
+        const res = await axios.get(`http://localhost:8080/categorias`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         setCategoriasDisponibles(res.data);
@@ -34,7 +34,7 @@ const IntercambioForm = () => {
     const fetchIntercambio = async () => {
       if (id) {
         try {
-          const res = await axios.get(`${process.env.REACT_APP_API_URL}/intercambios/${id}/editar`, {
+          const res = await axios.get(`http://localhost:8080/intercambios/${id}/editar`, {
             headers: { Authorization: `Bearer ${token}` },
           });
 
@@ -84,12 +84,12 @@ const IntercambioForm = () => {
     e.preventDefault();
     try {
       if (id) {
-        await axios.put(`${process.env.REACT_APP_API_URL}/intercambios/${id}`, formData, {
+        await axios.put(`http://localhost:8080/intercambios/${id}`, formData, {
           headers: { Authorization: `Bearer ${token}` },
         });
       } else {
         await axios.post(
-          `${process.env.REACT_APP_API_URL}/intercambios/${user.correo}`,
+          `http://localhost:8080/intercambios/${user.correo}`,
           formData,
           {
             headers: { Authorization: `Bearer ${token}` },

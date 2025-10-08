@@ -44,6 +44,7 @@ public class EventoController {
             evento.setFechaEvento(request.getFechaEvento());
             evento.setUbicacion(request.getUbicacion());
             evento.setDuracion(request.getDuracion());
+            evento.setCapacidad(request.getCapacidad());
 
             Evento creado = eventoService.crearEvento(evento, request.getCorreoOrganizador());
             return ResponseEntity.ok(creado);

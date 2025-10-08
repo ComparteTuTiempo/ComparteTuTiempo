@@ -30,11 +30,11 @@ export default function IntercambioDetalle() {
           setEsParticipante(usuarioEsParticipante);
 
           // cargar reseñas
-          axios.get(`${process.env.REACT_APP_API_URL}/resenas/intercambios/${id}`)
+          axios.get(`http://localhost:8080/resenas/intercambios/${id}`)
             .then(res => setResenas(res.data))
             .catch(err => console.error("❌ Error al cargar reseñas:", err));
 
-          axios.get(`${process.env.REACT_APP_API_URL}/resenas/intercambios/${id}/promedio`)
+          axios.get(`http://localhost:8080/resenas/intercambios/${id}/promedio`)
             .then(res => setPromedio(res.data))
             .catch(err => console.error("❌ Error al cargar promedio:", err));
 
@@ -66,7 +66,7 @@ export default function IntercambioDetalle() {
     }
     try {
       await axios.post(
-        `${process.env.REACT_APP_API_URL}/resenas/intercambios/${id}`,
+        `http://localhost:8080/resenas/intercambios/${id}`,
         {
           ...nuevaResena,
           intercambio: { id: parseInt(id, 10) } // 👈 añadimos el intercambio
@@ -75,9 +75,9 @@ export default function IntercambioDetalle() {
       );
 
       // refrescar reseñas y promedio
-      const res = await axios.get(`${process.env.REACT_APP_API_URL}/resenas/intercambios/${id}`);
+      const res = await axios.get(`http://localhost:8080/resenas/intercambios/${id}`);
       setResenas(res.data);
-      const avg = await axios.get(`${process.env.REACT_APP_API_URL}/resenas/intercambios/${id}/promedio`);
+      const avg = await axios.get(`http://localhost:8080/resenas/intercambios/${id}/promedio`);
       setPromedio(avg.data);
 
       setNuevaResena({ puntuacion: 5, comentario: "" });

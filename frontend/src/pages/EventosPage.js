@@ -117,6 +117,9 @@ const EventosPage = () => {
                   <span style={styles.rating}>
                     {new Date(e.fechaEvento).toLocaleDateString()}
                   </span>
+                  <span style={styles.rating}>
+                    Capacidad : {e.capacidad}
+                  </span>
                   {tab === "participaciones" && (
                     <span
                       style={{
